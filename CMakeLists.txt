@@ -98,7 +98,7 @@ ENDIF(WIN32 AND DEFINED EXTERNAL_LIBRARIES_DIR)
 
 #Boost bindings
 IF(CMAKE_COMPILER_IS_GNUCXX)
-  add_definitions("-DBOOST_UBLAS_BOUNDED_ARRAY_ALIGN=\\ __attribute__\\ \\(\\(aligned\\ \\(16\\)\\)\\)")
+  add_definitions("-DBOOST_UBLAS_BOUNDED_ARRAY_ALIGN= __attribute__ ((aligned (16)))")
 ENDIF(CMAKE_COMPILER_IS_GNUCXX)
 ADD_DEFINITIONS(-DBOOST_SPIRIT_USE_OLD_NAMESPACE)
 
