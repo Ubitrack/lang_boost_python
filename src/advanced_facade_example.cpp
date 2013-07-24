@@ -39,7 +39,7 @@ void ctrlC ( int i )
 }
 
 void receivePose(const Measurement::Pose& pose) {
-	std::cout << "received pushed Pose: " << pose << std::endl;
+	std::cout << "Example: received pushed pose: " << pose << std::endl;
 }
 
 
@@ -173,14 +173,23 @@ int main(int ac, char** av) {
 				Math::Quaternion rot( 0, 0, 0, 1 );
 		        Math::Vector< 3 > pos( 0, 0, 0 );
 				Measurement::Pose p(timestamp, Math::Pose( rot, pos ));
+				std::cout << "Example: send pose to ubitrack " << p << std::endl;
 				pSource->send( p );
 			}
 			
 			// pull a pose from ubitrack
 			if (pSink != NULL) {
 				// Retrieve measurement for current timestamp
-	            Ubitrack::Measurement::Pose measurement = pSink->get(timestamp);
-				std::cout << "Sucessfully pulled pose in SimpleApplicationPullSinkPosePrivate::getPose(): " << measurement << std::endl;
+		        try
+		        {
+		            Ubitrack::Measurement::Pose measurement = pSink->get(timestamp);
+					std::cout << "Example: sucessfully pulled pose: " << measurement << std::endl;
+		        }
+		        catch ( const Ubitrack::Util::Exception& e )
+		        {
+			        std::cout << "Caught exception while retrieving measurement from ( PullSinkPose ): " << e  << std::endl;
+			        std::cout << e.what() << std::endl;
+		        }
 			}
 			
 			
