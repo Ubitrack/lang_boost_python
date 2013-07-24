@@ -22,6 +22,8 @@
 
 #include <utMeasurement/Measurement.h>
 #include <utComponents/ApplicationPullSink.h>
+#include <utComponents/ApplicationPushSink.h>
+#include <utComponents/ApplicationPushSource.h>
 
 
 
@@ -129,22 +131,35 @@ int main(int ac, char** av) {
         utFacade.loadDataflow( sUtqlFile );
 
 
-		// connecting a pushsinkcallback
+		// connecting a pushsink callback
 		utFacade.setCallback< Measurement::Pose >( "PushSinkPose", boost::bind(&receivePose, _1) );
 		
+		// connecting a pullsink
         Components::ApplicationPullSinkPose * pSink;
-
         try
         {
 	        pSink = utFacade.componentByName< Components::ApplicationPullSinkPose >( "PullSinkPose" ).get();
         }
         catch ( const Ubitrack::Util::Exception& e )
         {
-	        std::cout << "Caught exception in SimpleFacade::getSimplePullSinkPose( PullSinkPose ): " << e  << std::endl;
+	        std::cout << "Caught exception while retrieving component( PullSinkPose ): " << e  << std::endl;
 	        std::cout << e.what() << std::endl;
 	        return 1;
         }
 		
+		// get a pushsource
+		Components::ApplicationPushSourcePose * pSource;
+        try
+        {
+			pSource = utFacade.componentByName< Components::ApplicationPushSourcePose >( "PushSourcePose" ).get();
+        }
+        catch ( const Ubitrack::Util::Exception& e )
+        {
+	        std::cout << "Caught exception while retrieving component( PushSourcePose ): " << e  << std::endl;
+	        std::cout << e.what() << std::endl;
+	        return 1;
+        }
+
 
         std::cout << "Starting dataflow" << std::endl;
         utFacade.startDataflow();
@@ -153,11 +168,22 @@ int main(int ac, char** av) {
         {
 			unsigned long long timestamp = Measurement::now();
 			
+			// push a pose to ubitrack
+			if (pSource != NULL) {
+				Math::Quaternion rot( 0, 0, 0, 1 );
+		        Math::Vector< 3 > pos( 0, 0, 0 );
+				Measurement::Pose p(timestamp, Math::Pose( rot, pos ));
+				pSource->send( p );
+			}
+			
+			// pull a pose from ubitrack
 			if (pSink != NULL) {
 				// Retrieve measurement for current timestamp
 	            Ubitrack::Measurement::Pose measurement = pSink->get(timestamp);
 				std::cout << "Sucessfully pulled pose in SimpleApplicationPullSinkPosePrivate::getPose(): " << measurement << std::endl;
 			}
+			
+			
 			
             Util::sleep( 1000 );
             #ifdef _WIN32
