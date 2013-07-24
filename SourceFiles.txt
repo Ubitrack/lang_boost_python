@@ -3,5 +3,5 @@ SET( PROJECT_HEADERS
 )
 
 SET( PROJECT_SRCS 
-	"${H3PROJECT_SOURCE_DIR}/src/advanced_facade_example.cpp" 
+	"${PROJECT_SOURCE_DIR}/src/advanced_facade_example.cpp" 
 )
