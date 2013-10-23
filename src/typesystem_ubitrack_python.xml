@@ -1,0 +1,12 @@
+<?xml version="1.0"?>
+<typesystem package="ubitrack_python">
+    <primitive-type name="bool"/>
+    <primitive-type name="int"/>
+    <primitive-type name="float"/>
+    <primitive-type name="double"/>
+
+    <value-type name="Vector2"/>
+    <value-type name="Vector3"/>
+    <value-type name="Vector4"/>
+
+</typesystem>
