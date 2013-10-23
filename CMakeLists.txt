@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 2.8)
 
-SET(PROJECT_NAME "advanced_facade_example")
+SET(PROJECT_NAME "ubitrack_python")
 
 PROJECT(${PROJECT_NAME})
 
@@ -22,6 +22,7 @@ INCLUDE( "${${PROJECT_NAME}_SOURCE_DIR}/SourceFiles.txt" )
 
 SET(${PROJECT_NAME}_SRCS ${PROJECT_SRCS})
 SET(${PROJECT_NAME}_HEADERS ${PROJECT_HEADERS})
+SET(${PROJECT_NAME}_GENERATOR_SRCS ${PROJECT_GENERATOR_SRCS})
 
 SET(optionalLibs)
 SET(requiredLibs)
@@ -202,6 +203,52 @@ ENDIF(TBB_FOUND)
 
 
 
+find_package(Shiboken 1.2.0 REQUIRED)
+
+
+if (NOT SITE_PACKAGE)
+    execute_process(
+        COMMAND ${SHIBOKEN_PYTHON_INTERPRETER} -c "from distutils import sysconfig; \\
+            print(sysconfig.get_python_lib(1,0,prefix='${CMAKE_INSTALL_PREFIX}'))"
+        OUTPUT_VARIABLE SITE_PACKAGE
+        OUTPUT_STRIP_TRAILING_WHITESPACE)
+    if (NOT SITE_PACKAGE)
+        message(FATAL_ERROR "Could not detect Python module installation directory.")
+    elseif (APPLE)
+        message(STATUS "!!! The generated bindings will be installed on ${SITE_PACKAGE}, is it right!?")
+    endif()
+endif()
+
+set(GENERATOR_EXTRA_FLAGS --generator-set=shiboken --enable-parent-ctor-heuristic --enable-pyside-extensions --enable-return-value-heuristic --use-isnull-as-nb_nonzero)
+if(WIN32 OR DEFINED AVOID_PROTECTED_HACK)
+    message(STATUS "${PROJECT_NAME} will be generated avoiding the protected hack!")
+    set(GENERATOR_EXTRA_FLAGS ${GENERATOR_EXTRA_FLAGS} --avoid-protected-hack)
+    add_definitions(-DAVOID_PROTECTED_HACK)
+else()
+    message(STATUS "${PROJECT_NAME} will be generated using the protected hack!")
+endif()
+
+set(${PROJECT_NAME}_TYPESYSTEM
+	${CMAKE_CURRENT_SOURCE_DIR}/src/typesystem_${PROJECT_NAME}.xml
+)
+
+configure_file("${CMAKE_CURRENT_SOURCE_DIR}/src/${PROJECT_NAME}-binding.txt.in"
+               "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}-binding.txt" @ONLY)
+
+add_custom_command(OUTPUT ${${PROJECT_NAME}_GENERATOR_SRCS}
+COMMAND shiboken --project-file=${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}-binding.txt ${GENERATOR_EXTRA_FLAGS}
+DEPENDS ${${PROJECT_NAME}_TYPESYSTEM} ${CMAKE_CURRENT_SOURCE_DIR}/src/global.h shiboken
+WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+COMMENT "Running generator for '${PROJECT_NAME}' binding..."
+)
+
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}
+                    ${CMAKE_SOURCE_DIR}
+                    ${SBK_PYTHON_INCLUDE_DIR}
+                    ${lib${PROJECT_NAME}_SOURCE_DIR}
+                    ${libshiboken_SOURCE_DIR})
+
+
 # autogenerate ${PROJECT_NAME}.h depending on the libraries available.
 #CONFIGURE_FILE( ${${PROJECT_NAME}_SOURCE_DIR}/../include/${PROJECT_NAME}/${PROJECT_NAME}.cmake ${${PROJECT_NAME}_SOURCE_DIR}/../include/${PROJECT_NAME}/${PROJECT_NAME}.h )
 
@@ -215,9 +262,16 @@ IF( COMMAND cmake_policy )
     CMAKE_POLICY(SET CMP0003 OLD)
   ENDIF( POLICY CMP0003 )
 ENDIF( COMMAND cmake_policy )
-ADD_EXECUTABLE(${PROJECT_NAME} ${${PROJECT_NAME}_SRCS} ${${PROJECT_NAME}_HEADERS})
 
-TARGET_LINK_LIBRARIES( ${PROJECT_NAME} ${requiredLibs} ${optionalLibs} )
+
+ADD_LIBRARY(${PROJECT_NAME} MODULE ${${PROJECT_NAME}_GENERATOR_SRCS})
+
+
+set_property(TARGET ${PROJECT_NAME} PROPERTY PREFIX "")
+
+if(WIN32)
+    set_property(TARGET ${PROJECT_NAME} PROPERTY SUFFIX ".pyd")
+endif()
 
 # make the name of debug libraries end in _d.
 SET_TARGET_PROPERTIES( ${PROJECT_NAME} PROPERTIES DEBUG_POSTFIX "_d" )
@@ -225,6 +279,8 @@ SET_TARGET_PROPERTIES( ${PROJECT_NAME} PROPERTIES DEBUG_POSTFIX "_d" )
 IF(UNIX) 
   SET_TARGET_PROPERTIES( ${PROJECT_NAME} PROPERTIES OUTPUT_NAME ${PROJECT_NAME} )
 ENDIF(UNIX)
+
+TARGET_LINK_LIBRARIES( ${PROJECT_NAME} ${requiredLibs} ${optionalLibs} ${SBK_PYTHON_LIBRARIES} libshiboken)
 
 IF(MSVC)
   # Create variables
