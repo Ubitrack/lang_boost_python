@@ -7,9 +7,12 @@ typesystem-file = @ubitrack_python_TYPESYSTEM@
 
 output-directory = @CMAKE_CURRENT_BINARY_DIR@
 
-include-path = @ubitrack_python_SOURCE_DIR@
+include-path = @UBITRACK_INCLUDE_DIR@
 
 typesystem-path = @CMAKE_CURRENT_SOURCE_DIR@
 
+debug-level=full
+
 enable-parent-ctor-heuristic
 use-isnull-as-nb_nonzero
+no-suppress-warnings

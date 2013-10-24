@@ -5,8 +5,8 @@
     <primitive-type name="float"/>
     <primitive-type name="double"/>
 
-    <value-type name="Vector2"/>
-    <value-type name="Vector3"/>
-    <value-type name="Vector4"/>
-
+    <value-type name="Ubitrack::Math::Vector2"/>
+    <value-type name="Ubitrack::Math::Vector3"/>
+    <value-type name="Ubitrack::Math::Vector4"/>
+    
 </typesystem>

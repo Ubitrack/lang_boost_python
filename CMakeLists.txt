@@ -109,17 +109,30 @@ IF(MSVC)
 ENDIF(MSVC)
 
 SET(HAVE_BOOST 0)
+if(MSVC)
+  # force dynamic linking of boost libs on windows ..
+  add_definitions(-DBOOST_ALL_DYN_LINK)
+endif(MSVC)
 set(Boost_USE_STATIC_LIBS   OFF)
 set(Boost_USE_MULTITHREADED ON)
 set(Boost_USE_STATIC_RUNTIME OFF)
-FIND_PACKAGE( Boost 1.49 COMPONENTS thread date_time system filesystem regex chrono locale serialization program_options REQUIRED)
-IF(Boost_FOUND)
-  ADD_DEFINITIONS("-DBOOST_FILESYSTEM_VERSION=3")
-  ADD_DEFINITIONS(-DHAVE_BOOST)
+find_package( Boost 1.49 COMPONENTS thread date_time system filesystem regex chrono locale serialization program_options python REQUIRED)
+if(Boost_FOUND)
+  add_definitions("-DBOOST_FILESYSTEM_VERSION=3")
+  add_definitions(-DHAVE_BOOST)
+  link_directories(${Boost_LIBRARY_DIRS})
+  SET(requiredLibs ${requiredLibs} ${Boost_LIBRARIES} )
   SET(HAVE_BOOST 1)
-    INCLUDE_DIRECTORIES( ${Boost_INCLUDE_DIR} )
-    SET(requiredLibs ${requiredLibs} ${Boost_LIBRARIES} )
-ENDIF(Boost_FOUND)
+endif(Boost_FOUND)
+
+# get python
+find_package(PythonLibs REQUIRED)
+IF(PYTHONLIBS_FOUND)
+  add_definitions(-DHAVE_PYTHON)
+  SET(HAVE_PYTHON 1)
+  INCLUDE_DIRECTORIES( ${PYTHON_INCLUDE_DIRS} )
+  SET(requiredLibs ${requiredLibs} ${PYTHON_LIBRARIES} )
+ENDIF(PYTHONLIBS_FOUND)
 
 # Find Lapack library. Required to compile.
 IF(WIN32 AND DEFINED EXTERNAL_LIBRARIES_DIR)
@@ -202,54 +215,57 @@ IF(TBB_FOUND)
 ENDIF(TBB_FOUND)
 
 
+# very primitive script .. needs improvement.
+FIND_PACKAGE(PyUblas)
+INCLUDE_DIRECTORIES(${PYUBLAS_INCLUDE_DIR})
 
-find_package(Shiboken 1.2.0 REQUIRED)
+#find_package(Shiboken 1.2.0 REQUIRED)
 #find_package(PySide 1.2.0 REQUIRED)
 
 
-if (NOT SITE_PACKAGE)
-    execute_process(
-        COMMAND ${SHIBOKEN_PYTHON_INTERPRETER} -c "from distutils import sysconfig; \\
-            print(sysconfig.get_python_lib(1,0,prefix='${CMAKE_INSTALL_PREFIX}'))"
-        OUTPUT_VARIABLE SITE_PACKAGE
-        OUTPUT_STRIP_TRAILING_WHITESPACE)
-    if (NOT SITE_PACKAGE)
-        message(FATAL_ERROR "Could not detect Python module installation directory.")
-    elseif (APPLE)
-        message(STATUS "!!! The generated bindings will be installed on ${SITE_PACKAGE}, is it right!?")
-    endif()
-endif()
+#if (NOT SITE_PACKAGE)
+#    execute_process(
+#        COMMAND ${SHIBOKEN_PYTHON_INTERPRETER} -c "from distutils import sysconfig; \\
+#            print(sysconfig.get_python_lib(1,0,prefix='${CMAKE_INSTALL_PREFIX}'))"
+#        OUTPUT_VARIABLE SITE_PACKAGE
+#        OUTPUT_STRIP_TRAILING_WHITESPACE)
+#    if (NOT SITE_PACKAGE)
+#        message(FATAL_ERROR "Could not detect Python module installation directory.")
+#    elseif (APPLE)
+#        message(STATUS "!!! The generated bindings will be installed on ${SITE_PACKAGE}, is it right!?")
+#    endif()
+#endif()
 
 #set(GENERATOR_EXTRA_FLAGS --generator-set=shiboken --enable-parent-ctor-heuristic --enable-pyside-extensions --enable-return-value-heuristic --use-isnull-as-nb_nonzero)
-set(GENERATOR_EXTRA_FLAGS --generator-set=shiboken --enable-parent-ctor-heuristic --enable-return-value-heuristic --use-isnull-as-nb_nonzero)
-if(WIN32 OR DEFINED AVOID_PROTECTED_HACK)
-    message(STATUS "${PROJECT_NAME} will be generated avoiding the protected hack!")
-    set(GENERATOR_EXTRA_FLAGS ${GENERATOR_EXTRA_FLAGS} --avoid-protected-hack)
-    add_definitions(-DAVOID_PROTECTED_HACK)
-else()
-    message(STATUS "${PROJECT_NAME} will be generated using the protected hack!")
-endif()
+#set(GENERATOR_EXTRA_FLAGS --generator-set=shiboken --debug-level=full --no-suppress-warnings --enable-parent-ctor-heuristic --enable-return-value-heuristic --use-isnull-as-nb_nonzero)
+#if(WIN32 OR DEFINED AVOID_PROTECTED_HACK)
+#    message(STATUS "${PROJECT_NAME} will be generated avoiding the protected hack!")
+#    set(GENERATOR_EXTRA_FLAGS ${GENERATOR_EXTRA_FLAGS} --avoid-protected-hack)
+#    add_definitions(-DAVOID_PROTECTED_HACK)
+#else()
+#    message(STATUS "${PROJECT_NAME} will be generated using the protected hack!")
+#endif()
 
-set(${PROJECT_NAME}_TYPESYSTEM
-	${CMAKE_CURRENT_SOURCE_DIR}/src/typesystem_${PROJECT_NAME}.xml
-)
+#set(${PROJECT_NAME}_TYPESYSTEM
+#	${CMAKE_CURRENT_SOURCE_DIR}/src/typesystem_${PROJECT_NAME}.xml
+#)
 
-configure_file("${CMAKE_CURRENT_SOURCE_DIR}/src/${PROJECT_NAME}-binding.txt.in"
-               "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}-binding.txt" @ONLY)
+#configure_file("${CMAKE_CURRENT_SOURCE_DIR}/src/${PROJECT_NAME}-binding.txt.in"
+#               "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}-binding.txt" @ONLY)
 
-add_custom_command(OUTPUT ${${PROJECT_NAME}_GENERATOR_SRCS}
-COMMAND ${SHIBOKEN_BINARY} --project-file=${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}-binding.txt ${GENERATOR_EXTRA_FLAGS}
-DEPENDS ${${PROJECT_NAME}_TYPESYSTEM} ${CMAKE_CURRENT_SOURCE_DIR}/src/global.h
-WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-COMMENT "Running generator for '${PROJECT_NAME}' binding..."
-)
+#add_custom_command(OUTPUT ${${PROJECT_NAME}_GENERATOR_SRCS}
+#COMMAND ${SHIBOKEN_BINARY} --project-file=${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}-binding.txt ${GENERATOR_EXTRA_FLAGS}
+#DEPENDS ${${PROJECT_NAME}_TYPESYSTEM} ${CMAKE_CURRENT_SOURCE_DIR}/src/global.h
+#WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+#COMMENT "Running generator for '${PROJECT_NAME}' binding..."
+#)
 
-MESSAGE(STATUS "GENERATED FILES: ${${PROJECT_NAME}_GENERATOR_SRCS}")
+#MESSAGE(STATUS "GENERATED FILES: ${${PROJECT_NAME}_GENERATOR_SRCS}")
 
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}
-                    ${CMAKE_SOURCE_DIR}
-                    ${SHIBOKEN_INCLUDE_DIR}
-                    ${SHIBOKEN_PYTHON_INCLUDE_DIR})
+#include_directories(${CMAKE_CURRENT_SOURCE_DIR}
+#                    ${CMAKE_SOURCE_DIR}
+#                    ${SHIBOKEN_INCLUDE_DIR}
+#                    ${SHIBOKEN_PYTHON_INCLUDE_DIR})
 
 
 # autogenerate ${PROJECT_NAME}.h depending on the libraries available.
@@ -267,14 +283,14 @@ IF( COMMAND cmake_policy )
 ENDIF( COMMAND cmake_policy )
 
 
-ADD_LIBRARY(${PROJECT_NAME} MODULE ${${PROJECT_NAME}_GENERATOR_SRCS})
+ADD_LIBRARY(${PROJECT_NAME} MODULE ${${PROJECT_NAME}_SRCS} ${${PROJECT_NAME}_HEADERS})
 
 
 set_property(TARGET ${PROJECT_NAME} PROPERTY PREFIX "")
 
-if(WIN32)
-    set_property(TARGET ${PROJECT_NAME} PROPERTY SUFFIX ".pyd")
-endif()
+#if(WIN32)
+#    set_property(TARGET ${PROJECT_NAME} PROPERTY SUFFIX ".pyd")
+#endif()
 
 # make the name of debug libraries end in _d.
 SET_TARGET_PROPERTIES( ${PROJECT_NAME} PROPERTIES DEBUG_POSTFIX "_d" )
@@ -283,7 +299,10 @@ IF(UNIX)
   SET_TARGET_PROPERTIES( ${PROJECT_NAME} PROPERTIES OUTPUT_NAME ${PROJECT_NAME} )
 ENDIF(UNIX)
 
-TARGET_LINK_LIBRARIES( ${PROJECT_NAME} ${requiredLibs} ${optionalLibs} ${SHIBOKEN_PYTHON_LIBRARIES} ${SHIBOKEN_LIBRARY})
+MESSAGE(STATUS "Link libraries: ${requiredLibs} ${optionalLibs}")
+TARGET_LINK_LIBRARIES( ${PROJECT_NAME} ${requiredLibs} ${optionalLibs}
+	#${SHIBOKEN_PYTHON_LIBRARIES} ${SHIBOKEN_LIBRARY}
+	)
 
 IF(MSVC)
   # Create variables
