@@ -1,4 +1,8 @@
+#define PYUBLAS_HAVE_BOOST_BINDINGS 1
+
 #include "pyublas/numpy.hpp"
+
+#include <complex>
 
 #include <boost/python.hpp>
 #include <boost/python/module.hpp>
@@ -71,7 +75,6 @@ struct matrix_to_python_converter
 	}
 };
 
-
 }
 
 Math::Vector< 4 > test_vec4() {
@@ -92,6 +95,8 @@ Math::Quaternion test_quat() {
 }
 
 
+
+
 BOOST_PYTHON_MODULE(ubitrack_python)
 {
 	vector_to_python_converter()
@@ -110,28 +115,122 @@ BOOST_PYTHON_MODULE(ubitrack_python)
 			.to_python< Math::Matrix < 3, 4 > >();
 
 
-    class_<Math::Quaternion>("Quaternion", init< Math::Vector< 3,double >, double >())
+    class_<boost::math::quaternion< double >, std::auto_ptr< boost::math::quaternion< double > > >("QuaternionBase", init< std::complex<double>&, std::complex<double>& >())
+		.def(init< double, double, double, double >())
+
+        // doew not work .. needs casting ??
+		.def(self += double())
+		.def(self += std::complex<double>())
+		.def(self += self)
+
+		.def(self -= double())
+		.def(self -= std::complex<double>())
+		.def(self -= self)
+
+		.def(self *= double())
+		.def(self *= std::complex<double>())
+		.def(self *= self)
+
+		.def(self /= double())
+		.def(self /= std::complex<double>())
+		.def(self /= self)
+
+		.def(self + self)
+		.def(self - self)
+
+		.def(self == double())
+		.def(self == std::complex<double>())
+		.def(self == self)
+
+		.def(self != double())
+		.def(self != std::complex<double>())
+		.def(self != self)
+
+		.def("angle", &Math::Quaternion::angle)
+
+
+
+        .def(self_ns::str(self_ns::self))
+        // example for static method ..
+        //.def("zeros", (Vector2 (*)())&Vector2::zeros)
+    ;
+
+    class_<Math::Quaternion, std::auto_ptr< Math::Quaternion >, boost::python::bases< boost::math::quaternion< double > > >("Quaternion", init< const pyublas::numpy_vector<double>&, double >())
+		.def(init< const boost::math::quaternion< double > >())
+		.def(init< const boost::numeric::ublas::matrix< double > >())
 		.def(init< double, double, double >())
 		.def(init< double, double, double, double >())
         .def("x", &Math::Quaternion::x)
         .def("y", &Math::Quaternion::y)
         .def("z", &Math::Quaternion::z)
         .def("w", &Math::Quaternion::w)
-        //.def("normalize", (Math::Quaternion& (Math::Quaternion::*)())&Math::Quaternion::normalize)
-        //.def("invert", &Math::Quaternion::invert)
-        .def("angle", &Math::Quaternion::angle)
+        .def("normalize", (Math::Quaternion& (Math::Quaternion::*)())&Math::Quaternion::normalize,
+        		boost::python::return_internal_reference<>())
+        .def("invert", (Math::Quaternion& (Math::Quaternion::*)())&Math::Quaternion::invert,
+        		boost::python::return_internal_reference<>())
+		.def("inverted", (Math::Quaternion (Math::Quaternion::*)())&Math::Quaternion::operator~)
 
-        // example for static method ..
-        //.def("zeros", (Vector2 (*)())&Vector2::zeros)
-    ;
+        // doew not work .. needs casting ??
+		.def(self += double())
+		.def(self += std::complex<double>())
+		.def(self += self)
+		.def(self += boost::math::quaternion< double >())
 
-    class_<Math::Pose>("Pose", init<  Math::Quaternion, Math::Vector< 3 > >())
-		//.def(init< boost::numeric::ublas::matrix< double > >())
-		//.add_property("rotation", &Math::Pose::rotation)
-		//.add_property("translation", &Math::Pose::translation)
+		.def(self -= double())
+		.def(self -= std::complex<double>())
+		.def(self -= self)
+		.def(self -= boost::math::quaternion< double >())
+
+		.def(self *= double())
+		.def(self *= std::complex<double>())
+		.def(self *= self)
+		.def(self *= boost::math::quaternion< double >())
+
+		.def(self /= double())
+		.def(self /= std::complex<double>())
+		.def(self /= self)
+		.def(self /= boost::math::quaternion< double >())
+
+		.def(self + self)
+		.def(self - self)
+		.def(self * self)
+		.def(self / self)
+		.def(self + boost::math::quaternion< double >())
+		.def(self - boost::math::quaternion< double >())
+		.def(self * boost::math::quaternion< double >())
+		.def(self / boost::math::quaternion< double >())
+
+		.def(self * pyublas::numpy_vector<double>())
+
+		.def(self == double())
+		.def(self == std::complex<double>())
+		.def(self == self)
+		.def(self == boost::math::quaternion< double >())
+
+		.def(self != double())
+		.def(self != std::complex<double>())
+		.def(self != self)
+		.def(self != boost::math::quaternion< double >())
+
+		;
+
+    class_<Math::Pose, std::auto_ptr< Math::Pose > >("Pose", init< const Math::Quaternion&, const pyublas::numpy_vector<double>& >())
+		.def(init< boost::numeric::ublas::matrix< double > >())
+		.def("rotation", (const Math::Quaternion& (Math::Pose::*)())&Math::Pose::rotation,
+				boost::python::return_internal_reference<>())
+		.def("translation", (const Math::Vector< 3 >& (Math::Pose::*)())&Math::Pose::translation
+				,boost::python::return_value_policy<boost::python::copy_const_reference>()
+				//,boost::python::return_internal_reference<>()
+				)
         .def("scalePose", &Math::Pose::scalePose)
-        //.def("toVector", &Math::Pose::toVector< Math::Vector< 7 > >)
-        //.def("fromVector", &Math::Pose::fromVector< Math::Vector< 7 > >)
+        //.def("toVector", (void (Math::Pose::*)(const Math::Vector< 7 >&))&Math::Pose::toVector< Math::Vector< 7 > >)
+        //.def("fromVector", (Math::Pose (Math::Pose::*)(pyublas::numpy_vector<double>&))&Math::Pose::fromVector< Math::Vector< 7 > >)
+        //.staticmethod("fromVector")
+        .def(self * pyublas::numpy_vector<double>())
+        .def(self * self)
+
+        .def("invert",  (Math::Pose (Math::Pose::*)())&Math::Pose::operator~)
+        .def(self_ns::str(self_ns::self))
     ;
 
 	def("test_vec4", test_vec4);
