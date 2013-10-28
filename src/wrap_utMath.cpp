@@ -286,6 +286,9 @@ BOOST_PYTHON_MODULE(ubitrack_python)
 
 	}
 
+    def("slerp", &Math::slerp);
+
+
     class_<Math::Pose, std::auto_ptr< Math::Pose > >("Pose", init< const Math::Quaternion&, const pyublas::numpy_vector<double>& >())
 		.def(init< boost::numeric::ublas::matrix< double > >())
 		.def("rotation", (const Math::Quaternion& (Math::Pose::*)())&Math::Pose::rotation,
