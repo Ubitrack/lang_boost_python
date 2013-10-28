@@ -1,0 +1,12 @@
+from distutils.core import setup
+
+setup(
+    name='ubitrack',
+    version='1.0',
+    packages=['ubitrack', 'ubitrack.core'],
+    url='http://www.magicvisionlab.com',
+    license='MIT',
+    author='Ulrich Eck',
+    author_email='ulrich.eck@magicvisionlab.com',
+    description='wrapper for UbiTrack using boost::python'
+)

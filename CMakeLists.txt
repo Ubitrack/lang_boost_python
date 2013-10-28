@@ -18,12 +18,6 @@ ENDIF( PREFER_STATIC_LIBRARIES )
 SET( ${PROJECT_NAME}_COMPILE_FLAGS "-D${PROJECT_NAME}_EXPORTS" )
 SET( ${PROJECT_NAME}_SOURCE_DIR ${${PROJECT_NAME}_SOURCE_DIR} )
 
-INCLUDE( "${${PROJECT_NAME}_SOURCE_DIR}/SourceFiles.txt" )
-
-SET(${PROJECT_NAME}_SRCS ${PROJECT_SRCS})
-SET(${PROJECT_NAME}_HEADERS ${PROJECT_HEADERS})
-SET(${PROJECT_NAME}_GENERATOR_SRCS ${PROJECT_GENERATOR_SRCS})
-
 SET(optionalLibs)
 SET(requiredLibs)
 
@@ -220,63 +214,6 @@ FIND_PACKAGE(PyUblas)
 INCLUDE_DIRECTORIES(${PYUBLAS_INCLUDE_DIR})
 INCLUDE_DIRECTORIES(${NUMPY_INCLUDE_DIR})
 
-#find_package(Shiboken 1.2.0 REQUIRED)
-#find_package(PySide 1.2.0 REQUIRED)
-
-
-#if (NOT SITE_PACKAGE)
-#    execute_process(
-#        COMMAND ${SHIBOKEN_PYTHON_INTERPRETER} -c "from distutils import sysconfig; \\
-#            print(sysconfig.get_python_lib(1,0,prefix='${CMAKE_INSTALL_PREFIX}'))"
-#        OUTPUT_VARIABLE SITE_PACKAGE
-#        OUTPUT_STRIP_TRAILING_WHITESPACE)
-#    if (NOT SITE_PACKAGE)
-#        message(FATAL_ERROR "Could not detect Python module installation directory.")
-#    elseif (APPLE)
-#        message(STATUS "!!! The generated bindings will be installed on ${SITE_PACKAGE}, is it right!?")
-#    endif()
-#endif()
-
-#set(GENERATOR_EXTRA_FLAGS --generator-set=shiboken --enable-parent-ctor-heuristic --enable-pyside-extensions --enable-return-value-heuristic --use-isnull-as-nb_nonzero)
-#set(GENERATOR_EXTRA_FLAGS --generator-set=shiboken --debug-level=full --no-suppress-warnings --enable-parent-ctor-heuristic --enable-return-value-heuristic --use-isnull-as-nb_nonzero)
-#if(WIN32 OR DEFINED AVOID_PROTECTED_HACK)
-#    message(STATUS "${PROJECT_NAME} will be generated avoiding the protected hack!")
-#    set(GENERATOR_EXTRA_FLAGS ${GENERATOR_EXTRA_FLAGS} --avoid-protected-hack)
-#    add_definitions(-DAVOID_PROTECTED_HACK)
-#else()
-#    message(STATUS "${PROJECT_NAME} will be generated using the protected hack!")
-#endif()
-
-#set(${PROJECT_NAME}_TYPESYSTEM
-#	${CMAKE_CURRENT_SOURCE_DIR}/src/typesystem_${PROJECT_NAME}.xml
-#)
-
-#configure_file("${CMAKE_CURRENT_SOURCE_DIR}/src/${PROJECT_NAME}-binding.txt.in"
-#               "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}-binding.txt" @ONLY)
-
-#add_custom_command(OUTPUT ${${PROJECT_NAME}_GENERATOR_SRCS}
-#COMMAND ${SHIBOKEN_BINARY} --project-file=${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}-binding.txt ${GENERATOR_EXTRA_FLAGS}
-#DEPENDS ${${PROJECT_NAME}_TYPESYSTEM} ${CMAKE_CURRENT_SOURCE_DIR}/src/global.h
-#WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-#COMMENT "Running generator for '${PROJECT_NAME}' binding..."
-#)
-
-#MESSAGE(STATUS "GENERATED FILES: ${${PROJECT_NAME}_GENERATOR_SRCS}")
-
-#include_directories(${CMAKE_CURRENT_SOURCE_DIR}
-#                    ${CMAKE_SOURCE_DIR}
-#                    ${SHIBOKEN_INCLUDE_DIR}
-#                    ${SHIBOKEN_PYTHON_INCLUDE_DIR})
-
-
-# autogenerate ${PROJECT_NAME}.h depending on the libraries available.
-#CONFIGURE_FILE( ${${PROJECT_NAME}_SOURCE_DIR}/../include/${PROJECT_NAME}/${PROJECT_NAME}.cmake ${${PROJECT_NAME}_SOURCE_DIR}/../include/${PROJECT_NAME}/${PROJECT_NAME}.h )
-
-IF(MSVC)
-  # Add the ${PROJECT_NAME}.rc resource file if Visual Studio
-  #SET( ${PROJECT_NAME}_SRCS ${${PROJECT_NAME}_SRCS} ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.rc )
-ENDIF(MSVC)
-
 IF( COMMAND cmake_policy )
   IF( POLICY CMP0003 )
     CMAKE_POLICY(SET CMP0003 OLD)
@@ -284,104 +221,34 @@ IF( COMMAND cmake_policy )
 ENDIF( COMMAND cmake_policy )
 
 
-ADD_LIBRARY(${PROJECT_NAME} MODULE ${${PROJECT_NAME}_SRCS} ${${PROJECT_NAME}_HEADERS})
+find_program(PYTHON "python")
+if (PYTHON)
+    set(SETUP_PY_IN "${CMAKE_CURRENT_SOURCE_DIR}/setup.py.in")
+    set(SETUP_PY    "${CMAKE_CURRENT_BINARY_DIR}/setup.py")
+    set(DEPS        "${CMAKE_CURRENT_SOURCE_DIR}/lib/ubitrack/__init__.py")
+    set(OUTPUT      "${CMAKE_CURRENT_BINARY_DIR}/build")
 
+    configure_file(${SETUP_PY_IN} ${SETUP_PY})
 
-set_property(TARGET ${PROJECT_NAME} PROPERTY PREFIX "")
-
-#if(WIN32)
-#    set_property(TARGET ${PROJECT_NAME} PROPERTY SUFFIX ".pyd")
-#endif()
-
-# make the name of debug libraries end in _d.
-SET_TARGET_PROPERTIES( ${PROJECT_NAME} PROPERTIES DEBUG_POSTFIX "_d" )
-
-IF(UNIX) 
-  SET_TARGET_PROPERTIES( ${PROJECT_NAME} PROPERTIES OUTPUT_NAME ${PROJECT_NAME} )
-ENDIF(UNIX)
-
-MESSAGE(STATUS "Link libraries: ${requiredLibs} ${optionalLibs}")
-TARGET_LINK_LIBRARIES( ${PROJECT_NAME} ${requiredLibs} ${optionalLibs}
-	#${SHIBOKEN_PYTHON_LIBRARIES} ${SHIBOKEN_LIBRARY}
+	add_custom_command(
+	  OUTPUT ${OUTPUT}/timestamp
+	  COMMAND ${PYTHON} setup.py build
+	  COMMAND ${CMAKE_COMMAND} -E touch ${OUTPUT}/timestamp
+	  DEPENDS ${DEPS}
 	)
+	
+endif()
 
-IF(MSVC)
-  # Create variables
-  SET( ${PROJECT_NAME}_LINK_FLAGS_DEBUG "" )
-  
-  SET( PROJECT_MSVC_VERSION 6 )
-  SET( TEMP_MSVC_VERSION 1299 )
-  WHILE( ${MSVC_VERSION} GREATER ${TEMP_MSVC_VERSION} )
-    MATH( EXPR PROJECT_MSVC_VERSION "${PROJECT_MSVC_VERSION} + 1" )
-    MATH( EXPR TEMP_MSVC_VERSION "${TEMP_MSVC_VERSION} + 100" )
-  ENDWHILE( ${MSVC_VERSION} GREATER ${TEMP_MSVC_VERSION} )
-  
-  # Treat wchar_t as built in type for all visual studio versions.
-  # This is default for every version above 7 ( so far ) but we still set it for all.
-  SET( ${PROJECT_NAME}_COMPILE_FLAGS "${${PROJECT_NAME}_COMPILE_FLAGS} /Zc:wchar_t")
-  
-  IF( ${MSVC_VERSION} GREATER 1399 )
-    # Remove compiler warnings about deprecation for visual studio versions 8 and above.
-    SET( ${PROJECT_NAME}_COMPILE_FLAGS "${${PROJECT_NAME}_COMPILE_FLAGS} -D_CRT_SECURE_NO_DEPRECATE" )
-  ENDIF( ${MSVC_VERSION} GREATER 1399 )
 
-  IF( ${MSVC_VERSION} GREATER 1499 )
-    # Build using several threads for visual studio versions 9 and above.
-    SET( ${PROJECT_NAME}_COMPILE_FLAGS "${${PROJECT_NAME}_COMPILE_FLAGS} /MP" )
-    # Remove link against default library for debug builds.
-    SET( ${PROJECT_NAME}_LINK_FLAGS_DEBUG "${${PROJECT_NAME}_LINK_FLAGS_DEBUG} /NODEFAULTLIB:msvcrt" )
-  ENDIF( ${MSVC_VERSION} GREATER 1499 )
 
-  SET_TARGET_PROPERTIES( ${PROJECT_NAME} PROPERTIES OUTPUT_NAME ${PROJECT_NAME}_vc${PROJECT_MSVC_VERSION} )
+SET( MODULE_LIBS ${requiredLibs} ${optionalLibs})
 
-  # Seems like ${PROJECT_NAME} needs to have incremental linking shut off for vc8. Since this is
-  # not the most important feature it is shut off for all visual studio versions.
-  SET_TARGET_PROPERTIES( ${PROJECT_NAME} PROPERTIES LINK_FLAGS_DEBUG "${${PROJECT_NAME}_LINK_FLAGS_DEBUG} /INCREMENTAL:NO" )
+include(cmake/PythonModuleBuilder.cmake)
 
-  # autogenerate ${PROJECT_NAME}.rc depending on the version
-  #CONFIGURE_FILE( ${PROJECT_NAME}.rc.cmake ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.rc )
-  
-  #ADD_CUSTOM_COMMAND( TARGET ${PROJECT_NAME}
-  #	PRE_BUILD
-  #	COMMAND ${${PROJECT_NAME}_SOURCE_DIR}/UpdateResourceFile 
-  #	ARGS ${PROJECT_NAME} ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.rc ${${PROJECT_NAME}_SOURCE_DIR}/${PROJECT_NAME}.rc.cmake
-  #	${${PROJECT_NAME}_MAJOR_VERSION} ${${PROJECT_NAME}_MINOR_VERSION}
-  #	${${PROJECT_NAME}_BUILD_VERSION} "${${PROJECT_NAME}_SVN_VERSION}"
-  #	"${PROJECT_NAME}_Output_Name"
-  #	"$(TargetFileName)" )
+add_subdirectory(src)
 
-ENDIF(MSVC)
 
-IF( NOT APPLE )
-  SET( ${PROJECT_NAME}_FULL_VERSION ${${PROJECT_NAME}_MAJOR_VERSION}.${${PROJECT_NAME}_MINOR_VERSION}.${${PROJECT_NAME}_BUILD_VERSION} ) 
-  SET_TARGET_PROPERTIES( ${PROJECT_NAME} PROPERTIES VERSION ${${PROJECT_NAME}_FULL_VERSION} )
-ENDIF( NOT APPLE )
-
-# set compile flags for ${PROJECT_NAME} project
-SET_TARGET_PROPERTIES( ${PROJECT_NAME} PROPERTIES COMPILE_FLAGS "${${PROJECT_NAME}_COMPILE_FLAGS}" )
-
-IF( UNIX )
-# Install header files on non-windows system (e.g. Unix).
-INSTALL( FILES ${${PROJECT_NAME}_HEADERS}
-         DESTINATION include/${PROJECT_NAME} )
-ENDIF( UNIX )
-
-SET( DEFAULT_BIN_INSTALL "bin" )
-SET( DEFAULT_LIB_INSTALL "lib" )
-
-IF( WIN32 )
-  SET( DEFAULT_BIN_INSTALL "bin32" )
-  SET( DEFAULT_LIB_INSTALL "lib32" )
-  IF( CMAKE_SIZEOF_VOID_P EQUAL 8 )
-    SET( DEFAULT_BIN_INSTALL "bin64" )
-    SET( DEFAULT_LIB_INSTALL "lib64" )
-  ENDIF( CMAKE_SIZEOF_VOID_P EQUAL 8 )
-ENDIF( WIN32 )
-
-# Install directories.
-INSTALL( TARGETS ${PROJECT_NAME}
-         LIBRARY DESTINATION ${DEFAULT_LIB_INSTALL} COMPONENT ${PROJECT_NAME}_cpack_runtime
-         RUNTIME DESTINATION ${DEFAULT_BIN_INSTALL} COMPONENT ${PROJECT_NAME}_cpack_runtime
-         ARCHIVE DESTINATION ${DEFAULT_LIB_INSTALL} COMPONENT ${PROJECT_NAME}_cpack_libraries)
-
-#INCLUDE ( ${${PROJECT_NAME}_SOURCE_DIR}/${PROJECT_NAME}CPack.cmake)
+if (PYTHON)
+	add_custom_target(pybuild ALL DEPENDS ${OUTPUT}/timestamp)
+    install(CODE "execute_process(COMMAND ${PYTHON} ${SETUP_PY} install)")
+endif(PYTHON)

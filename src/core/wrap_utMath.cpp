@@ -118,7 +118,7 @@ Math::Quaternion test_quat() {
 	return q;
 }
 
-BOOST_PYTHON_MODULE(ubitrack_python)
+BOOST_PYTHON_MODULE(_utmath)
 {
 	vector_to_python_converter()
 			.to_python< Math::Vector< 2 > >()
