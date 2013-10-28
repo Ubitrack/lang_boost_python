@@ -5,7 +5,9 @@ from nose import with_setup
 import ubitrack_python as ut
 import pyublas # load converters
 import numpy as np
+import math
 
+import unittest
 
 
 def setup_func():
@@ -42,4 +44,85 @@ def test_basic_datatypes():
 
     p2 = p * p1
     p3 = p.invert()
+
+
+
+class test_quaternion( unittest.TestCase):
+
+
+    def setUp( self ):
+        pass
+
+    def tearDown( self ):
+        pass
+
+    def test_create_identity( self ):
+        result = ut.Quaternion().toVector()
+
+        expected = np.array( [ 0.0, 0.0, 0.0, 1.0 ] )
+
+        self.assertTrue(
+            np.array_equal( result, expected ),
+            "Quaternion identity incorrect"
+            )
+
+    def test_normalise( self ):
+        def identity():
+            # normalise an identity quaternion
+            quat = ut.Quaternion()
+            quat.normalize()
+
+            expected = np.array( [ 0.0, 0.0, 0.0, 1.0 ] )
+#             assert np.array_equal(
+#                 expected,
+#                 quat / math.sqrt( np.sum( quat ** 2 ) )
+#                 )
+
+            self.assertTrue(
+                np.array_equal( quat.toVector(), expected ),
+                "Normalise identity quaternion incorrect"
+                )
+        identity()
+    
+        def non_identity():
+            # normalise a quaternion of length 2.0
+            quat = np.array( [ 1.0, 2.0, 3.0, 4.0 ] )
+            result = ut.Quaternion.fromVector(quat)
+            result.normalize()
+
+            expected = quat / math.sqrt( np.sum( quat ** 2 ) )
+
+            # check the length is 1.0
+            self.assertTrue(
+                np.array_equal( result.toVector(), expected ),
+                "Normalise quaternion incorrect"
+                )
+        non_identity()
+
+    def test_length( self ):
+        def identity():
+            quat = ut.Quaternion()
+            result = ut.abs(quat)
+
+            expected = 1.0
+
+            self.assertEqual(
+                result,
+                expected,
+                "Identity quaternion length calculation incorrect"
+                )
+        identity()
+
+        def non_identity():
+            quat = np.array( [ 1.0, 2.0, 3.0, 4.0 ] )
+            result = ut.abs(ut.Quaternion.fromVector(quat))
+
+            expected = math.sqrt( np.sum( quat ** 2 ) )
+            self.assertEqual(
+                result,
+                expected,
+                "Quaternion length calculation incorrect"
+                )
+        non_identity()
+
 

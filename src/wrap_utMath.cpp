@@ -28,8 +28,8 @@ struct vector_to_array
   static PyObject* convert(T1 const& p)
   {
 	  pyublas::numpy_vector<double> ph(p);
-	  boost::python::object obj(ph.to_python());
-	  return boost::python::incref(obj.ptr());
+	  object obj(ph.to_python());
+	  return incref(obj.ptr());
   }
 };
 
@@ -38,7 +38,7 @@ struct vector_to_python_converter
 	template< typename VT >
 	vector_to_python_converter& to_python()
 	{
-		boost::python::to_python_converter<
+		to_python_converter<
 			VT,
 			vector_to_array<VT>,
 			false //vector_to_array has no get_pytype
@@ -56,8 +56,8 @@ struct matrix_to_ndarray
   static PyObject* convert(T1 const& p)
   {
 	  pyublas::numpy_matrix<double> ph(p);
-	  boost::python::object obj(ph.to_python());
-	  return boost::python::incref(obj.ptr());
+	  object obj(ph.to_python());
+	  return incref(obj.ptr());
   }
 };
 
@@ -66,7 +66,7 @@ struct matrix_to_python_converter
 	template< typename MT >
 	matrix_to_python_converter& to_python()
 	{
-		boost::python::to_python_converter<
+		to_python_converter<
 			MT,
 			matrix_to_ndarray<MT>,
 			false //vector_to_array has no get_pytype
@@ -75,8 +75,32 @@ struct matrix_to_python_converter
 	}
 };
 
+// helpers
+
+template< class T >
+pyublas::numpy_vector<double> quaternion_to_vector( const T& q) {
+	Math::Vector< 4 > vec;
+	q.toVector(vec);
+	return vec;
 }
 
+template< class T >
+T quaternion_from_vector( const pyublas::numpy_vector<double>& vec) {
+	return T::fromVector(vec);
+}
+
+template< class T >
+pyublas::numpy_matrix<double> quaternion_to_matrix( const T& q) {
+	boost::numeric::ublas::matrix< double > mat;
+	q.toMatrix(mat);
+	return mat;
+}
+
+
+}
+
+
+// tests
 Math::Vector< 4 > test_vec4() {
 	return Math::Vector< 4 >(1,2,2,1.2);
 }
@@ -93,9 +117,6 @@ Math::Quaternion test_quat() {
 	Math::Quaternion q;
 	return q;
 }
-
-
-
 
 BOOST_PYTHON_MODULE(ubitrack_python)
 {
@@ -115,7 +136,8 @@ BOOST_PYTHON_MODULE(ubitrack_python)
 			.to_python< Math::Matrix < 3, 4 > >();
 
 
-    class_<boost::math::quaternion< double >, std::auto_ptr< boost::math::quaternion< double > > >("QuaternionBase", init< std::complex<double>&, std::complex<double>& >())
+	class_<boost::math::quaternion< double >, std::auto_ptr< boost::math::quaternion< double > > >("QuaternionBase")
+    	.def(init< std::complex<double>&, std::complex<double>& >())
 		.def(init< double, double, double, double >())
 
         // doew not work .. needs casting ??
@@ -146,16 +168,36 @@ BOOST_PYTHON_MODULE(ubitrack_python)
 		.def(self != std::complex<double>())
 		.def(self != self)
 
-		.def("angle", &Math::Quaternion::angle)
-
-
+		.def("real", (double (boost::math::quaternion< double >::*)())&boost::math::quaternion< double >::real)
+        .def("unreal",(boost::math::quaternion< double > (boost::math::quaternion< double >::*)())&boost::math::quaternion< double >::unreal)
 
         .def(self_ns::str(self_ns::self))
         // example for static method ..
         //.def("zeros", (Vector2 (*)())&Vector2::zeros)
     ;
 
-    class_<Math::Quaternion, std::auto_ptr< Math::Quaternion >, boost::python::bases< boost::math::quaternion< double > > >("Quaternion", init< const pyublas::numpy_vector<double>&, double >())
+    def("sup", &boost::math::sup<double>);
+    def("l1", &boost::math::l1<double>);
+    def("abs", &boost::math::abs<double>);
+    def("conj", &boost::math::conj<double>);
+    def("norm", &boost::math::norm<double>);
+    def("spherical", &boost::math::spherical<double>);
+    def("semipolar", &boost::math::semipolar<double>);
+    def("multipolar", &boost::math::multipolar<double>);
+    def("cylindrospherical", &boost::math::cylindrospherical<double>);
+    def("cylindrical", &boost::math::cylindrical<double>);
+    def("exp", &boost::math::exp<double>);
+    def("cos", &boost::math::cos<double>);
+    def("sin", &boost::math::sin<double>);
+    def("tan", &boost::math::tan<double>);
+    def("cosh", &boost::math::cosh<double>);
+    def("sinh", &boost::math::sinh<double>);
+    def("tanh", &boost::math::tanh<double>);
+    def("pow", &boost::math::pow<double>);
+
+	{
+	scope in_Quaternion = class_<Math::Quaternion, std::auto_ptr< Math::Quaternion >, bases< boost::math::quaternion< double > > >("Quaternion")
+    	.def(init< const pyublas::numpy_vector<double>&, double >())
 		.def(init< const boost::math::quaternion< double > >())
 		.def(init< const boost::numeric::ublas::matrix< double > >())
 		.def(init< double, double, double >())
@@ -165,9 +207,9 @@ BOOST_PYTHON_MODULE(ubitrack_python)
         .def("z", &Math::Quaternion::z)
         .def("w", &Math::Quaternion::w)
         .def("normalize", (Math::Quaternion& (Math::Quaternion::*)())&Math::Quaternion::normalize,
-        		boost::python::return_internal_reference<>())
+        		return_internal_reference<>())
         .def("invert", (Math::Quaternion& (Math::Quaternion::*)())&Math::Quaternion::invert,
-        		boost::python::return_internal_reference<>())
+        		return_internal_reference<>())
 		.def("inverted", (Math::Quaternion (Math::Quaternion::*)())&Math::Quaternion::operator~)
 
         // doew not work .. needs casting ??
@@ -195,6 +237,7 @@ BOOST_PYTHON_MODULE(ubitrack_python)
 		.def(self - self)
 		.def(self * self)
 		.def(self / self)
+
 		.def(self + boost::math::quaternion< double >())
 		.def(self - boost::math::quaternion< double >())
 		.def(self * boost::math::quaternion< double >())
@@ -212,15 +255,44 @@ BOOST_PYTHON_MODULE(ubitrack_python)
 		.def(self != self)
 		.def(self != boost::math::quaternion< double >())
 
+		.def("angle", &Math::Quaternion::angle)
+
+		.def("negateIfCloser", &Math::Quaternion::negateIfCloser)
+
+		.def("toLogarithm", (Math::Vector< 3 > (Math::Quaternion::*)())&Math::Quaternion::toLogarithm)
+		//.def("fromLogaritm", (Math::Quaternion (Math::Quaternion::*)(??))&Math::Quaternion::fromLogarithm
+		//		,return_value_policy<copy_const_reference>()
+		//		)
+		.def("getEulerAngles", (Math::Vector< 3 > (Math::Quaternion::*)(Math::Quaternion::t_EulerSequence) const)&Math::Quaternion::getEulerAngles)
+
+
+        .def("toMatrix", &quaternion_to_matrix<Math::Quaternion>)
+        //.def("toAxisAngle", &quaternion_to_vector<Math::Quaternion>)
+        .def("toVector", &quaternion_to_vector<Math::Quaternion>)
+        .def("fromVector", &quaternion_from_vector<Math::Quaternion>)
+        .staticmethod("fromVector")
 		;
+
+
+    enum_<Math::Quaternion::t_EulerSequence>("EULER_SEQUENCE")
+    		.value("XYZ", Math::Quaternion::EULER_SEQUENCE_XYZ)
+    		.value("YZX", Math::Quaternion::EULER_SEQUENCE_YZX)
+    		.value("ZXY", Math::Quaternion::EULER_SEQUENCE_ZXY)
+    		.value("ZYX", Math::Quaternion::EULER_SEQUENCE_ZYX)
+    		.value("XZY", Math::Quaternion::EULER_SEQUENCE_XZY)
+    		.value("YXZ", Math::Quaternion::EULER_SEQUENCE_YXZ)
+    		;
+
+
+	}
 
     class_<Math::Pose, std::auto_ptr< Math::Pose > >("Pose", init< const Math::Quaternion&, const pyublas::numpy_vector<double>& >())
 		.def(init< boost::numeric::ublas::matrix< double > >())
 		.def("rotation", (const Math::Quaternion& (Math::Pose::*)())&Math::Pose::rotation,
-				boost::python::return_internal_reference<>())
+				return_internal_reference<>())
 		.def("translation", (const Math::Vector< 3 >& (Math::Pose::*)())&Math::Pose::translation
-				,boost::python::return_value_policy<boost::python::copy_const_reference>()
-				//,boost::python::return_internal_reference<>()
+				,return_value_policy<copy_const_reference>()
+				//,return_internal_reference<>()
 				)
         .def("scalePose", &Math::Pose::scalePose)
         //.def("toVector", (void (Math::Pose::*)(const Math::Vector< 7 >&))&Math::Pose::toVector< Math::Vector< 7 > >)
