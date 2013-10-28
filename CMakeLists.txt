@@ -221,6 +221,12 @@ IF( COMMAND cmake_policy )
 ENDIF( COMMAND cmake_policy )
 
 
+SET( MODULE_LIBS ${requiredLibs} ${optionalLibs})
+
+include(cmake/PythonModuleBuilder.cmake)
+include(cmake/UbiTrackDetectPython.cmake)
+
+
 find_program(PYTHON "python")
 if (PYTHON)
     set(SETUP_PY_IN "${CMAKE_CURRENT_SOURCE_DIR}/setup.py.in")
@@ -239,11 +245,6 @@ if (PYTHON)
 	
 endif()
 
-
-
-SET( MODULE_LIBS ${requiredLibs} ${optionalLibs})
-
-include(cmake/PythonModuleBuilder.cmake)
 
 add_subdirectory(src)
 

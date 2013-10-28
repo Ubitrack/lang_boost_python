@@ -1,4 +1,13 @@
-MESSAGE(STATUS "Load PythonModuleBuilder")
+if(NOT COMMAND find_host_package)
+  macro(find_host_package)
+    find_package(${ARGN})
+  endmacro()
+endif()
+if(NOT COMMAND find_host_program)
+  macro(find_host_program)
+    find_program(${ARGN})
+  endmacro()
+endif()
 
 macro(add_python_module full_modname MODULE_SRCS)
 

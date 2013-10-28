@@ -1,12 +1,15 @@
-from distutils.core import setup
+from distutils.core import setup, Extension
 
-setup(
-    name='ubitrack',
-    version='1.0',
-    packages=['ubitrack', 'ubitrack.core'],
-    url='http://www.magicvisionlab.com',
-    license='MIT',
-    author='Ulrich Eck',
-    author_email='ulrich.eck@magicvisionlab.com',
-    description='wrapper for UbiTrack using boost::python'
-)
+if __name__ == '__main__':
+    setup(
+        #version='${PACKAGE_VERSION}',
+        package_dir={ '': '${CMAKE_CURRENT_SOURCE_DIR}/lib' },
+        packages=['ubitrack', 'ubitrack.core'],
+        name='ubitrack',
+        version='1.0',
+        url='http://www.magicvisionlab.com',
+        license='MIT',
+        author='Ulrich Eck',
+        author_email='ulrich.eck@magicvisionlab.com',
+        description='wrapper for UbiTrack using boost::python'
+        )
