@@ -126,3 +126,61 @@ class test_quaternion( unittest.TestCase):
         non_identity()
 
 
+    def test_apply_to_vector( self ):
+        # Euler angle constructor uses X-Z-Y ordering
+        
+        def identity():
+            quat = ut.Quaternion()
+            vec = np.array( [ 1.0, 0.0, 0.0 ] )
+
+            result = quat * vec
+
+            expected = vec
+
+            self.assertTrue(
+                np.array_equal( result, expected ),
+                "Quaternion apply_to_vector incorrect with identity"
+                )
+        identity()
+
+        def rotated_x():
+            quat = ut.Quaternion(  0.0, 0.0, math.pi )
+            vec = np.array( [ 0.0, 1.0, 0.0 ] )
+
+            result = quat * vec
+
+            expected = -vec
+
+            self.assertTrue(
+                np.allclose( result, expected ),
+                "Quaternion apply_to_vector incorrect with rotation about X"
+                )
+        rotated_x()
+
+        def rotated_y():
+            quat = ut.Quaternion( 0.0, math.pi, 0.0 )
+            vec = np.array( [ 1.0, 0.0, 0.0 ] )
+
+            result = quat * vec
+
+            expected = -vec
+
+            self.assertTrue(
+                np.allclose( result, expected ),
+                "Quaternion apply_to_vector incorrect with rotation about Y"
+                )
+        rotated_y()
+
+        def rotated_z():
+            quat = ut.Quaternion( math.pi, 0.0, 0.0 )
+            vec = np.array( [ 1.0, 0.0, 0.0 ] )
+
+            result = quat * vec
+
+            expected = -vec
+
+            self.assertTrue(
+                np.allclose( result, expected ),
+                "Quaternion apply_to_vector incorrect with rotation about Y"
+                )
+        rotated_z()
