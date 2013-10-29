@@ -5,6 +5,7 @@
 #include <complex>
 
 #include <boost/python.hpp>
+#include <boost/python/implicit.hpp>
 #include <boost/python/module.hpp>
 #include <boost/python/def.hpp>
 #include <boost/python/tuple.hpp>
@@ -33,12 +34,6 @@ struct vector_to_array
 	  return incref(obj.ptr());
   }
 
-//  static PyObject* convert(Measurement::Measurement<T1> const& p)
-//  {
-//	  pyublas::numpy_vector<double> ph(*p);
-//	  object obj(ph.to_python());
-//	  return incref(make_tuple(long_(p.time()), obj).ptr());
-//  }
 };
 
 struct vector_to_python_converter
@@ -51,12 +46,6 @@ struct vector_to_python_converter
 			vector_to_array<VT>,
 			false //vector_to_array has no get_pytype
 			>();
-
-//		to_python_converter<
-//			Measurement::Measurement<VT>,
-//			vector_to_array<VT>,
-//			false //vector_to_array has no get_pytype
-//			>();
 		return *this;
 	}
 };
@@ -74,12 +63,6 @@ struct matrix_to_ndarray
 	  return incref(obj.ptr());
   }
 
-//  static PyObject* convert(Measurement::Measurement<T1> const& p)
-//  {
-//	  pyublas::numpy_matrix<double> ph(*p);
-//	  object obj(ph.to_python());
-//	  return incref(make_tuple(long_(p.time()), obj).ptr());
-//  }
 };
 
 struct matrix_to_python_converter
@@ -92,12 +75,6 @@ struct matrix_to_python_converter
 			matrix_to_ndarray<MT>,
 			false //vector_to_array has no get_pytype
 			>();
-
-//		to_python_converter<
-//			Measurement::Measurement<MT>,
-//			matrix_to_ndarray<MT>,
-//			false //vector_to_array has no get_pytype
-//			>();
 		return *this;
 	}
 };
@@ -123,6 +100,16 @@ pyublas::numpy_matrix<double> quaternion_to_matrix( const T& q) {
 	return mat;
 }
 
+template< class T >
+tuple quaternion_to_axisangle( T& q) {
+	Math::Vector< 3 > axis;
+	double angle;
+	q.toAxisAngle(axis, angle);
+	//return make_tuple(axis, angle);
+	return make_tuple(1,1);
+}
+
+
 
 }
 
@@ -146,26 +133,28 @@ Math::Quaternion test_quat() {
 }
 
 
-// tests
-//Measurement::Position2D test_pos2d() {
-//	boost::shared_ptr< Math::Vector<2> > pos(new Math::Vector<2>(1.0, 2.0));
-//	Measurement::Position2D m(123, pos);
-//	std::cout << "generated measurement: " << m;
-//	return m;
-//}
-
-// tests
-//Measurement::Pose test_posemeasurement() {
-//	boost::shared_ptr< Math::Pose > pose(new Math::Pose(Math::Quaternion(0.0, 0.0, 0.0, 1.0), Math::Vector<3>(1.0, 2.0, 3.0)));
-//
-//	Measurement::Pose m(123, pose);
-//	std::cout << "generated measurement: " << m;
-//	return m;
-//}
-
-
 BOOST_PYTHON_MODULE(_utmath)
 {
+
+	/*
+	 * Vector Classes
+	 */
+	implicitly_convertible< Math::Vector< 2 >, pyublas::numpy_vector< double > >();
+	implicitly_convertible< Math::Vector< 3 >, pyublas::numpy_vector< double > >();
+	implicitly_convertible< Math::Vector< 4 >, pyublas::numpy_vector< double > >();
+	implicitly_convertible< Math::Vector< 5 >, pyublas::numpy_vector< double > >();
+	implicitly_convertible< Math::Vector< 6 >, pyublas::numpy_vector< double > >();
+	implicitly_convertible< Math::Vector< 7 >, pyublas::numpy_vector< double > >();
+	implicitly_convertible< Math::Vector< 8 >, pyublas::numpy_vector< double > >();
+
+	implicitly_convertible<pyublas::numpy_vector< double >,  Math::Vector< 2 > >();
+	implicitly_convertible<pyublas::numpy_vector< double >,  Math::Vector< 3 > >();
+	implicitly_convertible<pyublas::numpy_vector< double >,  Math::Vector< 4 > >();
+	implicitly_convertible<pyublas::numpy_vector< double >,  Math::Vector< 5 > >();
+	implicitly_convertible<pyublas::numpy_vector< double >,  Math::Vector< 6 > >();
+	implicitly_convertible<pyublas::numpy_vector< double >,  Math::Vector< 7 > >();
+	implicitly_convertible<pyublas::numpy_vector< double >,  Math::Vector< 8 > >();
+
 	vector_to_python_converter()
 			.to_python< Math::Vector< 2 > >()
 			.to_python< Math::Vector< 3 > >()
@@ -176,6 +165,20 @@ BOOST_PYTHON_MODULE(_utmath)
 			.to_python< Math::Vector< 8 > >()
 			;
 
+	/*
+	 * Matrix Classes
+	 */
+
+	implicitly_convertible< Math::Matrix < 2, 2 >, pyublas::numpy_matrix< double > >();
+	implicitly_convertible< Math::Matrix < 3, 3 >, pyublas::numpy_matrix< double > >();
+	implicitly_convertible< Math::Matrix < 4, 4 >, pyublas::numpy_matrix< double > >();
+	implicitly_convertible< Math::Matrix < 3, 4 >, pyublas::numpy_matrix< double > >();
+
+	implicitly_convertible<pyublas::numpy_matrix< double >,  Math::Matrix < 2, 2 > >();
+	implicitly_convertible<pyublas::numpy_matrix< double >,  Math::Matrix < 3, 3 > >();
+	implicitly_convertible<pyublas::numpy_matrix< double >,  Math::Matrix < 4, 4 > >();
+	implicitly_convertible<pyublas::numpy_matrix< double >,  Math::Matrix < 3, 4 > >();
+
 	matrix_to_python_converter()
 			.to_python< Math::Matrix < 2, 2 > >()
 			.to_python< Math::Matrix < 3, 3 > >()
@@ -183,11 +186,16 @@ BOOST_PYTHON_MODULE(_utmath)
 			.to_python< Math::Matrix < 3, 4 > >();
 
 
-	class_<boost::math::quaternion< double >, std::auto_ptr< boost::math::quaternion< double > > >("QuaternionBase")
+
+	/*
+	 * Quaternion Class
+	 */
+
+	class_<boost::math::quaternion< double >, boost::shared_ptr< boost::math::quaternion< double > > >("QuaternionBase")
     	.def(init< std::complex<double>&, std::complex<double>& >())
 		.def(init< double, double, double, double >())
 
-        // doew not work .. needs casting ??
+        // does not work .. needs casting ??
 		.def(self += double())
 		.def(self += std::complex<double>())
 		.def(self += self)
@@ -243,7 +251,7 @@ BOOST_PYTHON_MODULE(_utmath)
     def("pow", &boost::math::pow<double>);
 
 	{
-	scope in_Quaternion = class_<Math::Quaternion, std::auto_ptr< Math::Quaternion >, bases< boost::math::quaternion< double > > >("Quaternion")
+	scope in_Quaternion = class_<Math::Quaternion, boost::shared_ptr< Math::Quaternion >, bases< boost::math::quaternion< double > > >("Quaternion")
     	.def(init< const pyublas::numpy_vector<double>&, double >())
 		.def(init< const boost::math::quaternion< double > >())
 		.def(init< const boost::numeric::ublas::matrix< double > >())
@@ -314,7 +322,7 @@ BOOST_PYTHON_MODULE(_utmath)
 
 
         .def("toMatrix", &quaternion_to_matrix<Math::Quaternion>)
-        //.def("toAxisAngle", &quaternion_to_vector<Math::Quaternion>)
+        .def("toAxisAngle", &quaternion_to_axisangle<Math::Quaternion>)
         .def("toVector", &quaternion_to_vector<Math::Quaternion>)
         .def("fromVector", &quaternion_from_vector<Math::Quaternion>)
         .staticmethod("fromVector")
@@ -335,8 +343,12 @@ BOOST_PYTHON_MODULE(_utmath)
 
     def("slerp", &Math::slerp);
 
+    /*
+     * Pose Class
+     */
 
-    class_<Math::Pose, std::auto_ptr< Math::Pose > >("Pose", init< const Math::Quaternion&, const pyublas::numpy_vector<double>& >())
+
+    class_<Math::Pose, boost::shared_ptr< Math::Pose > >("Pose", init< const Math::Quaternion&, const pyublas::numpy_vector<double>& >())
 		.def(init< boost::numeric::ublas::matrix< double > >())
 		.def("rotation", (const Math::Quaternion& (Math::Pose::*)())&Math::Pose::rotation,
 				return_internal_reference<>())
@@ -355,15 +367,13 @@ BOOST_PYTHON_MODULE(_utmath)
         .def(self_ns::str(self_ns::self))
     ;
 
-    // register ptrs
-//    register_ptr_to_python< Measurement::Measurement< Math::Pose > >();
-//    register_ptr_to_python< Measurement::Measurement< Math::Quaternion > >();
 
+    /*
+     * Testing functions
+     */
 
 	def("test_vec4", test_vec4);
 	def("test_mat33", test_mat33);
 	def("test_quat", test_quat);
-//	def("test_pos2d", test_pos2d);
-//	def("test_posemeasurement", test_posemeasurement);
 }
 
