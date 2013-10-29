@@ -67,4 +67,10 @@ ENDIF( NOT APPLE )
 # set compile flags for ${full_modname} project
 SET_TARGET_PROPERTIES( ${full_modname} PROPERTIES COMPILE_FLAGS "${${full_modname}_COMPILE_FLAGS}" )
 
+install(TARGETS ${full_modname}
+	  RUNTIME DESTINATION "bin" COMPONENT main
+	  LIBRARY DESTINATION "${MODULE_INSTALL_PATH}/${CURRENT_PACKAGE}" COMPONENT main
+	  ARCHIVE DESTINATION "${MODULE_INSTALL_PATH}${CURRENT_PACKAGE}" COMPONENT main
+	  )
+
 endmacro()

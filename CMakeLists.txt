@@ -240,6 +240,8 @@ if (PYTHON)
 endif()
 
 
+SET(MODULE_INSTALL_PATH ${PYTHON_PACKAGE_DIR})
+
 
 SET( MODULE_LIBS ${requiredLibs} ${optionalLibs})
 

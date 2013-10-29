@@ -2,7 +2,7 @@ __author__ = 'jack'
 
 from nose import with_setup
 
-import ubitrack_python as ut
+from ubitrack.core import math as utmath
 import pyublas # load converters
 import numpy as np
 import math
@@ -22,19 +22,19 @@ def teardown_func():
 def test_basic_datatypes():
     "test basic data types: Vector2-8, Matrix33-44, Pose, Quaternion"
 
-    q = ut.test_quat()
+    q = utmath.test_quat()
     assert q.x() == 0 and q.y() == 0 and q.z() == 0 and q.w() == 1
 
-    m = ut.test_mat33()
+    m = utmath.test_mat33()
     assert np.all(m == np.identity(3))
 
     # from vector
-    p = ut.Pose(q, m[0,:])
-    q1 = ut.Quaternion(m[0,:], 1.0)
+    p = utmath.Pose(q, m[0,:])
+    q1 = utmath.Quaternion(m[0,:], 1.0)
 
     # from matrix
     m1 = np.identity(4)
-    p1 = ut.Pose(m1)
+    p1 = utmath.Pose(m1)
 
     #test accessors
     assert np.all(p1.translation() == np.asarray([0,0,0]))
@@ -57,7 +57,7 @@ class test_quaternion( unittest.TestCase):
         pass
 
     def test_create_identity( self ):
-        result = ut.Quaternion().toVector()
+        result = utmath.Quaternion().toVector()
 
         expected = np.array( [ 0.0, 0.0, 0.0, 1.0 ] )
 
@@ -69,7 +69,7 @@ class test_quaternion( unittest.TestCase):
     def test_normalise( self ):
         def identity():
             # normalise an identity quaternion
-            quat = ut.Quaternion()
+            quat = utmath.Quaternion()
             quat.normalize()
 
             expected = np.array( [ 0.0, 0.0, 0.0, 1.0 ] )
@@ -87,7 +87,7 @@ class test_quaternion( unittest.TestCase):
         def non_identity():
             # normalise a quaternion of length 2.0
             quat = np.array( [ 1.0, 2.0, 3.0, 4.0 ] )
-            result = ut.Quaternion.fromVector(quat)
+            result = utmath.Quaternion.fromVector(quat)
             result.normalize()
 
             expected = quat / math.sqrt( np.sum( quat ** 2 ) )
@@ -101,8 +101,8 @@ class test_quaternion( unittest.TestCase):
 
     def test_length( self ):
         def identity():
-            quat = ut.Quaternion()
-            result = ut.abs(quat)
+            quat = utmath.Quaternion()
+            result = utmath.abs(quat)
 
             expected = 1.0
 
@@ -115,7 +115,7 @@ class test_quaternion( unittest.TestCase):
 
         def non_identity():
             quat = np.array( [ 1.0, 2.0, 3.0, 4.0 ] )
-            result = ut.abs(ut.Quaternion.fromVector(quat))
+            result = utmath.abs(utmath.Quaternion.fromVector(quat))
 
             expected = math.sqrt( np.sum( quat ** 2 ) )
             self.assertEqual(
@@ -130,7 +130,7 @@ class test_quaternion( unittest.TestCase):
         # Euler angle constructor uses X-Z-Y ordering
         
         def identity():
-            quat = ut.Quaternion()
+            quat = utmath.Quaternion()
             vec = np.array( [ 1.0, 0.0, 0.0 ] )
 
             result = quat * vec
@@ -144,7 +144,7 @@ class test_quaternion( unittest.TestCase):
         identity()
 
         def rotated_x():
-            quat = ut.Quaternion(  0.0, 0.0, math.pi )
+            quat = utmath.Quaternion(  0.0, 0.0, math.pi )
             vec = np.array( [ 0.0, 1.0, 0.0 ] )
 
             result = quat * vec
@@ -158,7 +158,7 @@ class test_quaternion( unittest.TestCase):
         rotated_x()
 
         def rotated_y():
-            quat = ut.Quaternion( 0.0, math.pi, 0.0 )
+            quat = utmath.Quaternion( 0.0, math.pi, 0.0 )
             vec = np.array( [ 1.0, 0.0, 0.0 ] )
 
             result = quat * vec
@@ -172,7 +172,7 @@ class test_quaternion( unittest.TestCase):
         rotated_y()
 
         def rotated_z():
-            quat = ut.Quaternion( math.pi, 0.0, 0.0 )
+            quat = utmath.Quaternion( math.pi, 0.0, 0.0 )
             vec = np.array( [ 1.0, 0.0, 0.0 ] )
 
             result = quat * vec

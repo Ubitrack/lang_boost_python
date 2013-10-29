@@ -1,1 +1,1 @@
-import utmath
+import utmath as math
