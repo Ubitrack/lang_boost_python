@@ -220,6 +220,12 @@ IF( COMMAND cmake_policy )
   ENDIF( POLICY CMP0003 )
 ENDIF( COMMAND cmake_policy )
 
+SET(MODULE_INSTALL_PATH ${PYTHON_PACKAGE_DIR})
+SET( MODULE_LIBS ${requiredLibs} ${optionalLibs})
+
+include(cmake/PythonModuleBuilder.cmake)
+include(cmake/UbiTrackDetectPython.cmake)
+
 
 find_program(PYTHON "python")
 if (PYTHON)
@@ -239,13 +245,6 @@ if (PYTHON)
 	
 endif()
 
-
-SET(MODULE_INSTALL_PATH ${PYTHON_PACKAGE_DIR})
-
-
-SET( MODULE_LIBS ${requiredLibs} ${optionalLibs})
-
-include(cmake/PythonModuleBuilder.cmake)
 
 add_subdirectory(src)
 
