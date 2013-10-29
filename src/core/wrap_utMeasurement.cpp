@@ -15,21 +15,21 @@
 #define NPY_NO_DEPRECATED_API NPY_1_7_API_VERSION
 #include <numpy/arrayobject.h>
 
+#include <iostream>
+
 using namespace boost::python;
 using namespace Ubitrack;
 
 namespace {
 
 template< class T>
+typename T::value_type* get_measurement(const T& m) {
+	return m.get();
+}
+
+template< class T >
 struct measurement_converter
 {
-
-	boost::shared_ptr<typename T:: value_type> get_measurement(const T& m) {
-		typename T:: value_type* ptr = m.get();
-		//boost::shared_ptr<typename T:: value_type> ptr(m.get());
-		return ptr;
-	}
-
     template <class C>
     static void expose(C const& c)
     {
@@ -40,7 +40,9 @@ struct measurement_converter
 				.def("set_time", (void (T::*)(Measurement::Timestamp))&T::time)
 				.def("invalid", (bool (T::*)())&T::invalid)
 				.def("invalidate", (void (T::*)())&T::invalidate)
-				.def("get", &get_measurement)
+				.def("get", &get_measurement< T>
+						,return_value_policy<reference_existing_object>()
+						)
             ;
     }
 };
@@ -49,27 +51,20 @@ struct measurement_converter
 }
 
 
-/*
-// here comes the magic
-template <typename T> T* get_pointer(Measurement::Measurement<T> const& p) {
-  //notice the const_cast<> at this point
-  //for some unknown reason, bp likes to have it like that
-  return const_cast<T*>(p.get());
+// tests
+Measurement::Position2D test_pos2d() {
+	boost::shared_ptr< Math::Vector<2> > pos(new Math::Vector<2>(1.0, 2.0));
+	Measurement::Position2D m(123, pos);
+	std::cout << "generated measurement: " << m;
+	return m;
 }
 
-// some boost.python plumbing is required as you already know
-namespace boost { namespace python {
+Measurement::Pose test_posemeasurement() {
+	boost::shared_ptr< Math::Pose > pose(new Math::Pose(Math::Quaternion(0.0, 0.0, 0.0, 1.0), Math::Vector<3>(1.0, 2.0, 3.0)));
 
-  template <typename T> struct pointee<Measurement::Measurement<T> > {
-    typedef T type;
-  };
-
-} }
-*/
-
-// tests
-Math::Vector< 4 > test_vec4() {
-	return Math::Vector< 4 >(1,2,2,1.2);
+	Measurement::Pose m(123, pose);
+	std::cout << "generated measurement: " << m;
+	return m;
 }
 
 
@@ -78,26 +73,29 @@ BOOST_PYTHON_MODULE(_utmeasurement)
 {
 	def("now", Measurement::now);
 
-	measurement_converter<Measurement::Distance>::expose(
-			class_<Measurement::Distance, boost::noncopyable>("Distance")
+	measurement_converter<Measurement::Distance >::expose(
+			class_<Measurement::Distance>("Distance")
 				.def(init<Measurement::Timestamp, npy_double >())
-//				.def("get", (typename Measurement::Distance:: value_type* (Measurement::Distance::*)() const)&Measurement::Distance::get
-//						, return_internal_reference<>()
-//						)
 			);
 
-	measurement_converter<Measurement::Position2D>::expose(
-			class_<Measurement::Position2D, boost::noncopyable>("Position2D")
+	measurement_converter<Measurement::Position2D >::expose(
+			class_<Measurement::Position2D>("Position2D")
 				.def(init<Measurement::Timestamp, const pyublas::numpy_vector<double>& >())
-//				.def("get", (Math::Vector< 2 >* (Measurement::Position2D::*)() const)&Measurement::Position2D::get
-//						//, return_internal_reference<>()
-//						)
 			);
 
 
-	register_ptr_to_python< Measurement::Position2D >();
+	measurement_converter<Measurement::Rotation >::expose(
+			class_<Measurement::Rotation>("Rotation")
+				.def(init<Measurement::Timestamp, const Math::Quaternion& >())
+			);
 
-	def("test_vec4", test_vec4);
+	measurement_converter<Measurement::Pose >::expose(
+			class_<Measurement::Pose>("Pose")
+				.def(init<Measurement::Timestamp, const Math::Pose& >())
+			);
+
+	def("test_pos2d", test_pos2d);
+	def("test_posemeasurement", test_posemeasurement);
 
 }
 

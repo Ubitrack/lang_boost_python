@@ -15,11 +15,12 @@
 #include <utMath/Quaternion.h>
 #include <utMath/Pose.h>
 
+#include <utMeasurement/Measurement.h>
+
 using namespace boost::python;
 using namespace Ubitrack;
 
 namespace {
-
 
 // Converts a vector < n > to numpy array.
 template <typename T1>
@@ -31,6 +32,13 @@ struct vector_to_array
 	  object obj(ph.to_python());
 	  return incref(obj.ptr());
   }
+
+//  static PyObject* convert(Measurement::Measurement<T1> const& p)
+//  {
+//	  pyublas::numpy_vector<double> ph(*p);
+//	  object obj(ph.to_python());
+//	  return incref(make_tuple(long_(p.time()), obj).ptr());
+//  }
 };
 
 struct vector_to_python_converter
@@ -43,6 +51,12 @@ struct vector_to_python_converter
 			vector_to_array<VT>,
 			false //vector_to_array has no get_pytype
 			>();
+
+//		to_python_converter<
+//			Measurement::Measurement<VT>,
+//			vector_to_array<VT>,
+//			false //vector_to_array has no get_pytype
+//			>();
 		return *this;
 	}
 };
@@ -59,6 +73,13 @@ struct matrix_to_ndarray
 	  object obj(ph.to_python());
 	  return incref(obj.ptr());
   }
+
+//  static PyObject* convert(Measurement::Measurement<T1> const& p)
+//  {
+//	  pyublas::numpy_matrix<double> ph(*p);
+//	  object obj(ph.to_python());
+//	  return incref(make_tuple(long_(p.time()), obj).ptr());
+//  }
 };
 
 struct matrix_to_python_converter
@@ -71,6 +92,12 @@ struct matrix_to_python_converter
 			matrix_to_ndarray<MT>,
 			false //vector_to_array has no get_pytype
 			>();
+
+//		to_python_converter<
+//			Measurement::Measurement<MT>,
+//			matrix_to_ndarray<MT>,
+//			false //vector_to_array has no get_pytype
+//			>();
 		return *this;
 	}
 };
@@ -118,6 +145,25 @@ Math::Quaternion test_quat() {
 	return q;
 }
 
+
+// tests
+//Measurement::Position2D test_pos2d() {
+//	boost::shared_ptr< Math::Vector<2> > pos(new Math::Vector<2>(1.0, 2.0));
+//	Measurement::Position2D m(123, pos);
+//	std::cout << "generated measurement: " << m;
+//	return m;
+//}
+
+// tests
+//Measurement::Pose test_posemeasurement() {
+//	boost::shared_ptr< Math::Pose > pose(new Math::Pose(Math::Quaternion(0.0, 0.0, 0.0, 1.0), Math::Vector<3>(1.0, 2.0, 3.0)));
+//
+//	Measurement::Pose m(123, pose);
+//	std::cout << "generated measurement: " << m;
+//	return m;
+//}
+
+
 BOOST_PYTHON_MODULE(_utmath)
 {
 	vector_to_python_converter()
@@ -127,7 +173,8 @@ BOOST_PYTHON_MODULE(_utmath)
 			.to_python< Math::Vector< 5 > >()
 			.to_python< Math::Vector< 6 > >()
 			.to_python< Math::Vector< 7 > >()
-			.to_python< Math::Vector< 8 > >();
+			.to_python< Math::Vector< 8 > >()
+			;
 
 	matrix_to_python_converter()
 			.to_python< Math::Matrix < 2, 2 > >()
@@ -308,8 +355,15 @@ BOOST_PYTHON_MODULE(_utmath)
         .def(self_ns::str(self_ns::self))
     ;
 
+    // register ptrs
+//    register_ptr_to_python< Measurement::Measurement< Math::Pose > >();
+//    register_ptr_to_python< Measurement::Measurement< Math::Quaternion > >();
+
+
 	def("test_vec4", test_vec4);
 	def("test_mat33", test_mat33);
 	def("test_quat", test_quat);
+//	def("test_pos2d", test_pos2d);
+//	def("test_posemeasurement", test_posemeasurement);
 }
 
