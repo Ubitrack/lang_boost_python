@@ -4,13 +4,8 @@ from nose import with_setup
 
 from ubitrack.core import math as utmath
 from ubitrack.core import measurement
-import pyublas as pb
 import numpy as np
 import math
-
-import unittest
-
-pb.set_trace(True)
 
 def setup_func():
     "set up test fixtures"
@@ -76,8 +71,6 @@ def test_measurement_matrix3x3():
     assert i.get() == None
     m = np.array([[1.0, 2.0, 3.0],[1.0, 2.0, 3.0],[1.0, 2.0, 3.0]])
     b = measurement.Matrix3x3(123, m)
-    print b.get()
-    print m
     assert np.all(b.get() == m)
     assert b.time() == 123
     assert b.invalid() == False
@@ -93,9 +86,7 @@ def test_measurement_rotation():
 
     q = utmath.Quaternion()
     b = measurement.Rotation(123, q)
-    print b
     quat = b.get()
-    print quat
     assert np.all(quat.toVector() == q.toVector())
     assert b.time() == 123
     assert b.invalid() == False
@@ -113,9 +104,7 @@ def test_measurement_pose():
     m = np.array([[1.,2.,3.,4.],[1.,2.,3.,4.],[1.,2.,3.,4.],[1.,2.,3.,4.]])
     p = utmath.Pose(m)
     b = measurement.Pose(123, p)
-    print b
     p1 = b.get()
-    print p1
     assert np.all(p1.toVector() == p.toVector())
     assert b.time() == 123
     assert b.invalid() == False

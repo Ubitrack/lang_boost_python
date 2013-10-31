@@ -3,7 +3,6 @@ __author__ = 'jack'
 from nose import with_setup
 
 from ubitrack.core import math as utmath
-import pyublas # load converters
 import numpy as np
 import math
 
