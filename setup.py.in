@@ -36,6 +36,29 @@ class build_ext(_build_ext.build_ext):
                 os.makedirs(dirname)
             shutil.copy(f, dirname)
 
+        # create a script for running the tests
+        
+        pypath = os.pathsep.join([install_root, "$ENV{PYTHONPATH}"])
+        with open(os.path.join("${CMAKE_BINARY_DIR}", "testrunner.cmake"), "w") as fd:
+            fd.write("""
+set(ENV{NOSE_WHERE} "${CMAKE_CURRENT_SOURCE_DIR}/tests")
+set(ENV{NOSE_VERBOSE} "2")
+set(ENV{PYTHONPATH} "%s")
+
+execute_process(
+  COMMAND "${PYTHON}" -c "import nose; nose.main()"
+  OUTPUT_VARIABLE test_output
+  ERROR_VARIABLE error
+  RESULT_VARIABLE failed
+  )
+  
+if(failed)
+    MESSAGE(STATUS "#{test_output}")
+    MESSAGE(FATAL_ERROR "Nosetests failed: #{error}")
+endif(failed)
+""".replace("#","$") % (pypath,))
+
+
 setup_args['cmdclass'] = {'build_ext': build_ext }
 
 

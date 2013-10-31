@@ -253,3 +253,7 @@ endif(PYTHON)
 
 
 add_subdirectory(src)
+
+
+enable_testing()
+add_test( nosetests "${CMAKE_COMMAND}" -P ${CMAKE_BINARY_DIR}/testrunner.cmake )
