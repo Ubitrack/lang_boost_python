@@ -48,10 +48,7 @@ def test_measurement_pos2d():
     assert i.get() == None
     
     b = measurement.Position2D(123, np.array([1.0,2.0]))
-    print b
-    pos = b.get()
-    print pos
-    assert np.all(pos.value == np.array([1.0,2.0]))
+    assert np.all(b.get() == np.array([1.0,2.0]))
     assert b.time() == 123
     assert b.invalid() == False
 
@@ -65,10 +62,7 @@ def test_measurement_pos3d():
     assert i.get() == None
     
     b = measurement.Position(123, np.array([1.0, 2.0, 3.0]))
-    print b
-    pos = b.get()
-    print pos
-    assert np.all(pos.value == np.array([1.0, 2.0, 3.0]))
+    assert np.all(b.get() == np.array([1.0, 2.0, 3.0]))
     assert b.time() == 123
     assert b.invalid() == False
     
@@ -82,10 +76,9 @@ def test_measurement_matrix3x3():
     assert i.get() == None
     m = np.array([[1.0, 2.0, 3.0],[1.0, 2.0, 3.0],[1.0, 2.0, 3.0]])
     b = measurement.Matrix3x3(123, m)
-    print b
-    mat = b.get()
-    print mat
-    assert np.all(mat.value == m)
+    print b.get()
+    print m
+    assert np.all(b.get() == m)
     assert b.time() == 123
     assert b.invalid() == False
     
