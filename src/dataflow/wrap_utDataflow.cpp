@@ -48,7 +48,7 @@ BOOST_PYTHON_MODULE(_utdataflow)
 					,bp::return_value_policy<bp::copy_const_reference>()
 					)
 			.def("fullName", &Dataflow::Port::fullName
-					,bp::return_value_policy<bp::manage_new_object>()
+					//,bp::return_value_policy<bp::manage_new_object>()
 					)
 			.def("getComponent", &Dataflow::Port::getComponent
 					,bp::return_internal_reference<>()
