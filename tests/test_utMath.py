@@ -32,6 +32,8 @@ def test_basic_datatypes():
     assert q.x() == 0 and q.y() == 0 and q.z() == 0 and q.w() == 1
 
     m = utmath.test_mat33()
+    print m
+    print np.identity(3)
     assert np.all(m == np.identity(3))
 
     # from vector
@@ -87,7 +89,8 @@ class test_quaternion( unittest.TestCase):
         #axis angle initialization not working 
         v = np.array([1,0,0])
         q = utmath.Quaternion(v, 0.)
-        self.assertTrue(np.all(q.toVector() == np.array([0.,1.,0.,0.,])),
+        print q.toVector()
+        self.assertTrue(np.all(q.toVector() == np.array([0.,0.,0.,1.,])),
                         "quaternion created from axis angle has wrong data")
 
 

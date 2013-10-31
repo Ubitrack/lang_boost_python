@@ -23,8 +23,8 @@ using namespace Ubitrack;
 namespace {
 
 template< class T>
-const typename T::value_type* get_measurement(const T& m) {
-	return m.get();
+const typename T::value_type& get_measurement(const T& m) {
+	return *(m.get());
 }
 
 template< class T >
@@ -42,7 +42,8 @@ struct measurement_converter
 				.def("invalidate", (void (T::*)())&T::invalidate)
 				.def("get", &get_measurement< T>
 						//,return_value_policy<reference_existing_object>()
-						,return_internal_reference<>()
+        				,return_value_policy<copy_const_reference>()
+						//,return_internal_reference<>()
 						)
 				.def(self_ns::str(self_ns::self))
             ;
@@ -131,6 +132,7 @@ BOOST_PYTHON_MODULE(_utmeasurement)
 //				.def(init<Measurement::Timestamp, const Math::Pose& >())
 			);
 
+/*
 	measurement_converter<Measurement::ErrorPose >::expose(
 			class_<Measurement::ErrorPose>("ErrorPose")
 //				.def(init<Measurement::Timestamp, const Math::ErrorPose& >())
@@ -146,6 +148,7 @@ BOOST_PYTHON_MODULE(_utmeasurement)
 //				.def(init<Measurement::Timestamp, const Math::RotationVelocity & >())
 			);
 
+*/
 
 // XXX Multiple Measurement missing
 
