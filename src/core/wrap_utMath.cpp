@@ -15,7 +15,6 @@
 
 #include <utMeasurement/Measurement.h>
 
-using namespace boost::python;
 using namespace Ubitrack;
 
 namespace bp = boost::python;
@@ -272,11 +271,11 @@ Math::Matrix< 3, 3 > quaternion_to_matrix( const T& q) {
 }
 
 template< class T >
-tuple quaternion_to_axisangle( T& q) {
+bp::tuple quaternion_to_axisangle( T& q) {
 	Math::Vector< 3 > axis;
 	double angle;
 	q.toAxisAngle(axis, angle);
-	return make_tuple(axis, angle);
+	return bp::make_tuple(axis, angle);
 }
 
 template< typename T >
@@ -429,7 +428,7 @@ BOOST_PYTHON_MODULE(_utmath)
     	bp::scope in_Quaternion = bp::class_<Math::Quaternion, boost::shared_ptr< Math::Quaternion >, bp::bases< boost::math::quaternion< double > > >("Quaternion")
     	.def(bp::init< const Math::Vector< 3 >&, const double >())
     	.def(bp::init< const boost::math::quaternion< double > >())
-		.def(init< const Math::Matrix< 4, 4 > >())
+		.def(bp::init< const Math::Matrix< 4, 4 > >())
 		.def(bp::init< double, double, double >())
 		.def(bp::init< double, double, double, double >())
         .def("x", &Math::Quaternion::x)
@@ -437,9 +436,9 @@ BOOST_PYTHON_MODULE(_utmath)
         .def("z", &Math::Quaternion::z)
         .def("w", &Math::Quaternion::w)
         .def("normalize", (Math::Quaternion& (Math::Quaternion::*)())&Math::Quaternion::normalize,
-        		return_internal_reference<>())
+        		bp::return_internal_reference<>())
         .def("invert", (Math::Quaternion& (Math::Quaternion::*)())&Math::Quaternion::invert,
-        		return_internal_reference<>())
+        		bp::return_internal_reference<>())
 		.def("inverted", (Math::Quaternion (Math::Quaternion::*)())&Math::Quaternion::operator~)
 
         // doew not work .. needs casting ??
@@ -526,7 +525,7 @@ BOOST_PYTHON_MODULE(_utmath)
 	bp::class_<Math::Pose, boost::shared_ptr< Math::Pose > >("Pose", bp::init< const Math::Quaternion&, const Math::Vector< 3 >& >())
 		.def(bp::init< const Math::Matrix< 4, 4 >& >())
 		.def("rotation", (const Math::Quaternion& (Math::Pose::*)())&Math::Pose::rotation
-				,return_internal_reference<>()
+				,bp::return_internal_reference<>()
 				)
 		.def("translation", &py_get_translation<Math::Pose, double>
 				//(const Math::Vector< 3 >& (Math::Pose::*)())&Math::Pose::translation
