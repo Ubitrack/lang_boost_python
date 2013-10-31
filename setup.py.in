@@ -4,7 +4,7 @@ from distutils.command import build_ext as _build_ext
 setup_args = dict(
     #version='${PACKAGE_VERSION}',
     package_dir={ '': '${CMAKE_CURRENT_SOURCE_DIR}/lib' },
-    packages=['ubitrack', 'ubitrack.core'],
+    packages=['ubitrack', 'ubitrack.core', 'ubitrack.dataflow'],
     ext_modules=[Extension("ubitrack_modules", ["${CMAKE_BINARY_DIR}/build/modules/"])],
     name='ubitrack',
     version='1.0',
