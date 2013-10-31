@@ -22,6 +22,12 @@ def teardown_func():
 def test_basic_datatypes():
     "test basic data types: Vector2-8, Matrix33-44, Pose, Quaternion"
 
+    b = utmath.ScalarInt(1)
+    assert b.value == 1
+    
+    d = utmath.ScalarDouble(1.0)
+    assert d.value == 1.0
+
     q = utmath.test_quat()
     assert q.x() == 0 and q.y() == 0 and q.z() == 0 and q.w() == 1
 
@@ -38,12 +44,14 @@ def test_basic_datatypes():
 
     #test accessors
     assert np.all(p1.translation() == np.asarray([0,0,0]))
-    #assert p1.rotation() == np.array(0,0,0)
+    assert np.all(p1.rotation().toVector() == np.array([0,0,0,-1]))
 
-    #assert p == p1
-
+    # needs proper verification 
     p2 = p * p1
     p3 = p.invert()
+    
+    v = p3 * np.asarray([1.,2.,3.])
+    
 
 
 
@@ -65,6 +73,23 @@ class test_quaternion( unittest.TestCase):
             np.array_equal( result, expected ),
             "Quaternion identity incorrect"
             )
+
+    def test_create_quaternion(self):
+        m = np.array([[1.,2.,3.,4.],[1.,2.,3.,4.],[1.,2.,3.,4.],[1.,2.,3.,4.]])
+        p = utmath.Pose(m)
+        axis, angle = p.rotation().toAxisAngle()
+        
+        q = utmath.Quaternion(axis, angle)
+        self.assertTrue(str(q) == str(p.rotation()),
+                        "quaternion created from axis angle is not equal to the original")
+
+
+        #axis angle initialization not working 
+        v = np.array([1,0,0])
+        q = utmath.Quaternion(v, 0.)
+        self.assertTrue(np.all(q.toVector() == np.array([0.,1.,0.,0.,])),
+                        "quaternion created from axis angle has wrong data")
+
 
     def test_normalise( self ):
         def identity():

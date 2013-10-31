@@ -96,6 +96,19 @@ T quaternion_from_vector( const pyublas::numpy_vector<double>& vec) {
 }
 
 template< class T >
+Math::Vector< 7 > pose_to_vector( const T& q) {
+	Math::Vector< 7 > vec;
+	q.toVector(vec);
+	return vec;
+}
+
+template< class T >
+T pose_from_vector( const pyublas::numpy_vector<double>& vec) {
+	return T::fromVector(vec);
+}
+
+
+template< class T >
 Math::Matrix< 3, 3 > quaternion_to_matrix( const T& q) {
 	Math::Matrix< 3, 3 > mat;
 	q.toMatrix(mat);
@@ -158,13 +171,13 @@ BOOST_PYTHON_MODULE(_utmath)
 	/*
 	 * Vector Classes
 	 */
-	implicitly_convertible< Math::Vector< 2 >, pyublas::numpy_vector< double > >();
-	implicitly_convertible< Math::Vector< 3 >, pyublas::numpy_vector< double > >();
-	implicitly_convertible< Math::Vector< 4 >, pyublas::numpy_vector< double > >();
-	implicitly_convertible< Math::Vector< 5 >, pyublas::numpy_vector< double > >();
-	implicitly_convertible< Math::Vector< 6 >, pyublas::numpy_vector< double > >();
-	implicitly_convertible< Math::Vector< 7 >, pyublas::numpy_vector< double > >();
-	implicitly_convertible< Math::Vector< 8 >, pyublas::numpy_vector< double > >();
+//	implicitly_convertible< Math::Vector< 2 >, pyublas::numpy_vector< double > >();
+//	implicitly_convertible< Math::Vector< 3 >, pyublas::numpy_vector< double > >();
+//	implicitly_convertible< Math::Vector< 4 >, pyublas::numpy_vector< double > >();
+//	implicitly_convertible< Math::Vector< 5 >, pyublas::numpy_vector< double > >();
+//	implicitly_convertible< Math::Vector< 6 >, pyublas::numpy_vector< double > >();
+//	implicitly_convertible< Math::Vector< 7 >, pyublas::numpy_vector< double > >();
+//	implicitly_convertible< Math::Vector< 8 >, pyublas::numpy_vector< double > >();
 
 	implicitly_convertible<pyublas::numpy_vector< double >,  Math::Vector< 2 > >();
 	implicitly_convertible<pyublas::numpy_vector< double >,  Math::Vector< 3 > >();
@@ -188,10 +201,10 @@ BOOST_PYTHON_MODULE(_utmath)
 	 * Matrix Classes
 	 */
 
-	implicitly_convertible< Math::Matrix < 2, 2 >, pyublas::numpy_matrix< double > >();
-	implicitly_convertible< Math::Matrix < 3, 3 >, pyublas::numpy_matrix< double > >();
-	implicitly_convertible< Math::Matrix < 4, 4 >, pyublas::numpy_matrix< double > >();
-	implicitly_convertible< Math::Matrix < 3, 4 >, pyublas::numpy_matrix< double > >();
+//	implicitly_convertible< Math::Matrix < 2, 2 >, pyublas::numpy_matrix< double > >();
+//	implicitly_convertible< Math::Matrix < 3, 3 >, pyublas::numpy_matrix< double > >();
+//	implicitly_convertible< Math::Matrix < 4, 4 >, pyublas::numpy_matrix< double > >();
+//	implicitly_convertible< Math::Matrix < 3, 4 >, pyublas::numpy_matrix< double > >();
 
 	implicitly_convertible<pyublas::numpy_matrix< double >,  Math::Matrix < 2, 2 > >();
 	implicitly_convertible<pyublas::numpy_matrix< double >,  Math::Matrix < 3, 3 > >();
@@ -272,7 +285,8 @@ BOOST_PYTHON_MODULE(_utmath)
 	{
 	scope in_Quaternion = class_<Math::Quaternion, boost::shared_ptr< Math::Quaternion >, bases< boost::math::quaternion< double > > >("Quaternion")
     	.def(init< const Math::Vector< 3 >&, const double >())
-		.def(init< const boost::math::quaternion< double > >())
+    	//.def(init< const Math::Vector< 3 >&, const float >())
+    	.def(init< const boost::math::quaternion< double > >())
 		.def(init< const boost::numeric::ublas::matrix< double > >())
 		.def(init< double, double, double >())
 		.def(init< double, double, double, double >())
@@ -375,10 +389,13 @@ BOOST_PYTHON_MODULE(_utmath)
 				,return_value_policy<copy_const_reference>()
 				//,return_internal_reference<>()
 				)
+
         .def("scalePose", &Math::Pose::scalePose)
-        //.def("toVector", (void (Math::Pose::*)(const Math::Vector< 7 >&))&Math::Pose::toVector< Math::Vector< 7 > >)
-        //.def("fromVector", (Math::Pose (Math::Pose::*)(pyublas::numpy_vector<double>&))&Math::Pose::fromVector< Math::Vector< 7 > >)
-        //.staticmethod("fromVector")
+
+        .def("toVector", &pose_to_vector<Math::Pose>)
+        .def("fromVector", &pose_from_vector<Math::Pose>)
+        .staticmethod("fromVector")
+
         .def(self * Math::Vector< 3 >())
         .def(self * self)
 
