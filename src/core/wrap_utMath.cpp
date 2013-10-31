@@ -79,10 +79,12 @@ struct matrix_to_python_converter
 	}
 };
 
+
+
 // helpers
 
 template< class T >
-pyublas::numpy_vector<double> quaternion_to_vector( const T& q) {
+Math::Vector< 4 > quaternion_to_vector( const T& q) {
 	Math::Vector< 4 > vec;
 	q.toVector(vec);
 	return vec;
@@ -94,8 +96,8 @@ T quaternion_from_vector( const pyublas::numpy_vector<double>& vec) {
 }
 
 template< class T >
-pyublas::numpy_matrix<double> quaternion_to_matrix( const T& q) {
-	boost::numeric::ublas::matrix< double > mat;
+Math::Matrix< 3, 3 > quaternion_to_matrix( const T& q) {
+	Math::Matrix< 3, 3 > mat;
 	q.toMatrix(mat);
 	return mat;
 }
@@ -105,11 +107,13 @@ tuple quaternion_to_axisangle( T& q) {
 	Math::Vector< 3 > axis;
 	double angle;
 	q.toAxisAngle(axis, angle);
-	//return make_tuple(axis, angle);
-	return make_tuple(1,1);
+	return make_tuple(axis, angle);
 }
 
-
+template< typename T >
+T get_value_from_scalar( Math::Scalar<T>& v) {
+	return v.m_value;
+}
 
 }
 
@@ -135,6 +139,21 @@ Math::Quaternion test_quat() {
 
 BOOST_PYTHON_MODULE(_utmath)
 {
+
+	/*
+	 * Scalar Classes
+	 */
+
+    class_< Math::Scalar< int >, boost::shared_ptr< Math::Scalar< int > > >("ScalarInt", init< npy_int >())
+    		.add_property("value", &get_value_from_scalar<int>)
+            .def(self_ns::str(self_ns::self))
+    		;
+
+    class_< Math::Scalar< double >, boost::shared_ptr< Math::Scalar< double > > >("ScalarDouble", init< npy_double >())
+    		.add_property("value", &get_value_from_scalar<double>)
+            .def(self_ns::str(self_ns::self))
+    		;
+
 
 	/*
 	 * Vector Classes
@@ -252,7 +271,7 @@ BOOST_PYTHON_MODULE(_utmath)
 
 	{
 	scope in_Quaternion = class_<Math::Quaternion, boost::shared_ptr< Math::Quaternion >, bases< boost::math::quaternion< double > > >("Quaternion")
-    	.def(init< const pyublas::numpy_vector<double>&, double >())
+    	.def(init< const Math::Vector< 3 >&, const double >())
 		.def(init< const boost::math::quaternion< double > >())
 		.def(init< const boost::numeric::ublas::matrix< double > >())
 		.def(init< double, double, double >())
@@ -298,7 +317,7 @@ BOOST_PYTHON_MODULE(_utmath)
 		.def(self * boost::math::quaternion< double >())
 		.def(self / boost::math::quaternion< double >())
 
-		.def(self * pyublas::numpy_vector<double>())
+		.def(self * Math::Vector< 3 >())
 
 		.def(self == double())
 		.def(self == std::complex<double>())
@@ -360,7 +379,7 @@ BOOST_PYTHON_MODULE(_utmath)
         //.def("toVector", (void (Math::Pose::*)(const Math::Vector< 7 >&))&Math::Pose::toVector< Math::Vector< 7 > >)
         //.def("fromVector", (Math::Pose (Math::Pose::*)(pyublas::numpy_vector<double>&))&Math::Pose::fromVector< Math::Vector< 7 > >)
         //.staticmethod("fromVector")
-        .def(self * pyublas::numpy_vector<double>())
+        .def(self * Math::Vector< 3 >())
         .def(self * self)
 
         .def("invert",  (Math::Pose (Math::Pose::*)())&Math::Pose::operator~)

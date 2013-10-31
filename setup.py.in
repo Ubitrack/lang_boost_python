@@ -1,15 +1,43 @@
 from distutils.core import setup, Extension
+from distutils.command import build_ext as _build_ext
+
+setup_args = dict(
+    #version='${PACKAGE_VERSION}',
+    package_dir={ '': '${CMAKE_CURRENT_SOURCE_DIR}/lib' },
+    packages=['ubitrack', 'ubitrack.core'],
+    ext_modules=[Extension("ubitrack_modules", ["${CMAKE_BINARY_DIR}/build/modules/"])],
+    name='ubitrack',
+    version='1.0',
+    url='http://www.magicvisionlab.com',
+    license='MIT',
+    author='Ulrich Eck',
+    author_email='ulrich.eck@magicvisionlab.com',
+    description='wrapper for UbiTrack using boost::python'
+)
+
+class build_ext(_build_ext.build_ext):
+    def build_extensions(self):
+        ''' Copies the already-compiled modules
+        '''
+        import shutil
+        import os
+        import fnmatch
+        import sys 
+
+        ext = self.extensions[0]
+        install_root = os.path.dirname(self.get_ext_fullpath(ext.name))
+        modules_dir = ext.sources[0]
+
+        sofiles = [os.path.join(dirpath, f) for dirpath, dirnames, files in os.walk(modules_dir) for f in fnmatch.filter(files, '*.*')]
+        
+        for f in sofiles:
+            dirname = os.path.dirname(os.path.join(install_root, f.replace(modules_dir,"")))
+            if not os.path.isdir(dirname):
+                os.makedirs(dirname)
+            shutil.copy(f, dirname)
+
+setup_args['cmdclass'] = {'build_ext': build_ext }
+
 
 if __name__ == '__main__':
-    setup(
-        #version='${PACKAGE_VERSION}',
-        package_dir={ '': '${CMAKE_CURRENT_SOURCE_DIR}/lib' },
-        packages=['ubitrack', 'ubitrack.core'],
-        name='ubitrack',
-        version='1.0',
-        url='http://www.magicvisionlab.com',
-        license='MIT',
-        author='Ulrich Eck',
-        author_email='ulrich.eck@magicvisionlab.com',
-        description='wrapper for UbiTrack using boost::python'
-        )
+    setup(**setup_args)

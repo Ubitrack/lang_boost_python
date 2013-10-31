@@ -1,15 +1,18 @@
+
 if(NOT COMMAND find_host_package)
   macro(find_host_package)
     find_package(${ARGN})
   endmacro()
 endif()
+
 if(NOT COMMAND find_host_program)
   macro(find_host_program)
     find_program(${ARGN})
   endmacro()
 endif()
 
-macro(add_python_module full_modname MODULE_SRCS)
+
+macro(add_python_module full_modname the_package MODULE_SRCS)
 
 ADD_LIBRARY(${full_modname} MODULE ${MODULE_SRCS})
 
@@ -68,18 +71,32 @@ IF(MSVC)
 
 ENDIF(MSVC)
 
-IF( NOT APPLE )
-  SET( ${full_modname}_FULL_VERSION ${${PROJECT_NAME}_MAJOR_VERSION}.${${PROJECT_NAME}_MINOR_VERSION}.${${PROJECT_NAME}_BUILD_VERSION} ) 
-  SET_TARGET_PROPERTIES( ${full_modname} PROPERTIES VERSION ${${full_modname}_FULL_VERSION} )
-ENDIF( NOT APPLE )
+#IF( NOT APPLE )
+#  SET( ${full_modname}_FULL_VERSION ${${PROJECT_NAME}_MAJOR_VERSION}.${${PROJECT_NAME}_MINOR_VERSION}.${${PROJECT_NAME}_BUILD_VERSION} ) 
+#  SET_TARGET_PROPERTIES( ${full_modname} PROPERTIES VERSION ${${full_modname}_FULL_VERSION} )
+#ENDIF( NOT APPLE )
 
 # set compile flags for ${full_modname} project
 SET_TARGET_PROPERTIES( ${full_modname} PROPERTIES COMPILE_FLAGS "${${full_modname}_COMPILE_FLAGS}" )
 
-install(TARGETS ${full_modname}
-	  RUNTIME DESTINATION "bin" COMPONENT main
-	  LIBRARY DESTINATION "${MODULE_INSTALL_PATH}/${CURRENT_PACKAGE}" COMPONENT main
-	  ARCHIVE DESTINATION "${MODULE_INSTALL_PATH}${CURRENT_PACKAGE}" COMPONENT main
-	  )
+#install(TARGETS ${full_modname}
+#	  RUNTIME DESTINATION "bin" COMPONENT main
+#	  LIBRARY DESTINATION "${CMAKE_BINARY_DIR}/build/modules/${CURRENT_PACKAGE}" COMPONENT main
+#	  ARCHIVE DESTINATION "${CMAKE_BINARY_DIR}/build/modules/${CURRENT_PACKAGE}" COMPONENT main
+#	  )
+
+add_custom_command(
+  OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/timestamp.${full_modname}
+  COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:${full_modname}> ${CMAKE_BINARY_DIR}/build/modules/${the_package}/$<TARGET_FILE_NAME:${full_modname}>
+  COMMAND ${CMAKE_COMMAND} -E touch ${CMAKE_CURRENT_BINARY_DIR}/timestamp.${full_modname}
+  DEPENDS ${DEPS}
+  VERBATIM
+)
+add_custom_target(copy${full_modname} ALL DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/timestamp.${full_modname} )
+ADD_DEPENDENCIES(copy${full_modname} ${full_modname})
+ADD_DEPENDENCIES(pybuild copy${full_modname})
+
+
+
 
 endmacro()

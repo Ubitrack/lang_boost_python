@@ -223,6 +223,7 @@ ENDIF( COMMAND cmake_policy )
 SET(MODULE_INSTALL_PATH ${PYTHON_PACKAGE_DIR})
 SET( MODULE_LIBS ${requiredLibs} ${optionalLibs})
 
+
 include(cmake/PythonModuleBuilder.cmake)
 include(cmake/UbiTrackDetectPython.cmake)
 
@@ -242,14 +243,13 @@ if (PYTHON)
 	  COMMAND ${CMAKE_COMMAND} -E touch ${OUTPUT}/timestamp
 	  DEPENDS ${DEPS}
 	)
-	
-endif()
+	add_custom_target(pybuild ALL DEPENDS ${OUTPUT}/timestamp )
+
+    install(CODE "execute_process(COMMAND ${PYTHON} ${SETUP_PY} install)")
+endif(PYTHON)
+
+#FILE(GLOB PY_UT_INIT_FULLPATH "${CMAKE_CURRENT_BINARY_DIR}/build/*/ubitrack/__init__.py")
+#GET_FILENAME_COMPONENT(PY_UT_INSTALLROOT ${PY_UT_INIT_FULLPATH} PATH)
 
 
 add_subdirectory(src)
-
-
-if (PYTHON)
-	add_custom_target(pybuild ALL DEPENDS ${OUTPUT}/timestamp)
-    install(CODE "execute_process(COMMAND ${PYTHON} ${SETUP_PY} install)")
-endif(PYTHON)
