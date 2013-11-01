@@ -17,12 +17,20 @@
 
 
 #include <utUtil/Logging.h>
+#include <utUtil/Exception.h>
 
 using namespace Ubitrack;
 
 namespace bp = boost::python;
 
 namespace {
+
+void translateException( const Ubitrack::Util::Exception& e) {
+    PyErr_SetString(PyExc_RuntimeError, e.what());
+};
+
+
+
 
 /// A stream buffer getting data from and putting data into a Python file object
 /** The aims are as follow:
@@ -531,6 +539,8 @@ BOOST_PYTHON_FUNCTION_OVERLOADS(logging_overloads, Ubitrack::Util::initLogging, 
 
 BOOST_PYTHON_MODULE(_ututil)
 {
+	bp::register_exception_translator<Ubitrack::Util::Exception>(translateException);
+
 	bp::def("initLogging", &Ubitrack::Util::initLogging, logging_overloads());
 
 

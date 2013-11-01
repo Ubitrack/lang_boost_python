@@ -119,15 +119,6 @@ if(Boost_FOUND)
   SET(HAVE_BOOST 1)
 endif(Boost_FOUND)
 
-# get python
-find_package(PythonLibs REQUIRED)
-IF(PYTHONLIBS_FOUND)
-  add_definitions(-DHAVE_PYTHON)
-  SET(HAVE_PYTHON 1)
-  INCLUDE_DIRECTORIES( ${PYTHON_INCLUDE_DIRS} )
-  SET(requiredLibs ${requiredLibs} ${PYTHON_LIBRARIES} )
-ENDIF(PYTHONLIBS_FOUND)
-
 find_package(BoostNumpy REQUIRED)
 IF(BOOST_NUMPY_FOUND)
   add_definitions(-DHAVE_BOOST_NUMPY)
@@ -216,6 +207,10 @@ IF(TBB_FOUND)
   SET(requiredLibs ${requiredLibs} ${TBB_LIBRARIES} )
 ENDIF(TBB_FOUND)
 
+INCLUDE(cmake/PythonModuleBuilder.cmake)
+INCLUDE(cmake/UbiTrackDetectPython.cmake)
+
+INCLUDE_DIRECTORIES(${PYTHON_INCLUDE_DIR})
 INCLUDE_DIRECTORIES(${PYTHON_NUMPY_INCLUDE_DIR})
 
 IF( COMMAND cmake_policy )
@@ -228,12 +223,8 @@ SET(MODULE_INSTALL_PATH ${PYTHON_PACKAGE_DIR})
 SET( MODULE_LIBS ${requiredLibs} ${optionalLibs})
 
 
-include(cmake/PythonModuleBuilder.cmake)
-include(cmake/UbiTrackDetectPython.cmake)
 
-
-find_program(PYTHON "python")
-if (PYTHON)
+if (PYTHON_EXECUTABLE)
     set(SETUP_PY_IN "${CMAKE_CURRENT_SOURCE_DIR}/setup.py.in")
     set(SETUP_PY    "${CMAKE_CURRENT_BINARY_DIR}/setup.py")
     set(DEPS        "${CMAKE_CURRENT_SOURCE_DIR}/lib/ubitrack/__init__.py")
@@ -243,21 +234,16 @@ if (PYTHON)
 
 	add_custom_command(
 	  OUTPUT ${OUTPUT}/timestamp
-	  COMMAND ${PYTHON} setup.py build
+	  COMMAND ${PYTHON_EXECUTABLE} setup.py build
 	  COMMAND ${CMAKE_COMMAND} -E touch ${OUTPUT}/timestamp
 	  DEPENDS ${DEPS}
 	)
 	add_custom_target(pybuild ALL DEPENDS ${OUTPUT}/timestamp )
 
     install(CODE "execute_process(COMMAND ${PYTHON} ${SETUP_PY} install)")
-endif(PYTHON)
-
-#FILE(GLOB PY_UT_INIT_FULLPATH "${CMAKE_CURRENT_BINARY_DIR}/build/*/ubitrack/__init__.py")
-#GET_FILENAME_COMPONENT(PY_UT_INSTALLROOT ${PY_UT_INIT_FULLPATH} PATH)
-
+endif(PYTHON_EXECUTABLE)
 
 add_subdirectory(src)
-
 
 enable_testing()
 add_test( nosetests "${CMAKE_COMMAND}" -P ${CMAKE_BINARY_DIR}/testrunner.cmake )
