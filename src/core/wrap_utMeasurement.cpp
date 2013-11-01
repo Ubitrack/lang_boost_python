@@ -38,7 +38,7 @@ struct measurement_converter
 				.def("set_time", (void (T::*)(Measurement::Timestamp))&T::time)
 				.def("invalid", (bool (T::*)())&T::invalid)
 				.def("invalidate", (void (T::*)())&T::invalidate)
-				.def("get", &get_measurement< T>
+				.def("get", &get_measurement< T >
 						//,return_value_policy<reference_existing_object>()
         				,bp::return_value_policy<bp::copy_const_reference>()
 						//,return_internal_reference<>()
