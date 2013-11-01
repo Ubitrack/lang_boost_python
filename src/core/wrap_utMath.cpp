@@ -1,4 +1,6 @@
+#define NPY_NO_DEPRECATED_API NPY_1_7_API_VERSION
 #include <boost/numpy.hpp>
+#include <numpy/arrayobject.h>
 #include <complex>
 
 #include <boost/python.hpp>
@@ -19,6 +21,7 @@ using namespace Ubitrack;
 
 namespace bp = boost::python;
 namespace bn = boost::numpy;
+
 
 namespace {
 
@@ -309,6 +312,7 @@ BOOST_PYTHON_MODULE(_utmath)
 {
 	// initialize boost.numpy
 	bn::initialize();
+
 	/*
 	 * Scalar Classes
 	 */

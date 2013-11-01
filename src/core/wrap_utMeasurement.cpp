@@ -1,4 +1,6 @@
+#define NPY_NO_DEPRECATED_API NPY_1_7_API_VERSION
 #include <boost/numpy.hpp>
+#include <numpy/arrayobject.h>
 #include <complex>
 
 #include <boost/python.hpp>
@@ -8,9 +10,6 @@
 #include <boost/python/to_python_converter.hpp>
 
 #include <utMeasurement/Measurement.h>
-
-#define NPY_NO_DEPRECATED_API NPY_1_7_API_VERSION
-#include <numpy/arrayobject.h>
 
 #include <iostream>
 
