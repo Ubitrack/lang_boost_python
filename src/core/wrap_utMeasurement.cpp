@@ -22,8 +22,11 @@ namespace {
 
 template< class T>
 const typename T::value_type& get_measurement(const T& m) {
+	// potentially dangerous ..
 	return *(m.get());
 }
+
+
 
 template< class T >
 struct measurement_converter

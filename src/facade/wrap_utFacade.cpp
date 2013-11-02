@@ -57,18 +57,18 @@ void setWrappedCallbackFacade( Facade::AdvancedFacade* self, const std::string& 
 }
 
 
-template< class EventType >
-static void expose_pushsink_for(const std::string& event_name)
+template< class ComponentType, class EventType >
+void expose_pushsink_for(const std::string& event_name)
 {
 	std::string pushsink_name("ApplicationPushSink");
 	pushsink_name.append(event_name);
-	bp::class_< Components::ApplicationPushSink< EventType >, boost::shared_ptr< Components::ApplicationPushSink< EventType > >, bp::bases< Dataflow::Component >, boost::noncopyable>(pushsink_name.c_str(), bp::no_init)
-		.def("setCallback", &setWrappedCallback< Components::ApplicationPushSink< EventType >, EventType >)
+	bp::class_< ComponentType, boost::shared_ptr< ComponentType >, bp::bases< Dataflow::Component >, boost::noncopyable>(pushsink_name.c_str(), bp::no_init)
+		.def("setCallback", &setWrappedCallback< ComponentType, EventType >)
 		;
 }
 
 template< class EventType >
-static void expose_pullsink_for(const std::string& event_name)
+void expose_pullsink_for(const std::string& event_name)
 {
 	std::string pullsink_name("ApplicationPullSink");
 	pullsink_name.append(event_name);
@@ -77,35 +77,37 @@ static void expose_pullsink_for(const std::string& event_name)
 		;
 }
 
-}
 
+//Facade::AdvancedFacade::componentByName< Components::ApplicationPushSink< Measurement::Button > >
+
+}
 
 BOOST_PYTHON_MODULE(_utfacade)
 {
-	expose_pushsink_for< Measurement::Button >("Button");
-	expose_pushsink_for< Measurement::Pose >("Pose");
-	expose_pushsink_for< Measurement::ErrorPose >("ErrorPose");
-	expose_pushsink_for< Measurement::Position >("Position");
-	expose_pushsink_for< Measurement::Position2D >("Position2D");
-	expose_pushsink_for< Measurement::Rotation >("Rotation");
-	expose_pushsink_for< Measurement::Matrix4x4 >("Matrix4x4");
-	expose_pushsink_for< Measurement::Matrix3x3 >("Matrix3x3");
+	expose_pushsink_for< Components::ApplicationPushSinkButton, Measurement::Button >("Button");
+	expose_pushsink_for< Components::ApplicationPushSinkPose, Measurement::Pose >("Pose");
+//	expose_pushsink_for< Components::ApplicationPushSinkErrorPose, Measurement::ErrorPose >("ErrorPose");
+	expose_pushsink_for< Components::ApplicationPushSinkPosition, Measurement::Position >("Position");
+	expose_pushsink_for< Components::ApplicationPushSinkPosition2D, Measurement::Position2D >("Position2D");
+	expose_pushsink_for< Components::ApplicationPushSinkRotation, Measurement::Rotation >("Rotation");
+	expose_pushsink_for< Components::ApplicationPushSinkMatrix4x4, Measurement::Matrix4x4 >("Matrix4x4");
+	expose_pushsink_for< Components::ApplicationPushSinkMatrix3x3, Measurement::Matrix3x3 >("Matrix3x3");
 
-//	expose_pushsink_for< Measurement::PositionList >("PositionList");
-//	expose_pushsink_for< Measurement::PositionList2 >("PositionList2");
-//	expose_pushsink_for< Measurement::ErrorPositionList >("ErrorPositionList");
-//	expose_pushsink_for< Measurement::ErrorPositionList2 >("ErrorPositionList2");
+//	expose_pushsink_for< Components::ApplicationPushSinkPositionList, Measurement::PositionList >("PositionList");
+//	expose_pushsink_for< Components::ApplicationPushSinkPositionList2, Measurement::PositionList2 >("PositionList2");
+//	expose_pushsink_for< Components::ApplicationPushSinkErrorPositionList, Measurement::ErrorPositionList >("ErrorPositionList");
+//	expose_pushsink_for< Components::ApplicationPushSinkErrorPositionList2, Measurement::ErrorPositionList2 >("ErrorPositionList2");
 
-	expose_pullsink_for< Measurement::Button >("Button");
-	expose_pullsink_for< Measurement::Pose >("Pose");
-	expose_pullsink_for< Measurement::ErrorPose >("ErrorPose");
-	expose_pullsink_for< Measurement::Position2D >("Position2D");
-	expose_pullsink_for< Measurement::Position >("Position");
-	expose_pullsink_for< Measurement::ErrorPosition >("ErrorPosition");
-	expose_pullsink_for< Measurement::Rotation >("Rotation");
-	expose_pullsink_for< Measurement::Matrix4x4 >("Matrix4x4");
-	expose_pullsink_for< Measurement::Matrix3x3 >("Matrix3x3");
-	expose_pullsink_for< Measurement::Vector4D >("Vector4D");
+//	expose_pullsink_for< Measurement::Button >("Button");
+//	expose_pullsink_for< Measurement::Pose >("Pose");
+//	expose_pullsink_for< Measurement::ErrorPose >("ErrorPose");
+//	expose_pullsink_for< Measurement::Position2D >("Position2D");
+//	expose_pullsink_for< Measurement::Position >("Position");
+//	expose_pullsink_for< Measurement::ErrorPosition >("ErrorPosition");
+//	expose_pullsink_for< Measurement::Rotation >("Rotation");
+//	expose_pullsink_for< Measurement::Matrix4x4 >("Matrix4x4");
+//	expose_pullsink_for< Measurement::Matrix3x3 >("Matrix3x3");
+//	expose_pullsink_for< Measurement::Vector4D >("Vector4D");
 
 //	expose_pullsink_for< Measurement::PositionList >("PositionList");
 //	expose_pullsink_for< Measurement::PositionList2 >("PositionList2");
@@ -123,30 +125,31 @@ BOOST_PYTHON_MODULE(_utfacade)
 		.def("killEverything", &Facade::AdvancedFacade::killEverything)
 
 		// all components .. need a better way do do this .. meta-meta programming needed - havent looking into boost::mpl yet ;)
-		.def("componentByName", &Facade::AdvancedFacade::componentByName< Components::ApplicationPushSink< Measurement::Button > >)
-		.def("componentByName", &Facade::AdvancedFacade::componentByName< Components::ApplicationPushSink< Measurement::Pose > >)
-		.def("componentByName", &Facade::AdvancedFacade::componentByName< Components::ApplicationPushSink< Measurement::ErrorPose > >)
-		.def("componentByName", &Facade::AdvancedFacade::componentByName< Components::ApplicationPushSink< Measurement::Position > >)
-		.def("componentByName", &Facade::AdvancedFacade::componentByName< Components::ApplicationPushSink< Measurement::Position2D > >)
-		.def("componentByName", &Facade::AdvancedFacade::componentByName< Components::ApplicationPushSink< Measurement::Rotation > >)
-		.def("componentByName", &Facade::AdvancedFacade::componentByName< Components::ApplicationPushSink< Measurement::Matrix4x4 > >)
-		.def("componentByName", &Facade::AdvancedFacade::componentByName< Components::ApplicationPushSink< Measurement::Matrix3x3 > >)
 
-//		.def("componentByName", &Facade::AdvancedFacade::componentByName< Components::ApplicationPushSink< Measurement::PositionList > >)
-//		.def("componentByName", &Facade::AdvancedFacade::componentByName< Components::ApplicationPushSink< Measurement::PositionList2 > >)
-//		.def("componentByName", &Facade::AdvancedFacade::componentByName< Components::ApplicationPushSink< Measurement::ErrorPositionList > >)
-//		.def("componentByName", &Facade::AdvancedFacade::componentByName< Components::ApplicationPushSink< Measurement::ErrorPositionList2 > >)
+		.def("componentByName", &Facade::AdvancedFacade::componentByName< Components::ApplicationPushSinkButton >)
+		.def("componentByName", &Facade::AdvancedFacade::componentByName< Components::ApplicationPushSinkPose >)
+//		.def("componentByName", &Facade::AdvancedFacade::componentByName< Components::ApplicationPushSinkErrorPose >)
+		.def("componentByName", &Facade::AdvancedFacade::componentByName< Components::ApplicationPushSinkPosition >)
+		.def("componentByName", &Facade::AdvancedFacade::componentByName< Components::ApplicationPushSinkPosition2D >)
+		.def("componentByName", &Facade::AdvancedFacade::componentByName< Components::ApplicationPushSinkRotation >)
+		.def("componentByName", &Facade::AdvancedFacade::componentByName< Components::ApplicationPushSinkMatrix4x4 >)
+		.def("componentByName", &Facade::AdvancedFacade::componentByName< Components::ApplicationPushSinkMatrix3x3 >)
+
+//		.def("componentByName", &Facade::AdvancedFacade::componentByName< ApplicationPushSinkPositionList >)
+//		.def("componentByName", &Facade::AdvancedFacade::componentByName< ApplicationPushSinkPositionList2 >)
+//		.def("componentByName", &Facade::AdvancedFacade::componentByName< ApplicationPushSinkErrorPositionList >)
+//		.def("componentByName", &Facade::AdvancedFacade::componentByName< ApplicationPushSinkErrorPositionList2 >)
 
 
-		.def("componentByName", &Facade::AdvancedFacade::componentByName< Components::ApplicationPullSink< Measurement::Button > >)
-		.def("componentByName", &Facade::AdvancedFacade::componentByName< Components::ApplicationPullSink< Measurement::Pose > >)
-		.def("componentByName", &Facade::AdvancedFacade::componentByName< Components::ApplicationPullSink< Measurement::ErrorPose > >)
-		.def("componentByName", &Facade::AdvancedFacade::componentByName< Components::ApplicationPullSink< Measurement::Position > >)
-		.def("componentByName", &Facade::AdvancedFacade::componentByName< Components::ApplicationPullSink< Measurement::Position2D > >)
-		.def("componentByName", &Facade::AdvancedFacade::componentByName< Components::ApplicationPullSink< Measurement::Rotation > >)
-		.def("componentByName", &Facade::AdvancedFacade::componentByName< Components::ApplicationPullSink< Measurement::Matrix4x4 > >)
-		.def("componentByName", &Facade::AdvancedFacade::componentByName< Components::ApplicationPullSink< Measurement::Matrix3x3 > >)
-		.def("componentByName", &Facade::AdvancedFacade::componentByName< Components::ApplicationPullSink< Measurement::Vector4D > >)
+//		.def("componentByName", &Facade::AdvancedFacade::componentByName< Components::ApplicationPullSink< Measurement::Button > >)
+//		.def("componentByName", &Facade::AdvancedFacade::componentByName< Components::ApplicationPullSink< Measurement::Pose > >)
+//		.def("componentByName", &Facade::AdvancedFacade::componentByName< Components::ApplicationPullSink< Measurement::ErrorPose > >)
+//		.def("componentByName", &Facade::AdvancedFacade::componentByName< Components::ApplicationPullSink< Measurement::Position > >)
+//		.def("componentByName", &Facade::AdvancedFacade::componentByName< Components::ApplicationPullSink< Measurement::Position2D > >)
+//		.def("componentByName", &Facade::AdvancedFacade::componentByName< Components::ApplicationPullSink< Measurement::Rotation > >)
+//		.def("componentByName", &Facade::AdvancedFacade::componentByName< Components::ApplicationPullSink< Measurement::Matrix4x4 > >)
+//		.def("componentByName", &Facade::AdvancedFacade::componentByName< Components::ApplicationPullSink< Measurement::Matrix3x3 > >)
+//		.def("componentByName", &Facade::AdvancedFacade::componentByName< Components::ApplicationPullSink< Measurement::Vector4D > >)
 
 //		.def("componentByName", &Facade::AdvancedFacade::componentByName< Components::ApplicationPullSink< Measurement::PositionList > >)
 //		.def("componentByName", &Facade::AdvancedFacade::componentByName< Components::ApplicationPullSink< Measurement::PositionList2 > >)
@@ -156,12 +159,12 @@ BOOST_PYTHON_MODULE(_utfacade)
 		// push sinks
 		.def("setCallback", &setWrappedCallbackFacade< Measurement::Button >)
 		.def("setCallback", &setWrappedCallbackFacade< Measurement::Pose >)
-		.def("setCallback", &setWrappedCallbackFacade< Measurement::ErrorPose >)
+//		.def("setCallbackErrorPose", &setWrappedCallbackFacade< Measurement::ErrorPose >)
 		.def("setCallback", &setWrappedCallbackFacade< Measurement::Position >)
-		.def("setCallback", &setWrappedCallbackFacade< Measurement::Position2D >)
-		.def("setCallback", &setWrappedCallbackFacade< Measurement::Rotation >)
-		.def("setCallback", &setWrappedCallbackFacade< Measurement::Matrix4x4 >)
-		.def("setCallback", &setWrappedCallbackFacade< Measurement::Matrix3x3 >)
+		.def("setCallbackPosition2D", &setWrappedCallbackFacade< Measurement::Position2D >)
+		.def("setCallbackRotation", &setWrappedCallbackFacade< Measurement::Rotation >)
+		.def("setCallbackMatrix3x3", &setWrappedCallbackFacade< Measurement::Matrix4x4 >)
+		.def("setCallbackMatrix4x4", &setWrappedCallbackFacade< Measurement::Matrix3x3 >)
 
 //		.def("setCallback", &setWrappedCallbackFacade< Measurement::PositionList >)
 //		.def("setCallback", &setWrappedCallbackFacade< Measurement::PositionList2 >)
