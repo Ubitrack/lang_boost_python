@@ -1,39 +1,52 @@
 
+__author__ = 'jack'
 
-from ubitrack.facade import facade
+from nose import with_setup
+
+from ubitrack.core import math as utmath
 from ubitrack.core import util
+from ubitrack.facade import facade
+import numpy as np
 import time
+import os
 
-print "init logging"
-util.initLogging("log4cpp.conf")
+f = None
 
-print "load dataflow"
-f = facade.AdvancedFacade("/usr/local/lib/ubitrack")
-f.loadDataflow("/home/jack/workspace/ubitrack_python/tests/single_pushsinkpose.dfg", True)
+def setup_func():
+    "set up test fixtures"
+    util.initLogging("log4cpp.conf")
+    global f
+    f = facade.AdvancedFacade("/usr/local/lib/ubitrack")
 
 
-def cb(m):
-    print "Measurement: %s" % m
+def teardown_func():
+    "tear down test fixtures"
+    if f is not None:
+        f.clearDataflow()
 
-print "get pushsink and register callback"
-x = f.componentByName("receiver")
-if x is None:
-    raise RuntimeError("Wrapping is not working properly !!!!")
 
-x.setCallback(cb)
+@with_setup(setup_func, teardown_func)
+def test_basic_facade_components():
 
-#print "register callback again on the facade"
-#f.setCallback("receiver", cb)
+    thisdir = os.path.dirname(__file__)
+    f.loadDataflow(os.path.join(thisdir, "single_pushsinkpose.dfg"), True)
+    
+    results = []
 
-print "start dataflow"
-f.startDataflow()
+    def cb(m):
+        results.append(m)
+    
+    x = f.getApplicationPushSinkPose("receiver")
+    if x is None:
+        raise RuntimeError("Wrapping is not working properly !!!!")
+    
+    x.setCallback(cb)
 
-time.sleep(3)
+    f.setCallbackPose("receiver", cb)
+    f.startDataflow()
+    
+    time.sleep(3)
+    
+    f.stopDataflow()
 
-print "stop dataflow"
-f.stopDataflow()
-
-print "cleanup"
-f.clearDataflow()
-
-print "done"
+    assert len(results) > 0 

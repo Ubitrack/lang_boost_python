@@ -20,7 +20,7 @@ def teardown_func():
 # @with_setup(setup_func, teardown_func)
 # def test_basic_dataflow_components():
 #     "test basic dataflow components"
-# 
+#  
 #     # abstract classes for now
 #     c = dataflow.Component("test1")
 #     assert c.getName() == "test1"
@@ -32,7 +32,7 @@ def teardown_func():
 #     c1 = dataflow.Component("test2")
 #     p2 = dataflow.Port("P2", c1)
 #     assert p2.fullName() == "test2:P2"
-#       
+#        
 #     p1.connect(p2)
 #     c1.start()
 #     c.start()
