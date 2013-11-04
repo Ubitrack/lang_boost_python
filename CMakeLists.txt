@@ -240,7 +240,7 @@ if (PYTHON_EXECUTABLE)
 	)
 	add_custom_target(pybuild ALL DEPENDS ${OUTPUT}/timestamp )
 
-    install(CODE "execute_process(COMMAND ${PYTHON} ${SETUP_PY} install)")
+    install(CODE "execute_process(COMMAND ${PYTHON_EXECUTABLE} ${SETUP_PY} install)")
 endif(PYTHON_EXECUTABLE)
 
 add_subdirectory(src)

@@ -46,7 +46,7 @@ set(ENV{NOSE_VERBOSE} "2")
 set(ENV{PYTHONPATH} "%s")
 
 execute_process(
-  COMMAND "${PYTHON}" -c "import nose; nose.main()"
+  COMMAND "${PYTHON_EXECUTABLE}" -c "import nose; nose.main()"
   OUTPUT_VARIABLE test_output
   ERROR_VARIABLE error
   RESULT_VARIABLE failed
