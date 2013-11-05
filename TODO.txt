@@ -1,0 +1,11 @@
+missing functionality:
+
+- ApplicationPushSources are not wrapped
+- ImageMeasurement is not wrapped
+
+should create a simple OpenGL example to make starting new projects easy
+
+eventually migrate some of the HARP tools into it - including HDF5 recorder
+
+need more tests
+

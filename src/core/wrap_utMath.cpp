@@ -3,6 +3,7 @@
 #include <numpy/arrayobject.h>
 #include <complex>
 
+#include <boost/python/suite/indexing/vector_indexing_suite.hpp>
 #include <boost/python.hpp>
 #include <boost/python/implicit.hpp>
 #include <boost/python/module.hpp>
@@ -28,6 +29,7 @@ namespace {
 
 // by value converters for vector/matrix
 
+// Converts a vector < n > to numpy array (copy)
 template<typename T, int N>
 struct vector_to_array {
 	static PyObject* convert(Math::Vector< N, T > const& p) {
@@ -51,7 +53,7 @@ struct vector_to_python_converter {
 };
 
 
-// Converts a vector < n > to numpy array.
+// Converts a matrix < n, m > to numpy array (copy)
 template<typename T, int N, int M>
 struct matrix_to_ndarray {
 	static PyObject* convert(Math::Matrix< N, M, T > const& p) {
@@ -80,7 +82,7 @@ struct matrix_to_python_converter {
 
 
 
-// convert ndarray to vector
+// convert ndarray to vector (copy)
 
 template< typename T, int N>
 static void copy_ndarray_to_vector(bn::ndarray const & array, Math::Vector< N, T >& vec) {
@@ -145,7 +147,7 @@ struct vector_from_python {
 
 
 
-// convert ndarray to matrix
+// convert ndarray to matrix (copy)
 
 template< typename T, int N, int M>
 static void copy_ndarray_to_matrix(bn::ndarray const & array, Math::Matrix< N, M, T >& mat) {
@@ -316,6 +318,11 @@ BOOST_PYTHON_MODULE(_utmath)
 	/*
 	 * Scalar Classes
 	 */
+
+    bp::class_< Math::Scalar< unsigned long >, boost::shared_ptr< Math::Scalar< unsigned long > > >("ScalarID", bp::init< unsigned long >())
+    		.add_property("value", &get_value_from_scalar<unsigned long>)
+            .def(bp::self_ns::str(bp::self_ns::self))
+    		;
 
     bp::class_< Math::Scalar< int >, boost::shared_ptr< Math::Scalar< int > > >("ScalarInt", bp::init< int >())
     		.add_property("value", &get_value_from_scalar<int>)
@@ -545,10 +552,40 @@ BOOST_PYTHON_MODULE(_utmath)
 
         .def(bp::self * Math::Vector< 3 >())
         .def(bp::self * bp::self)
+        .def(bp::self == bp::self)
 
         .def("invert",  (Math::Pose (Math::Pose::*)())&Math::Pose::operator~)
         .def(bp::self_ns::str(bp::self_ns::self))
     ;
+
+
+	// std::vector<T> support
+    bp::class_<std::vector< Math::Pose >, boost::shared_ptr< std::vector< Math::Pose > > >("PoseList")
+//			.def("__iter__", bp::iterator<std::vector< Math::Vector< 3 > > >())
+//			.def("__len__", &std::vector< Math::Vector< 3 > >::size)
+    		.def(bp::vector_indexing_suite<std::vector< Math::Pose > >())
+    		;
+    bp::class_<std::vector< Math::Vector< 2 > > >("PositionList2")
+    		.def(bp::vector_indexing_suite<std::vector< Math::Vector< 2 > > >())
+    		;
+
+    bp::class_<std::vector< Math::Vector< 3 > > >("PositionList")
+		.def("__iter__", bp::iterator<std::vector< Math::Vector< 3 > > >())
+		.def("__len__", &std::vector< Math::Vector< 3 > >::size)
+//		.def(bp::vector_indexing_suite<std::vector< Math::Vector< 3 > > >())
+		;
+
+    bp::class_<std::vector< Math::Scalar< double > > >("DistanceList")
+    		.def(bp::vector_indexing_suite<std::vector< Math::Scalar< double > > >())
+    		;
+
+    bp::class_<std::vector< Math::Scalar< unsigned long > > >("IDList")
+    		.def(bp::vector_indexing_suite<std::vector< Math::Scalar< unsigned long > > >())
+    		;
+
+//    bp::class_<std::vector< Math::ErrorPose > >("ErrorPoseList").def(bp::vector_indexing_suite<std::vector< Math::ErrorPose > >());
+//    bp::class_<std::vector< Math::ErrorVector< 2 > > >("ErrorPositionList2").def(bp::vector_indexing_suite<std::vector< Math::ErrorVector< 2 > > >());
+//    bp::class_<std::vector< Math::ErrorVector< 3 > > >("ErrorPositionList").def(bp::vector_indexing_suite<std::vector< Math::ErrorVector< 3 > > >());
 
 
     /*

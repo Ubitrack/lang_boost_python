@@ -117,4 +117,14 @@ def test_measurement_pose():
 
 
 
+@with_setup(setup_func, teardown_func)
+def test_measurement_poselist():
+    "test measurement poselist"
 
+    m = measurement.test_poselistmeasurement()
+    result = m.get()
+    assert len(result) == 3
+    
+    element = result[0]
+    assert np.all(element.translation() == np.array([1.0, 2.0, 3.0])) 
+    

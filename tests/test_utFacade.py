@@ -5,6 +5,7 @@ from nose import with_setup
 
 from ubitrack.core import math as utmath
 from ubitrack.core import util
+from ubitrack.core import measurement
 from ubitrack.facade import facade
 import numpy as np
 import time
@@ -50,3 +51,28 @@ def test_basic_facade_components():
     f.stopDataflow()
 
     assert len(results) > 0 
+
+
+@with_setup(setup_func, teardown_func)
+def test_pull_positionlist():
+
+    thisdir = os.path.dirname(__file__)
+    f.loadDataflow(os.path.join(thisdir, "test_positionlist.dfg"), True)
+    
+    x = f.getApplicationPullSinkPositionList("receiver")
+    if x is None:
+        raise RuntimeError("Wrapping is not working properly !!!!")
+    
+    f.startDataflow()
+    
+    mps = x.get(measurement.now())
+    
+    f.stopDataflow()
+
+    ps = mps.get()
+    assert len(ps) == 3 
+    
+    p0 = ps[0]
+    assert p0[0] == 1 and p0[1] == 0 and p0[2] == 0
+    
+
