@@ -12,9 +12,16 @@
 #include <boost/optional.hpp>
 #include <boost/utility/typed_in_place_factory.hpp>
 
+#include <boost/filesystem.hpp>
+#include <boost/archive/text_oarchive.hpp>
+#include <boost/archive/text_iarchive.hpp>
+#include <boost/serialization/string.hpp>
+
+#include <istream>
 #include <streambuf>
 #include <iostream>
 
+#include <utMeasurement/Measurement.h>
 
 #include <utUtil/Logging.h>
 #include <utUtil/Exception.h>
@@ -531,9 +538,45 @@ struct istream : streambuf_capsule, streambuf::istream
   {}
 };
 
+} // end anon ns
 
-}
 
+template< class EventType >
+class EventStreamReader {
+public:
+	EventStreamReader( streambuf& sb) {
+		streambuf::istream file(sb);
+		boost::archive::text_iarchive archive( file );
+
+		// could be improved by only loading the requested event instead of all during init.
+		// read contents until end-of-file exception
+		try
+		{
+			while ( true )
+			{
+				EventType e( boost::shared_ptr< typename EventType::value_type >( new typename EventType::value_type() ) );
+				std::string dummy; // for newline character in archive
+				archive >> dummy >> e;
+				data.append( e );
+			}
+		}
+		catch (const std::exception& ex) {
+			std::cout << "EventStreamReader exception: " << ex.what() << std::endl;
+		} catch (const std::string& ex) {
+			std::cout << "EventStreamReader exception: " << ex << std::endl;
+		} catch (...) {
+			std::cout << "EventStreamReader unknown exception" << std::endl;
+		}
+	}
+	virtual ~EventStreamReader() {}
+
+	bp::list values() {
+		return data;
+	}
+
+protected:
+	bp::list data;
+};
 
 BOOST_PYTHON_FUNCTION_OVERLOADS(logging_overloads, Ubitrack::Util::initLogging, 0, 1)
 
@@ -559,6 +602,54 @@ BOOST_PYTHON_MODULE(_ututil)
     bp::class_<istream, boost::noncopyable, bp::bases<std::istream> > is("istream", bp::no_init);
     is.def(bp::init<bp::object&, std::size_t>((bp::arg("python_file_obj"), bp::arg("buffer_size") = 0)));
     is.def_readwrite("file",&ostream::get_original_file);
+
+
+    // EventStreamReaders
+    bp::class_< EventStreamReader< Measurement::Pose > >("PoseStreamReader", bp::init< streambuf& >())
+		.def("values", &EventStreamReader<Measurement::Pose >::values)
+		;
+
+    bp::class_< EventStreamReader< Measurement::ErrorPose > >("ErrorPoseStreamReader", bp::init< streambuf& >())
+		.def("values", &EventStreamReader<Measurement::ErrorPose >::values)
+		;
+
+    bp::class_< EventStreamReader< Measurement::ErrorPosition > >("ErrorPositionStreamReader", bp::init< streambuf& >())
+		.def("values", &EventStreamReader<Measurement::ErrorPosition >::values)
+		;
+
+    bp::class_< EventStreamReader< Measurement::Rotation > >("RotationStreamReader", bp::init< streambuf& >())
+		.def("values", &EventStreamReader<Measurement::Rotation >::values)
+		;
+
+    bp::class_< EventStreamReader< Measurement::Position > >("PositionStreamReader", bp::init< streambuf& >())
+		.def("values", &EventStreamReader<Measurement::Position >::values)
+		;
+
+    bp::class_< EventStreamReader< Measurement::Position2D > >("Position2DStreamReader", bp::init< streambuf& >())
+		.def("values", &EventStreamReader<Measurement::Position2D >::values)
+		;
+
+    bp::class_< EventStreamReader< Measurement::PositionList > >("PositionListStreamReader", bp::init< streambuf& >())
+		.def("values", &EventStreamReader<Measurement::PositionList >::values)
+		;
+
+    bp::class_< EventStreamReader< Measurement::PositionList2 > >("PositionList2StreamReader", bp::init< streambuf& >())
+		.def("values", &EventStreamReader<Measurement::PositionList2 >::values)
+		;
+
+    bp::class_< EventStreamReader< Measurement::PoseList > >("PoseListStreamReader", bp::init< streambuf& >())
+		.def("values", &EventStreamReader<Measurement::PoseList >::values)
+		;
+
+//    bp::class_< EventStreamReader< Measurement::RotationVelocity > >("RotationVelocityStreamReader", bp::init< streambuf& >())
+//		.def("values", &EventStreamReader<Measurement::RotationVelocity >::values)
+//		;
+//
+//    bp::class_< EventStreamReader< Measurement::Image > >("ImageStreamReader", bp::init< streambuf& >())
+//		.def("values", &EventStreamReader<Measurement::Image >::values)
+//		;
+
+
 
 
 }

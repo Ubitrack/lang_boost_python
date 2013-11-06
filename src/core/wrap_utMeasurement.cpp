@@ -3,7 +3,9 @@
 #include <numpy/arrayobject.h>
 #include <complex>
 
+#include <boost/python/suite/indexing/vector_indexing_suite.hpp>
 #include <boost/python.hpp>
+#include <boost/python/implicit.hpp>
 #include <boost/python/module.hpp>
 #include <boost/python/def.hpp>
 #include <boost/python/tuple.hpp>
@@ -29,7 +31,7 @@ const typename T::value_type& get_measurement(const T& m) {
 
 
 template< class T >
-struct measurement_converter
+struct measurement_exposer
 {
     template <class C>
     static void expose(C const& c)
@@ -65,7 +67,7 @@ bp::list get_measurementlist(const T& m) {
 
 
 template< class T >
-struct measurementlist_converter
+struct measurementlist_exposer
 {
     template <class C>
     static void expose(C const& c)
@@ -115,101 +117,130 @@ BOOST_PYTHON_MODULE(_utmeasurement)
 {
 	bp::def("now", Measurement::now);
 
-	measurement_converter<Measurement::Distance >::expose(
+	measurement_exposer<Measurement::Distance >::expose(
 			bp::class_<Measurement::Distance>("Distance")
 			);
 
-	measurement_converter<Measurement::Button >::expose(
+	measurement_exposer<Measurement::Button >::expose(
 			bp::class_<Measurement::Button>("Button")
 			);
 
-	measurement_converter<Measurement::Position2D >::expose(
+	measurement_exposer<Measurement::Position2D >::expose(
 			bp::class_<Measurement::Position2D>("Position2D")
 			);
 
 
-	measurement_converter<Measurement::Position >::expose(
+	measurement_exposer<Measurement::Position >::expose(
 			bp::class_<Measurement::Position>("Position")
 			);
 
-	measurement_converter<Measurement::Vector4D >::expose(
+	measurement_exposer<Measurement::Vector4D >::expose(
 			bp::class_<Measurement::Vector4D>("Vector4D")
 			);
 
-	measurement_converter<Measurement::Vector8D >::expose(
+	measurement_exposer<Measurement::Vector8D >::expose(
 			bp::class_<Measurement::Vector8D>("Vector8D")
 			);
 
-	measurement_converter<Measurement::Rotation >::expose(
+	measurement_exposer<Measurement::Rotation >::expose(
 			bp::class_<Measurement::Rotation>("Rotation")
 			);
 
-	measurement_converter<Measurement::Matrix3x3 >::expose(
+	measurement_exposer<Measurement::Matrix3x3 >::expose(
 			bp::class_<Measurement::Matrix3x3>("Matrix3x3")
 			);
 
-	measurement_converter<Measurement::Matrix3x4 >::expose(
+	measurement_exposer<Measurement::Matrix3x4 >::expose(
 			bp::class_<Measurement::Matrix3x4>("Matrix3x4")
 			);
 
-	measurement_converter<Measurement::Matrix4x4 >::expose(
+	measurement_exposer<Measurement::Matrix4x4 >::expose(
 			bp::class_<Measurement::Matrix4x4>("Matrix4x4")
 			);
 
-	measurement_converter<Measurement::Pose >::expose(
+	measurement_exposer<Measurement::Pose >::expose(
 			bp::class_<Measurement::Pose>("Pose")
 			);
 
-/*
-	measurement_converter<Measurement::ErrorPose >::expose(
+	measurement_exposer<Measurement::ErrorPose >::expose(
 			bp::class_<Measurement::ErrorPose>("ErrorPose")
 			);
 
-	measurement_converter<Measurement::ErrorPosition >::expose(
+	measurement_exposer<Measurement::ErrorPosition >::expose(
 			bp::class_<Measurement::ErrorPosition>("ErrorPosition")
 			);
 
-	measurement_converter<Measurement::RotationVelocity >::expose(
+	measurement_exposer<Measurement::RotationVelocity >::expose(
 			bp::class_<Measurement::RotationVelocity>("RotationVelocity")
 			);
 
-*/
-
-
-	measurementlist_converter<Measurement::PoseList >::expose(
+	measurementlist_exposer<Measurement::PoseList >::expose(
 			bp::class_<Measurement::PoseList>("PoseList")
 			);
 
-	measurementlist_converter<Measurement::PositionList2 >::expose(
+	measurementlist_exposer<Measurement::PositionList2 >::expose(
 			bp::class_<Measurement::PositionList2>("PositionList2")
 			);
 
-	measurementlist_converter<Measurement::PositionList >::expose(
+	measurementlist_exposer<Measurement::PositionList >::expose(
 			bp::class_<Measurement::PositionList>("PositionList")
 			);
 
-	measurementlist_converter<Measurement::DistanceList >::expose(
+	measurementlist_exposer<Measurement::DistanceList >::expose(
 			bp::class_<Measurement::DistanceList>("DistanceList")
 			);
 
-	measurementlist_converter<Measurement::IDList >::expose(
+	measurementlist_exposer<Measurement::IDList >::expose(
 			bp::class_<Measurement::IDList>("IDList")
 			);
 
 /*
-	measurementlist_converter<Measurement::ErrorPoseList >::expose(
+	// currently unavailable due to missing == operator for ErrorVector/Pose
+	measurementlist_exposer<Measurement::ErrorPoseList >::expose(
 			bp::class_<Measurement::ErrorPoseList>("ErrorPoseList")
 			);
 
-	measurementlist_converter<Measurement::ErrorPositionList2 >::expose(
+	measurementlist_exposer<Measurement::ErrorPositionList2 >::expose(
 			bp::class_<Measurement::ErrorPositionList2>("ErrorPositionList2")
 			);
 
-	measurementlist_converter<Measurement::ErrorPositionList >::expose(
+	measurementlist_exposer<Measurement::ErrorPositionList >::expose(
 			bp::class_<Measurement::ErrorPositionList>("ErrorPositionList")
 			);
 */
 
+
+	bp::class_<std::vector<Measurement::Pose > >("PoseVector")
+			.def(bp::vector_indexing_suite<std::vector<Measurement::Pose > >())
+			;
+
+	bp::class_<std::vector<Measurement::Distance > >("DistanceVector")
+			.def(bp::vector_indexing_suite<std::vector<Measurement::Distance > >())
+			;
+
+	bp::class_<std::vector<Measurement::Button > >("ButtonVector")
+			.def(bp::vector_indexing_suite<std::vector<Measurement::Button > >())
+			;
+
+	bp::class_<std::vector<Measurement::Position > >("PositionVector")
+			.def(bp::vector_indexing_suite<std::vector<Measurement::Position > >())
+			;
+
+	bp::class_<std::vector<Measurement::Position2D > >("Position2DVector")
+			.def(bp::vector_indexing_suite<std::vector<Measurement::Position2D > >())
+			;
+
+	bp::class_<std::vector<Measurement::Rotation > >("RotationVector")
+			.def(bp::vector_indexing_suite<std::vector<Measurement::Rotation > >())
+			;
+
+	bp::class_<std::vector<Measurement::Matrix3x3 > >("Matrix3x3Vector")
+			.def(bp::vector_indexing_suite<std::vector<Measurement::Matrix3x3 > >())
+			;
+
+	bp::class_<std::vector<Measurement::Matrix4x4 > >("Matrix4x4Vector")
+			.def(bp::vector_indexing_suite<std::vector<Measurement::Matrix4x4 > >())
+			;
 
 	bp::def("test_pos2d", &test_pos2d);
 	bp::def("test_posemeasurement", &test_posemeasurement);

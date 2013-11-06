@@ -1,7 +1,7 @@
 missing functionality:
 
-- ApplicationPushSources are not wrapped
-- ImageMeasurement is not wrapped
+- Error* Math/Measurement/Sinks are not wrapped
+- ImageMeasurement/Sink are not wrapped
 
 should create a simple OpenGL example to make starting new projects easy
 
