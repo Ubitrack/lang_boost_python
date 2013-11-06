@@ -15,6 +15,7 @@
 #include <utMath/Matrix.h>
 #include <utMath/Quaternion.h>
 #include <utMath/Pose.h>
+#include <utMath/RotationVelocity.h>
 
 #include <utMeasurement/Measurement.h>
 
@@ -281,12 +282,35 @@ static bn::ndarray py_to_vector(bp::object const & self) {
 	return ret;
 }
 
+template<class C, typename T>
+static bn::ndarray py_to_matrix4x4(bp::object const & self) {
+	Math::Matrix<4, 4, T> m((const Math::Pose&)bp::extract<C const &>(self)());
+	bp::tuple shape = bp::make_tuple(4,4);
+	bn::ndarray ret = bn::zeros(shape, bn::dtype::get_builtin<T>());
+	Py_intptr_t const * strides = ret.get_strides();
+	for (int i = 0; i < 4; ++i) {
+		for (int j = 0; j < 4; j++) {
+			*reinterpret_cast<T *>(ret.get_data() + i * strides[0]
+									+ j * strides[1]) = m(i, j);
+		}
+	}
+	return ret;
+}
+
 // helpers
 
 template<class T>
 T quaternion_from_vector(const Math::Vector<4>& vec) {
 	return T::fromVector(vec);
 }
+
+template<class T>
+T quaternion_from_matrix(const Math::Matrix<3, 3>& m) {
+	boost::numeric::ublas::matrix< double > um(m);
+	return T(um);
+}
+
+
 
 template<class T>
 Math::Vector<7> pose_to_vector(const T& q) {
@@ -477,93 +501,99 @@ BOOST_PYTHON_MODULE(_utmath)
 
 	{
 		bp::scope in_Quaternion =
-				bp::class_<Math::Quaternion,
-						boost::shared_ptr<Math::Quaternion>,
-						bp::bases<boost::math::quaternion<double> > >(
-						"Quaternion").def(
-						bp::init<const Math::Vector<3>&, const double>()).def(
-						bp::init<const boost::math::quaternion<double> >()).def(
-						bp::init<const Math::Matrix<4, 4> >()).def(
-						bp::init<double, double, double>()).def(
-						bp::init<double, double, double, double>()).def("x",
-						&Math::Quaternion::x).def("y", &Math::Quaternion::y).def(
-						"z", &Math::Quaternion::z).def("w",
-						&Math::Quaternion::w).def("normalize",
-						(Math::Quaternion& (Math::Quaternion::*)())&Math::Quaternion::normalize, bp::return_internal_reference<>())
-						.def("invert", (Math::Quaternion& (Math::Quaternion::*)())&Math::Quaternion::invert,
-								bp::return_internal_reference<>())
-						.def("inverted", (Math::Quaternion (Math::Quaternion::*)())&Math::Quaternion::operator~)
+				bp::class_<Math::Quaternion, boost::shared_ptr<Math::Quaternion>, bp::bases<boost::math::quaternion<double> > >("Quaternion")
+					.def(bp::init<const Math::Vector<3>&, const double>())
+					.def(bp::init<const boost::math::quaternion<double>& >())
+					.def(bp::init<double, double, double>())
+					.def(bp::init<double, double, double, double>())
+					.def("x",&Math::Quaternion::x)
+					.def("y", &Math::Quaternion::y)
+					.def("z", &Math::Quaternion::z)
+					.def("w",&Math::Quaternion::w)
+					.def("normalize",(Math::Quaternion& (Math::Quaternion::*)())&Math::Quaternion::normalize,
+							bp::return_internal_reference<>())
+					.def("invert", (Math::Quaternion& (Math::Quaternion::*)())&Math::Quaternion::invert,
+							bp::return_internal_reference<>())
+					.def("inverted", (Math::Quaternion (Math::Quaternion::*)())&Math::Quaternion::operator~)
 
-						// doew not work .. needs casting ??
-						.def(bp::self += double())
-						.def(bp::self += std::complex<double>())
-						.def(bp::self += bp::self)
-						.def(bp::self += boost::math::quaternion< double >())
+					// doew not work .. needs casting ??
+					.def(bp::self += double())
+					.def(bp::self += std::complex<double>())
+					.def(bp::self += bp::self)
+					.def(bp::self += boost::math::quaternion< double >())
 
-						.def(bp::self -= double())
-						.def(bp::self -= std::complex<double>())
-						.def(bp::self -= bp::self)
-						.def(bp::self -= boost::math::quaternion< double >())
+					.def(bp::self -= double())
+					.def(bp::self -= std::complex<double>())
+					.def(bp::self -= bp::self)
+					.def(bp::self -= boost::math::quaternion< double >())
 
-						.def(bp::self *= double())
-						.def(bp::self *= std::complex<double>())
-						.def(bp::self *= bp::self)
-						.def(bp::self *= boost::math::quaternion< double >())
+					.def(bp::self *= double())
+					.def(bp::self *= std::complex<double>())
+					.def(bp::self *= bp::self)
+					.def(bp::self *= boost::math::quaternion< double >())
 
-						.def(bp::self /= double())
-						.def(bp::self /= std::complex<double>())
-						.def(bp::self /= bp::self)
-						.def(bp::self /= boost::math::quaternion< double >())
+					.def(bp::self /= double())
+					.def(bp::self /= std::complex<double>())
+					.def(bp::self /= bp::self)
+					.def(bp::self /= boost::math::quaternion< double >())
 
-						.def(bp::self + bp::self)
-						.def(bp::self - bp::self)
-						.def(bp::self * bp::self)
-						.def(bp::self / bp::self)
+					.def(bp::self + bp::self)
+					.def(bp::self - bp::self)
+					.def(bp::self * bp::self)
+					.def(bp::self / bp::self)
 
-						.def(bp::self + boost::math::quaternion< double >())
-						.def(bp::self - boost::math::quaternion< double >())
-						.def(bp::self * boost::math::quaternion< double >())
-						.def(bp::self / boost::math::quaternion< double >())
+					.def(boost::math::quaternion< double >() + bp::self)
+					.def(boost::math::quaternion< double >() - bp::self)
+					.def(boost::math::quaternion< double >() * bp::self)
+					.def(boost::math::quaternion< double >() / bp::self)
 
-						.def(bp::self * Math::Vector< 3 >())
+					.def(bp::self + boost::math::quaternion< double >())
+					.def(bp::self - boost::math::quaternion< double >())
+					.def(bp::self * boost::math::quaternion< double >())
+					.def(bp::self / boost::math::quaternion< double >())
 
-						.def(bp::self == double())
-						.def(bp::self == std::complex<double>())
-						.def(bp::self == bp::self)
-						.def(bp::self == boost::math::quaternion< double >())
+					.def("transformVector", (Math::Vector< 3 > (Math::Quaternion::*)(const Math::Vector< 3 > &))&Math::Quaternion::operator*)
 
-						.def(bp::self != double())
-						.def(bp::self != std::complex<double>())
-						.def(bp::self != bp::self)
-						.def(bp::self != boost::math::quaternion< double >())
+					.def(bp::self == double())
+					.def(bp::self == std::complex<double>())
+					.def(bp::self == bp::self)
+					.def(bp::self == boost::math::quaternion< double >())
 
-						.def("angle", &Math::Quaternion::angle)
+					.def(bp::self != double())
+					.def(bp::self != std::complex<double>())
+					.def(bp::self != bp::self)
+					.def(bp::self != boost::math::quaternion< double >())
 
-						.def("negateIfCloser", &Math::Quaternion::negateIfCloser)
+					.def("angle", &Math::Quaternion::angle)
 
-						.def("toLogarithm", (Math::Vector< 3 > (Math::Quaternion::*)())&Math::Quaternion::toLogarithm)
-						//.def("fromLogaritm", (Math::Quaternion (Math::Quaternion::*)(??))&Math::Quaternion::fromLogarithm
-						//		,return_value_policy<copy_const_reference>()
-						//		)
-						.def("getEulerAngles", (Math::Vector< 3 > (Math::Quaternion::*)(Math::Quaternion::t_EulerSequence) const)&Math::Quaternion::getEulerAngles)
+					.def("negateIfCloser", &Math::Quaternion::negateIfCloser)
 
-						.def("toMatrix", &quaternion_to_matrix<Math::Quaternion>)
-						.def("toAxisAngle", &quaternion_to_axisangle<Math::Quaternion>)
-						.def("toVector", &py_to_vector<Math::Quaternion, 4, double>)
-						.def("fromVector", &quaternion_from_vector<Math::Quaternion>)
-						.staticmethod("fromVector")
-						;
+					.def("toLogarithm", (Math::Vector< 3 > (Math::Quaternion::*)())&Math::Quaternion::toLogarithm)
+					//.def("fromLogaritm", (Math::Quaternion (Math::Quaternion::*)(??))&Math::Quaternion::fromLogarithm
+					//		,return_value_policy<copy_const_reference>()
+					//		)
+					.def("getEulerAngles", (Math::Vector< 3 > (Math::Quaternion::*)(Math::Quaternion::t_EulerSequence) const)&Math::Quaternion::getEulerAngles)
 
-						bp::enum_<Math::Quaternion::t_EulerSequence>("EULER_SEQUENCE")
-						.value("XYZ", Math::Quaternion::EULER_SEQUENCE_XYZ)
-						.value("YZX", Math::Quaternion::EULER_SEQUENCE_YZX)
-						.value("ZXY", Math::Quaternion::EULER_SEQUENCE_ZXY)
-						.value("ZYX", Math::Quaternion::EULER_SEQUENCE_ZYX)
-						.value("XZY", Math::Quaternion::EULER_SEQUENCE_XZY)
-						.value("YXZ", Math::Quaternion::EULER_SEQUENCE_YXZ)
-						;
+					.def("toMatrix", &quaternion_to_matrix<Math::Quaternion>)
+					.def("fromMatrix", &quaternion_from_matrix<Math::Quaternion>)
+					.staticmethod("fromMatrix")
 
-					}
+					.def("toAxisAngle", &quaternion_to_axisangle<Math::Quaternion>)
+					.def("toVector", &py_to_vector<Math::Quaternion, 4, double>)
+					.def("fromVector", &quaternion_from_vector<Math::Quaternion>)
+					.staticmethod("fromVector")
+					;
+
+					bp::enum_<Math::Quaternion::t_EulerSequence>("EULER_SEQUENCE")
+					.value("XYZ", Math::Quaternion::EULER_SEQUENCE_XYZ)
+					.value("YZX", Math::Quaternion::EULER_SEQUENCE_YZX)
+					.value("ZXY", Math::Quaternion::EULER_SEQUENCE_ZXY)
+					.value("ZYX", Math::Quaternion::EULER_SEQUENCE_ZYX)
+					.value("XZY", Math::Quaternion::EULER_SEQUENCE_XZY)
+					.value("YXZ", Math::Quaternion::EULER_SEQUENCE_YXZ)
+					;
+
+				}
 
 	bp::def("slerp", &Math::slerp);
 
@@ -587,6 +617,8 @@ BOOST_PYTHON_MODULE(_utmath)
 			.def("toVector", &py_to_vector<Math::Pose, 7, double>)
 			.def("fromVector", &pose_from_vector<Math::Pose>)
 			.staticmethod("fromVector")
+
+			.def("toMatrix", &py_to_matrix4x4<Math::Pose, double>)
 
 			.def(bp::self * Math::Vector< 3 >())
 			.def(bp::self * bp::self)

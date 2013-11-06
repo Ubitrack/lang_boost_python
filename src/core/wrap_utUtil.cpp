@@ -25,6 +25,7 @@
 
 #include <utUtil/Logging.h>
 #include <utUtil/Exception.h>
+#include <utUtil/CalibFile.h>
 
 using namespace Ubitrack;
 
@@ -538,6 +539,17 @@ struct istream : streambuf_capsule, streambuf::istream
   {}
 };
 
+
+
+// read calib files
+template< class T >
+typename T::value_type readUtCalibFile(const std::string& sFile) {
+	typename T::value_type value;
+	Util::readCalibFileDropMeasurement<typename T::value_type>(sFile, value);
+	return value;
+}
+
+
 } // end anon ns
 
 
@@ -563,7 +575,7 @@ public:
 		catch (const std::exception& ex) {
 			std::cout << "EventStreamReader exception: " << ex.what() << std::endl;
 		} catch (const std::string& ex) {
-			std::cout << "EventStreamReader exception: " << ex << std::endl;
+			std::cout << "EventStreamReader string exception: " << ex << std::endl;
 		} catch (...) {
 			std::cout << "EventStreamReader unknown exception" << std::endl;
 		}
@@ -629,6 +641,18 @@ BOOST_PYTHON_MODULE(_ututil)
 		.def("values", &EventStreamReader<Measurement::Position2D >::values)
 		;
 
+    bp::class_< EventStreamReader< Measurement::Matrix3x3 > >("Matrix3x3StreamReader", bp::init< streambuf& >())
+		.def("values", &EventStreamReader<Measurement::Matrix3x3 >::values)
+		;
+
+    bp::class_< EventStreamReader< Measurement::Matrix3x4 > >("Matrix3x4StreamReader", bp::init< streambuf& >())
+		.def("values", &EventStreamReader<Measurement::Matrix3x4 >::values)
+		;
+
+    bp::class_< EventStreamReader< Measurement::Matrix4x4 > >("Matrix4x4StreamReader", bp::init< streambuf& >())
+		.def("values", &EventStreamReader<Measurement::Matrix4x4 >::values)
+		;
+
     bp::class_< EventStreamReader< Measurement::PositionList > >("PositionListStreamReader", bp::init< streambuf& >())
 		.def("values", &EventStreamReader<Measurement::PositionList >::values)
 		;
@@ -650,6 +674,51 @@ BOOST_PYTHON_MODULE(_ututil)
 //		;
 
 
+    bp::def("readCalibDistance", &readUtCalibFile< Measurement::Distance >
+//		,bp::return_value_policy<bp::manage_new_object>()
+	);
+    bp::def("readCalibPose", &readUtCalibFile< Measurement::Pose >
+//		,bp::return_value_policy<bp::manage_new_object>()
+	);
+    bp::def("readCalibErrorPose", &readUtCalibFile< Measurement::ErrorPose >
+//		,bp::return_value_policy<bp::manage_new_object>()
+	);
+    bp::def("readCalibErrorPosition", &readUtCalibFile< Measurement::ErrorPosition >
+//		,bp::return_value_policy<bp::manage_new_object>()
+	);
+    bp::def("readCalibPosition", &readUtCalibFile< Measurement::Position >
+//		,bp::return_value_policy<bp::manage_new_object>()
+	);
+    bp::def("readCalibRotation", &readUtCalibFile< Measurement::Rotation >
+//		,bp::return_value_policy<bp::manage_new_object>()
+	);
+    bp::def("readCalibMatrix3x3", &readUtCalibFile< Measurement::Matrix3x3 >
+//		,bp::return_value_policy<bp::manage_new_object>()
+	);
+    bp::def("readCalibMatrix3x4", &readUtCalibFile< Measurement::Matrix3x4 >
+//		,bp::return_value_policy<bp::manage_new_object>()
+	);
+    bp::def("readCalibMatrix4x4", &readUtCalibFile< Measurement::Matrix4x4 >
+//		,bp::return_value_policy<bp::manage_new_object>()
+	);
+    bp::def("readCalibVector4D", &readUtCalibFile< Measurement::Vector4D >
+//		,bp::return_value_policy<bp::manage_new_object>()
+	);
+    bp::def("readCalibVector8D", &readUtCalibFile< Measurement::Vector8D >
+//		,bp::return_value_policy<bp::manage_new_object>()
+	);
+    bp::def("readCalibPositionList", &readUtCalibFile< Measurement::PositionList >
+//		,bp::return_value_policy<bp::manage_new_object>()
+	);
+    bp::def("readCalibPositionList2", &readUtCalibFile< Measurement::PositionList2 >
+//		,bp::return_value_policy<bp::manage_new_object>()
+	);
+    bp::def("readCalibPoseList", &readUtCalibFile< Measurement::PoseList >
+//		,bp::return_value_policy<bp::manage_new_object>()
+	);
+    bp::def("readCalibDistanceList", &readUtCalibFile< Measurement::DistanceList >
+//		,bp::return_value_policy<bp::manage_new_object>()
+	);
 
 
 }

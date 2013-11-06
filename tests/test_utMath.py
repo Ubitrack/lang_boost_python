@@ -160,7 +160,7 @@ class test_quaternion( unittest.TestCase):
             quat = utmath.Quaternion()
             vec = np.array( [ 1.0, 0.0, 0.0 ] )
 
-            result = quat * vec
+            result = quat.transformVector(vec)
 
             expected = vec
 
@@ -174,7 +174,7 @@ class test_quaternion( unittest.TestCase):
             quat = utmath.Quaternion(  0.0, 0.0, math.pi )
             vec = np.array( [ 0.0, 1.0, 0.0 ] )
 
-            result = quat * vec
+            result = quat.transformVector(vec)
 
             expected = -vec
 
@@ -188,7 +188,7 @@ class test_quaternion( unittest.TestCase):
             quat = utmath.Quaternion( 0.0, math.pi, 0.0 )
             vec = np.array( [ 1.0, 0.0, 0.0 ] )
 
-            result = quat * vec
+            result = quat.transformVector(vec)
 
             expected = -vec
 
@@ -202,7 +202,7 @@ class test_quaternion( unittest.TestCase):
             quat = utmath.Quaternion( math.pi, 0.0, 0.0 )
             vec = np.array( [ 1.0, 0.0, 0.0 ] )
 
-            result = quat * vec
+            result = quat.transformVector(vec)
 
             expected = -vec
 
