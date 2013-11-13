@@ -243,6 +243,8 @@ if (PYTHON_EXECUTABLE)
     install(CODE "execute_process(COMMAND ${PYTHON_EXECUTABLE} ${SETUP_PY} install)")
 endif(PYTHON_EXECUTABLE)
 
+INCLUDE_DIRECTORIES("${CMAKE_SOURCE_DIR}/include")
+
 add_subdirectory(src)
 
 enable_testing()
