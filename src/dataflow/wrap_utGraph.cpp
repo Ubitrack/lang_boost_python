@@ -4,6 +4,7 @@
 #include <complex>
 
 #include <boost/python/suite/indexing/vector_indexing_suite.hpp>
+#include <boost/python/suite/indexing/map_indexing_suite.hpp>
 #include <boost/python.hpp>
 #include <boost/python/implicit.hpp>
 #include <boost/python/module.hpp>
@@ -26,6 +27,10 @@ using namespace Ubitrack::Python;
 
 namespace bp = boost::python;
 namespace bn = boost::numpy;
+
+// type declaration shortcut
+typedef Graph::Graph< Graph::UTQLNode, Graph::UTQLEdge > UTQLGraph;
+
 
 namespace {
 
@@ -77,9 +82,42 @@ boost::shared_ptr< Graph::UTQLDocument > UTQLReader_processInput( streambuf& sb 
 	doc = Graph::UTQLReader::processInput( stream );
 	return doc;
 	}
+
+
+UTQLGraph::NodePtr get_SourceNode_from_weak_ptr(const UTQLGraph::Edge& e) {
+	UTQLGraph::NodePtr sp = e.m_Source.lock ();
+	return sp;
 }
 
-typedef Graph::Graph< Graph::UTQLNode, Graph::UTQLEdge > UTQLGraph;
+UTQLGraph::NodePtr get_TargetNode_from_weak_ptr(const UTQLGraph::Edge& e) {
+	UTQLGraph::NodePtr sp = e.m_Target.lock ();
+	return sp;
+}
+
+bp::list get_InEdgeList_from_weak_ptr(const UTQLGraph::Node& n) {
+	bp::list edges;
+	for (UTQLGraph::Node::EdgeList::const_iterator it = n.m_InEdges.begin(); it != n.m_InEdges.end(); it++) {
+		UTQLGraph::EdgePtr ep = it->lock ();
+		if (ep) {
+			edges.append(*(ep.get()));
+		}
+	}
+	return edges;
+}
+
+bp::list get_OutEdgeList_from_weak_ptr(const UTQLGraph::Node& n) {
+	bp::list edges;
+	for (UTQLGraph::Node::EdgeList::const_iterator it = n.m_OutEdges.begin(); it != n.m_OutEdges.end(); it++) {
+		UTQLGraph::EdgePtr ep = it->lock ();
+		if (ep) {
+			edges.append(*(ep.get()));
+		}
+	}
+	return edges;
+}
+
+}
+
 
 BOOST_PYTHON_MODULE(_utgraph)
 {
@@ -87,35 +125,36 @@ BOOST_PYTHON_MODULE(_utgraph)
 
 	bp::class_< UTQLGraph::Node, boost::shared_ptr< UTQLGraph::Node > >("UTQLGraphNode", bp::init<const std::string&, const Graph::UTQLNode&>())
 		.def_readwrite("Name", &UTQLGraph::Node::m_Name)
-		.def_readwrite("InEdges", &UTQLGraph::Node::m_InEdges)
-		.def_readwrite("OutEdges", &UTQLGraph::Node::m_OutEdges)
+		.def("getInEdges", &get_InEdgeList_from_weak_ptr)
+		.def("getOutEdges", &get_OutEdgeList_from_weak_ptr)
 		;
 
 	bp::class_< UTQLGraph::Edge, boost::shared_ptr< UTQLGraph::Edge > >("UTQLGraphEdge", bp::no_init)
 		// .def(bp::init<const std::string&, Graph::GraphEdge< Graph::UTQLNode, Graph::UTQLEdge >::WeakNodePtr, Graph::GraphEdge< Graph::UTQLNode, Graph::UTQLEdge >::WeakNodePtr >())
 		.def_readwrite("Name", &UTQLGraph::Edge::m_Name)
-		.def_readwrite("Source", &UTQLGraph::Edge::m_Source)
-		.def_readwrite("Target", &UTQLGraph::Edge::m_Target)
+		.def("getSource", &get_SourceNode_from_weak_ptr)
+		.def("getTarget", &get_TargetNode_from_weak_ptr)
 		;
 
 
-	bp::class_< UTQLGraph, boost::shared_ptr< UTQLGraph > >("UTQLGraph", bp::init<>())
+	bp::class_< UTQLGraph, boost::shared_ptr< UTQLGraph > >("UTQLGraph", bp::no_init)
 		.def("addNode", &UTQLGraph::addNode)
 		.def("hasNode", &UTQLGraph::hasNode)
-//		.def("getNode", &UTQLGraph::getNode
-//				,bp::return_internal_reference<>()
-//				)
+		.def("getNode", &UTQLGraph::getNode)
+
 //		.def("removeNode", &UTQLGraph::removeNode)
 //		.def("addEdge", &UTQLGraph::addEdge)
 		.def("hasEdge", &UTQLGraph::hasEdge)
-//		.def("getEdge", &UTQLGraph::getEdge
-//				,bp::return_internal_reference<>()
-//				)
+		.def("getEdge", &UTQLGraph::getEdge)
+
 //		.def("removeEdge", &UTQLGraph::removeEdge)
 		.def("size", &UTQLGraph::size)
 		.def("order", &UTQLGraph::order)
 		.def("empty", &UTQLGraph::order)
 		.def("null", &UTQLGraph::null)
+
+		.def_readonly("Nodes", &UTQLGraph::m_Nodes)
+		.def_readonly("Edges", &UTQLGraph::m_Edges)
 		;
 
 	bp::class_< Graph::UTQLDocument, boost::shared_ptr< Graph::UTQLDocument > >("UTQLDocument", bp::init<bool>())
@@ -129,11 +168,11 @@ BOOST_PYTHON_MODULE(_utgraph)
 		.def("isRequest", &Graph::UTQLDocument::isRequest)
 		// properties
 		.def_readonly("SubgraphById", &Graph::UTQLDocument::m_SubgraphById)
-		.def_readonly("SubgraphByName", &Graph::UTQLDocument::m_SubgraphByName)
-		.def_readonly("Subgraphs", &Graph::UTQLDocument::m_Subgraphs)
+//		.def_readonly("SubgraphByName", &Graph::UTQLDocument::m_SubgraphByName)
+//		.def_readonly("Subgraphs", &Graph::UTQLDocument::m_Subgraphs)
 		;
 
-	bp::class_< Graph::UTQLSubgraph, boost::shared_ptr< Graph::UTQLSubgraph >, bp::bases<UTQLGraph> >("UTQLSubgraph", bp::init<std::string, std::string>())
+	bp::class_< Graph::UTQLSubgraph, boost::shared_ptr< Graph::UTQLSubgraph >, bp::bases< UTQLGraph > >("UTQLSubgraph", bp::init<std::string, std::string>())
 		.def_readwrite("ID", &Graph::UTQLSubgraph::m_ID)
 		.def_readwrite("Name", &Graph::UTQLSubgraph::m_Name)
 //		.def_readwrite("onlyBestEdgeMatch", &Graph::UTQLSubgraph::m_onlyBestEdgeMatch)
@@ -142,6 +181,7 @@ BOOST_PYTHON_MODULE(_utgraph)
 		.def_readwrite("DataflowAttributes", &Graph::UTQLSubgraph::m_DataflowAttributes)
 		.def_readwrite("DataflowClass", &Graph::UTQLSubgraph::m_DataflowClass)
 		;
+
 
 	bp::class_< Graph::UTQLEdge, boost::shared_ptr< Graph::UTQLEdge > >("UTQLEdge", bp::no_init)
 		//.def(bp::init<Graph::InOutAttribute::Tag>())
@@ -164,7 +204,6 @@ BOOST_PYTHON_MODULE(_utgraph)
 		.def("empty", &Graph::EdgeReference::empty)
 		;
 
-
 	bp::class_<Graph::UTQLDocument::SubgraphIDMap>("UTQLDocument_SubgraphIDMap")
 	  .def("__len__", &Graph::UTQLDocument::SubgraphIDMap::size)
 	  .def("__getitem__", &map_item< std::string, boost::shared_ptr< Graph::UTQLSubgraph > >().get
@@ -180,9 +219,41 @@ BOOST_PYTHON_MODULE(_utgraph)
 	  .def("items", &map_item< std::string, boost::shared_ptr< Graph::UTQLSubgraph > >().items)
 	  ;
 
-	bp::class_<std::vector< boost::shared_ptr< Graph::UTQLSubgraph > > >("SubgraphList")
-			.def(bp::vector_indexing_suite<std::vector< boost::shared_ptr< Graph::UTQLSubgraph > > >())
-			;
+
+	bp::class_<UTQLGraph::NodeMap>("UTQLSubgraph_NodeMap")
+	  .def("__len__", &UTQLGraph::NodeMap::size)
+	  .def("__getitem__", &map_item< std::string, UTQLGraph::NodePtr >().get
+			  ,bp::return_value_policy<bp::copy_non_const_reference>()
+			  )
+	  .def("__setitem__", &map_item< std::string, UTQLGraph::NodePtr >().set)
+	  .def("__delitem__", &map_item< std::string, UTQLGraph::NodePtr >().del)
+	  .def("clear", &UTQLGraph::NodeMap::clear)
+	  .def("__contains__", &map_item< std::string, UTQLGraph::NodePtr >().in)
+	  .def("has_key", &map_item< std::string, UTQLGraph::NodePtr >().in)
+	  .def("keys", &map_item< std::string, UTQLGraph::NodePtr >().keys)
+	  .def("values", &map_item< std::string, UTQLGraph::NodePtr >().values)
+	  .def("items", &map_item< std::string, UTQLGraph::NodePtr >().items)
+	  ;
+
+	bp::class_<UTQLGraph::EdgeMap>("UTQLSubgraph_EdgeMap")
+	  .def("__len__", &UTQLGraph::EdgeMap::size)
+	  .def("__getitem__", &map_item< std::string, UTQLGraph::EdgePtr >().get
+			  ,bp::return_value_policy<bp::copy_non_const_reference>()
+			  )
+	  .def("__setitem__", &map_item< std::string, UTQLGraph::EdgePtr >().set)
+	  .def("__delitem__", &map_item< std::string, UTQLGraph::EdgePtr >().del)
+	  .def("clear", &UTQLGraph::EdgeMap::clear)
+	  .def("__contains__", &map_item< std::string, UTQLGraph::EdgePtr >().in)
+	  .def("has_key", &map_item< std::string, UTQLGraph::EdgePtr >().in)
+	  .def("keys", &map_item< std::string, UTQLGraph::EdgePtr >().keys)
+	  .def("values", &map_item< std::string, UTQLGraph::EdgePtr >().values)
+	  .def("items", &map_item< std::string, UTQLGraph::EdgePtr >().items)
+	  ;
+
+
+//	bp::class_<std::vector< boost::shared_ptr< Graph::UTQLSubgraph > > >("SubgraphList")
+//			.def(bp::vector_indexing_suite<std::vector< boost::shared_ptr< Graph::UTQLSubgraph > > >())
+//			;
 
 	bp::def("readUTQLDocument", &UTQLReader_processInput);
 
