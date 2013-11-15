@@ -122,14 +122,63 @@ bp::list get_OutEdgeList_from_weak_ptr(const UTQLGraph::Node& n) {
 BOOST_PYTHON_MODULE(_utgraph)
 {
 
+	bp::class_< Graph::AttributeValue, boost::shared_ptr< Graph::AttributeValue > >("AttributeValue", bp::init<const std::string&>())
+		.def("getText", &Graph::AttributeValue::getText
+				  ,bp::return_value_policy<bp::copy_const_reference>()
+				)
+		.def("getNumber", &Graph::AttributeValue::getNumber)
+		.def("isNumber", &Graph::AttributeValue::isNumber)
+		.def(bp::self == bp::self)
+		;
 
-	bp::class_< UTQLGraph::Node, boost::shared_ptr< UTQLGraph::Node > >("UTQLGraphNode", bp::init<const std::string&, const Graph::UTQLNode&>())
+	bp::class_< Graph::KeyValueAttributes, boost::shared_ptr< Graph::KeyValueAttributes > >("KeyValueAttributes", bp::no_init)
+		.def("getAttribute", &Graph::KeyValueAttributes::getAttribute)
+		.def("setAttribute", &Graph::KeyValueAttributes::setAttribute)
+		.def("hasAttribute", &Graph::KeyValueAttributes::hasAttribute)
+
+
+		.def("getAttributeString", &Graph::KeyValueAttributes::getAttributeString)
+		// getAttributeData<type> wrappers ?
+
+
+		.def("isEqual", &Graph::KeyValueAttributes::isEqual)
+		//.def("mergeAttributes", &Graph::KeyValueAttributes::mergeAttributes)
+		//.def("swap", &Graph::KeyValueAttributes::swap)
+		.def("map", &Graph::KeyValueAttributes::map
+				,bp::return_internal_reference<>()
+				)
+		;
+
+
+	bp::class_< Graph::InOutAttribute, boost::shared_ptr< Graph::InOutAttribute >, bp::bases< Graph::KeyValueAttributes > >("InOutAttribute", bp::no_init)
+		.def("isInput", &Graph::InOutAttribute::isInput)
+		.def("isOutput", &Graph::InOutAttribute::isOutput)
+		;
+
+	bp::class_<Graph::KeyValueAttributes::AttributeMapType>("KeyValueAttributes_AttributeMap")
+	  .def("__len__", &Graph::KeyValueAttributes::AttributeMapType::size)
+	  .def("__getitem__", &map_item< std::string, Graph::AttributeValue >().get
+			  ,bp::return_value_policy<bp::copy_non_const_reference>()
+			  )
+	  .def("__setitem__", &map_item< std::string, Graph::AttributeValue >().set)
+	  .def("__delitem__", &map_item< std::string, Graph::AttributeValue >().del)
+	  .def("clear", &Graph::KeyValueAttributes::AttributeMapType::clear)
+	  .def("__contains__", &map_item< std::string, Graph::AttributeValue >().in)
+	  .def("has_key", &map_item< std::string, Graph::AttributeValue >().in)
+	  .def("keys", &map_item< std::string, Graph::AttributeValue >().keys)
+	  .def("values", &map_item< std::string, Graph::AttributeValue >().values)
+	  .def("items", &map_item< std::string, Graph::AttributeValue >().items)
+	  ;
+
+
+
+	bp::class_< UTQLGraph::Node, boost::shared_ptr< UTQLGraph::Node >, bp::bases< Graph::InOutAttribute > >("UTQLGraphNode", bp::init<const std::string&, const Graph::UTQLNode&>())
 		.def_readwrite("Name", &UTQLGraph::Node::m_Name)
 		.def("getInEdges", &get_InEdgeList_from_weak_ptr)
 		.def("getOutEdges", &get_OutEdgeList_from_weak_ptr)
 		;
 
-	bp::class_< UTQLGraph::Edge, boost::shared_ptr< UTQLGraph::Edge > >("UTQLGraphEdge", bp::no_init)
+	bp::class_< UTQLGraph::Edge, boost::shared_ptr< UTQLGraph::Edge >, bp::bases< Graph::InOutAttribute > >("UTQLGraphEdge", bp::no_init)
 		// .def(bp::init<const std::string&, Graph::GraphEdge< Graph::UTQLNode, Graph::UTQLEdge >::WeakNodePtr, Graph::GraphEdge< Graph::UTQLNode, Graph::UTQLEdge >::WeakNodePtr >())
 		.def_readwrite("Name", &UTQLGraph::Edge::m_Name)
 		.def("getSource", &get_SourceNode_from_weak_ptr)
@@ -160,9 +209,9 @@ BOOST_PYTHON_MODULE(_utgraph)
 	bp::class_< Graph::UTQLDocument, boost::shared_ptr< Graph::UTQLDocument > >("UTQLDocument", bp::init<bool>())
 		.def("addSubgraph", &Graph::UTQLDocument::addSubgraph)
 		.def("hasSubgraphById", &Graph::UTQLDocument::hasSubgraphById)
-//		.def("getSubgraphById", &Graph::UTQLDocument::getSubgraphById
-//				,bp::return_internal_reference<>()
-//				)
+		.def("getSubgraphById", &Graph::UTQLDocument::getSubgraphById
+			,bp::return_internal_reference<>()
+			)
 		.def("removeSubgraphById", &Graph::UTQLDocument::removeSubgraphById)
 		.def("exportDot", &Graph::UTQLDocument::exportDot)
 		.def("isRequest", &Graph::UTQLDocument::isRequest)
