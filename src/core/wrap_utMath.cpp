@@ -298,11 +298,16 @@ static bn::ndarray py_to_matrix4x4(bp::object const & self) {
 }
 
 // helpers
-
 template<class T>
 T quaternion_from_vector(const Math::Vector<4>& vec) {
 	return T::fromVector(vec);
 }
+
+template<class T>
+T quaternion_from_logarithm(const Math::Vector<3>& vec) {
+	return T::fromLogarithm(vec);
+}
+
 
 template<class T>
 T quaternion_from_matrix(const Math::Matrix<3, 3>& m) {
@@ -343,6 +348,14 @@ template<typename T>
 T get_value_from_scalar(Math::Scalar<T>& v) {
 	return v.m_value;
 }
+
+template<class T>
+Math::Vector<3> rotationvelocity_to_vector(const T& rv) {
+	Math::Vector<3> vec(rv);
+	return vec;
+}
+
+
 
 }
 
@@ -569,9 +582,9 @@ BOOST_PYTHON_MODULE(_utmath)
 					.def("negateIfCloser", &Math::Quaternion::negateIfCloser)
 
 					.def("toLogarithm", (Math::Vector< 3 > (Math::Quaternion::*)())&Math::Quaternion::toLogarithm)
-					//.def("fromLogaritm", (Math::Quaternion (Math::Quaternion::*)(??))&Math::Quaternion::fromLogarithm
-					//		,return_value_policy<copy_const_reference>()
-					//		)
+					.def("fromLogarithm", &quaternion_from_logarithm<Math::Quaternion>)
+					.staticmethod("fromLogarithm")
+
 					.def("getEulerAngles", (Math::Vector< 3 > (Math::Quaternion::*)(Math::Quaternion::t_EulerSequence) const)&Math::Quaternion::getEulerAngles)
 
 					.def("toMatrix", &quaternion_to_matrix<Math::Quaternion>)
@@ -579,6 +592,7 @@ BOOST_PYTHON_MODULE(_utmath)
 					.staticmethod("fromMatrix")
 
 					.def("toAxisAngle", &quaternion_to_axisangle<Math::Quaternion>)
+
 					.def("toVector", &py_to_vector<Math::Quaternion, 4, double>)
 					.def("fromVector", &quaternion_from_vector<Math::Quaternion>)
 					.staticmethod("fromVector")
@@ -638,6 +652,19 @@ BOOST_PYTHON_MODULE(_utmath)
 			// missing from/toAdditiveErrorVector
 
 			.def("invert", (Math::ErrorPose (Math::ErrorPose::*)())&Math::ErrorPose::operator~)
+			.def(bp::self_ns::str(bp::self_ns::self))
+			;
+
+	/*
+	 * RotationVelocity Class
+	 */
+
+	bp::class_<Math::RotationVelocity, boost::shared_ptr<Math::RotationVelocity> >("RotationVelocity", bp::init<const Math::Quaternion&, const Math::Quaternion&, double >())
+			.def(bp::init<double, double, double>())
+			.def("integrate", (Math::Quaternion (Math::RotationVelocity::*)(double))&Math::RotationVelocity::integrate)
+			.def("angularVelocity", (double (Math::RotationVelocity::*)())&Math::RotationVelocity::angularVelocity)
+			.def("axis", (Math::Vector< 3 > (Math::RotationVelocity::*)())&Math::RotationVelocity::axis)
+			.def("toVector", &rotationvelocity_to_vector<Math::RotationVelocity>)
 			.def(bp::self_ns::str(bp::self_ns::self))
 			;
 
