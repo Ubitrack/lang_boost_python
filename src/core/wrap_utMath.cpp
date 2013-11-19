@@ -612,6 +612,22 @@ BOOST_PYTHON_MODULE(_utmath)
 	bp::def("slerp", &Math::slerp);
 
 	/*
+	 * Linear Interpolation of basic types
+	 */
+	bp::def("linearInterpolatePose", (Math::Pose (*)(const Math::Pose&, const Math::Pose&, double)) &Math::linearInterpolate);
+	bp::def("linearInterpolateErrorPose", (Math::ErrorPose (*)(const Math::ErrorPose&, const Math::ErrorPose&, double)) &Math::linearInterpolate);
+	bp::def("linearInterpolateQuaternion", (Math::Quaternion (*)(const Math::Quaternion&, const Math::Quaternion&, double)) &Math::linearInterpolate);
+	bp::def("linearInterpolateVector2", (Math::Vector<2> (*)(const Math::Vector<2>&, const Math::Vector<2>&, double)) &Math::linearInterpolate);
+	bp::def("linearInterpolateVector3", (Math::Vector<3> (*)(const Math::Vector<3>&, const Math::Vector<3>&, double)) &Math::linearInterpolate);
+	bp::def("linearInterpolateVector4", (Math::Vector<4> (*)(const Math::Vector<4>&, const Math::Vector<4>&, double)) &Math::linearInterpolate);
+	bp::def("linearInterpolateVector5", (Math::Vector<5> (*)(const Math::Vector<5>&, const Math::Vector<5>&, double)) &Math::linearInterpolate);
+	bp::def("linearInterpolateVector6", (Math::Vector<6> (*)(const Math::Vector<6>&, const Math::Vector<6>&, double)) &Math::linearInterpolate);
+	bp::def("linearInterpolateVector7", (Math::Vector<7> (*)(const Math::Vector<7>&, const Math::Vector<7>&, double)) &Math::linearInterpolate);
+	bp::def("linearInterpolateVector8", (Math::Vector<8> (*)(const Math::Vector<8>&, const Math::Vector<8>&, double)) &Math::linearInterpolate);
+
+
+
+	/*
 	 * Pose Class
 	 */
 
