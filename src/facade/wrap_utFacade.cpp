@@ -12,10 +12,10 @@
 #include <boost/python/to_python_converter.hpp>
 
 #include <utFacade/AdvancedFacade.h>
+#include <utComponents/ApplicationEndpointsVision.h>
 #include <utComponents/ApplicationPushSink.h>
 #include <utComponents/ApplicationPullSink.h>
 #include <utComponents/ApplicationPushSource.h>
-
 
 #include <iostream>
 
@@ -96,6 +96,8 @@ BOOST_PYTHON_MODULE(_utfacade)
 //	expose_pushsink_for< Components::ApplicationPushSinkErrorPositionList, Measurement::ErrorPositionList >("ErrorPositionList");
 //	expose_pushsink_for< Components::ApplicationPushSinkErrorPositionList2, Measurement::ErrorPositionList2 >("ErrorPositionList2");
 
+	expose_pushsink_for< Components::ApplicationPushSink< Measurement::ImageMeasurement >, Measurement::ImageMeasurement >("VisionImage");
+
 	expose_pullsink_for< Measurement::Button >("Button");
 	expose_pullsink_for< Measurement::Pose >("Pose");
 //	expose_pullsink_for< Measurement::ErrorPose >("ErrorPose");
@@ -112,6 +114,7 @@ BOOST_PYTHON_MODULE(_utfacade)
 //	expose_pullsink_for< Measurement::ErrorPositionList >("ErrorPositionList");
 //	expose_pullsink_for< Measurement::ErrorPositionList2 >("ErrorPositionList2");
 
+	expose_pullsink_for< Measurement::ImageMeasurement >("VisionImage");
 
 
 	bp::class_< Facade::AdvancedFacade, boost::shared_ptr< Facade::AdvancedFacade >, boost::noncopyable>("AdvancedFacade", bp::init< bp::optional< const std::string& > >())
@@ -138,6 +141,7 @@ BOOST_PYTHON_MODULE(_utfacade)
 //		.def("getApplicationPushSinkErrorPositionList", &Facade::AdvancedFacade::componentByName< Components::ApplicationPushSinkErrorPositionList >)
 //		.def("getApplicationPushSinkErrorPositionList2", &Facade::AdvancedFacade::componentByName< Components::ApplicationPushSinkErrorPositionList2 >)
 
+		.def("getApplicationPushSinkVisionImage", &Facade::AdvancedFacade::componentByName< Components::ApplicationPushSink< Measurement::ImageMeasurement > >)
 
 		.def("getApplicationPullSinkButton", &Facade::AdvancedFacade::componentByName< Components::ApplicationPullSink< Measurement::Button > >)
 		.def("getApplicationPullSinkPose", &Facade::AdvancedFacade::componentByName< Components::ApplicationPullSink< Measurement::Pose > >)
@@ -154,6 +158,9 @@ BOOST_PYTHON_MODULE(_utfacade)
 //		.def("getApplicationPullSinkErrorPositionList", &Facade::AdvancedFacade::componentByName< Components::ApplicationPullSink< Measurement::ErrorPositionList > >)
 //		.def("getApplicationPullSinkErrorPositionList2", &Facade::AdvancedFacade::componentByName< Components::ApplicationPullSink< Measurement::ErrorPositionList2 > >)
 
+
+		.def("getApplicationPullSinkVisionImage", &Facade::AdvancedFacade::componentByName< Components::ApplicationPullSink< Measurement::ImageMeasurement > >)
+
 		// push sinks
 		.def("setCallbackButton", &setWrappedCallbackFacade< Measurement::Button >)
 		.def("setCallbackPose", &setWrappedCallbackFacade< Measurement::Pose >)
@@ -169,7 +176,7 @@ BOOST_PYTHON_MODULE(_utfacade)
 //		.def("setCallbackErrorPositionList", &setWrappedCallbackFacade< Measurement::ErrorPositionList >)
 //		.def("setCallbackErrorPositionList2", &setWrappedCallbackFacade< Measurement::ErrorPositionList2 >)
 
-
+		.def("setCallbackVisionImage", &setWrappedCallbackFacade< Measurement::ImageMeasurement >)
 
 
 
