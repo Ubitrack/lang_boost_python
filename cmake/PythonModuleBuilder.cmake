@@ -12,9 +12,10 @@ if(NOT COMMAND find_host_program)
 endif()
 
 
-macro(add_python_module full_modname the_package MODULE_SRCS)
+macro(add_python_module full_modname the_package MODULE_SRC_NAME)
 
-ADD_LIBRARY(${full_modname} MODULE ${MODULE_SRCS})
+MESSAGE(STATUS "python module ${full_modname} with sources: ${${MODULE_SRC_NAME}}")
+ADD_LIBRARY(${full_modname} MODULE ${${MODULE_SRC_NAME}})
 
 set_property(TARGET ${full_modname} PROPERTY PREFIX "")
 

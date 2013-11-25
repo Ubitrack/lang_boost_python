@@ -172,6 +172,18 @@ IF(OPENCV_FOUND)
   SET(requiredLibs ${requiredLibs} ${OPENCV_LIBRARIES} )
 ENDIF(OPENCV_FOUND)
 
+# OpenGL
+SET(HAVE_OPENGL 0)
+find_package(OpenGL)
+IF(OpenGL_FOUND)
+  add_definitions(-DHAVE_OPENGL)
+  SET(HAVE_OPENGL 1)
+  MESSAGE(STATUS "Found OpenGL: ${OpenGL_INCLUDE_DIR} - ${OpenGL_LIBRARIES}")
+  INCLUDE_DIRECTORIES(${OpenGL_INCLUDE_DIR})
+  SET(requiredLibs ${requiredLibs} ${OpenGL_LIBRARIES})
+ENDIF(OpenGL_FOUND)
+
+
 # TBB
 # setup defaults for windows binary distributions
 IF(WIN32)
