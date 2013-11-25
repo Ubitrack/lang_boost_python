@@ -75,6 +75,11 @@ void BackgroundImage::draw( int m_width, int m_height )
 	glLoadIdentity();
 	gluOrtho2D( 0.0, m_width, 0.0, m_height );
 
+
+	glMatrixMode( GL_MODELVIEW );
+	glPushMatrix();
+	glLoadIdentity();
+
 	// prepare fullscreen bitmap without fancy extras
 	GLboolean bLightingEnabled = glIsEnabled( GL_LIGHTING );
 	glDisable( GL_LIGHTING );
@@ -163,8 +168,14 @@ void BackgroundImage::draw( int m_width, int m_height )
 	if ( bLightingEnabled )
 		glEnable( GL_LIGHTING );
 
+
 	glPopMatrix();
+
+	glMatrixMode( GL_PROJECTION );
+	glPopMatrix();
+
 	glMatrixMode( GL_MODELVIEW );
+
 }
 
 /**
