@@ -116,6 +116,19 @@ bp::list get_OutEdgeList_from_weak_ptr(const UTQLGraph::Node& n) {
 	return edges;
 }
 
+bp::object get_xml_from_attrvalue_node(const Graph::AttributeValue& av) {
+	const TiXmlElement* np = av.getXML();
+	if (np) {
+		TiXmlPrinter printer;
+		printer.SetIndent( "  " );
+		np->Accept( &printer );
+		return bp::object(printer.CStr());
+	} else {
+		return bp::object();
+	}
+
+}
+
 }
 
 
@@ -129,6 +142,9 @@ BOOST_PYTHON_MODULE(_utgraph)
 		.def("getNumber", &Graph::AttributeValue::getNumber)
 		.def("isNumber", &Graph::AttributeValue::isNumber)
 		.def(bp::self == bp::self)
+		.def("getXML", &get_xml_from_attrvalue_node
+				  //,bp::return_value_policy<bp::copy_const_reference>()
+				)
 		;
 
 	bp::class_< Graph::KeyValueAttributes, boost::shared_ptr< Graph::KeyValueAttributes > >("KeyValueAttributes", bp::no_init)
@@ -173,14 +189,14 @@ BOOST_PYTHON_MODULE(_utgraph)
 
 
 	bp::class_< UTQLGraph::Node, boost::shared_ptr< UTQLGraph::Node >, bp::bases< Graph::InOutAttribute > >("UTQLGraphNode", bp::init<const std::string&, const Graph::UTQLNode&>())
-		.def_readwrite("Name", &UTQLGraph::Node::m_Name)
+		.def_readonly("Name", &UTQLGraph::Node::m_Name)
 		.def("getInEdges", &get_InEdgeList_from_weak_ptr)
 		.def("getOutEdges", &get_OutEdgeList_from_weak_ptr)
 		;
 
 	bp::class_< UTQLGraph::Edge, boost::shared_ptr< UTQLGraph::Edge >, bp::bases< Graph::InOutAttribute > >("UTQLGraphEdge", bp::no_init)
 		// .def(bp::init<const std::string&, Graph::GraphEdge< Graph::UTQLNode, Graph::UTQLEdge >::WeakNodePtr, Graph::GraphEdge< Graph::UTQLNode, Graph::UTQLEdge >::WeakNodePtr >())
-		.def_readwrite("Name", &UTQLGraph::Edge::m_Name)
+		.def_readonly("Name", &UTQLGraph::Edge::m_Name)
 		.def("getSource", &get_SourceNode_from_weak_ptr)
 		.def("getTarget", &get_TargetNode_from_weak_ptr)
 		;
@@ -222,24 +238,24 @@ BOOST_PYTHON_MODULE(_utgraph)
 		;
 
 	bp::class_< Graph::UTQLSubgraph, boost::shared_ptr< Graph::UTQLSubgraph >, bp::bases< UTQLGraph > >("UTQLSubgraph", bp::init<std::string, std::string>())
-		.def_readwrite("ID", &Graph::UTQLSubgraph::m_ID)
-		.def_readwrite("Name", &Graph::UTQLSubgraph::m_Name)
+		.def_readonly("ID", &Graph::UTQLSubgraph::m_ID)
+		.def_readonly("Name", &Graph::UTQLSubgraph::m_Name)
 //		.def_readwrite("onlyBestEdgeMatch", &Graph::UTQLSubgraph::m_onlyBestEdgeMatch)
 		//.def_readwrite("bestMatchExpression", &Graph::UTQLSubgraph::m_bestMatchExpression)
-		.def_readwrite("DataflowConfiguration", &Graph::UTQLSubgraph::m_DataflowConfiguration)
-		.def_readwrite("DataflowAttributes", &Graph::UTQLSubgraph::m_DataflowAttributes)
-		.def_readwrite("DataflowClass", &Graph::UTQLSubgraph::m_DataflowClass)
+		.def_readonly("DataflowConfiguration", &Graph::UTQLSubgraph::m_DataflowConfiguration)
+		.def_readonly("DataflowAttributes", &Graph::UTQLSubgraph::m_DataflowAttributes)
+		.def_readonly("DataflowClass", &Graph::UTQLSubgraph::m_DataflowClass)
 		;
 
 
 	bp::class_< Graph::UTQLEdge, boost::shared_ptr< Graph::UTQLEdge > >("UTQLEdge", bp::no_init)
 		//.def(bp::init<Graph::InOutAttribute::Tag>())
-		.def_readwrite("EdgeReference", &Graph::UTQLEdge::m_EdgeReference)
+		.def_readonly("EdgeReference", &Graph::UTQLEdge::m_EdgeReference)
 		;
 
 	bp::class_< Graph::UTQLNode, boost::shared_ptr< Graph::UTQLNode > >("UTQLNode", bp::no_init)
 		// .def(bp::init<Graph::InOutAttribute::Tag>())
-		.def_readwrite("QualifiedName", &Graph::UTQLNode::m_QualifiedName)
+		.def_readonly("QualifiedName", &Graph::UTQLNode::m_QualifiedName)
 		;
 
 	bp::class_< Graph::EdgeReference, boost::shared_ptr< Graph::EdgeReference > >("EdgeReference", bp::no_init)
