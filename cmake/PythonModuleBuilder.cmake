@@ -19,9 +19,9 @@ ADD_LIBRARY(${full_modname} MODULE ${${MODULE_SRC_NAME}})
 
 set_property(TARGET ${full_modname} PROPERTY PREFIX "")
 
-#if(WIN32)
-#    set_property(TARGET ${full_modname} PROPERTY SUFFIX ".pyd")
-#endif()
+if(WIN32)
+    set_property(TARGET ${full_modname} PROPERTY SUFFIX ".pyd")
+endif()
 
 # make the name of debug libraries end in _d.
 SET_TARGET_PROPERTIES( ${full_modname} PROPERTIES DEBUG_POSTFIX "_d" )
