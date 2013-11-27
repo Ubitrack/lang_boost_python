@@ -80,7 +80,10 @@ public:
 				}
 			}
 			catch (const std::exception& ex) {
-				PyErr_SetString(PyExc_RuntimeError, ex.what());
+				// end of archive
+				if (std::string(ex.what()).compare("input stream error") != 0 ) {
+					PyErr_SetString(PyExc_RuntimeError, ex.what());
+				}
 			} catch (const std::string& ex) {
 				PyErr_SetString(PyExc_RuntimeError, ex.c_str());
 			} catch (...) {
