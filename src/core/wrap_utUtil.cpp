@@ -63,27 +63,39 @@ class EventStreamReader {
 public:
 	EventStreamReader( streambuf& sb) {
 		streambuf::istream file(sb);
-		boost::archive::text_iarchive archive( file );
 
-		// could be improved by only loading the requested event instead of all during init.
-		// read contents until end-of-file exception
-		try
-		{
-			while ( true )
+		try {
+			boost::archive::text_iarchive archive( file );
+
+			// could be improved by only loading the requested event instead of all during init.
+			// read contents until end-of-file exception
+			try
 			{
-				EventType e( boost::shared_ptr< typename EventType::value_type >( new typename EventType::value_type() ) );
-				std::string dummy; // for newline character in archive
-				archive >> dummy >> e;
-				data.append( e );
+				while ( true )
+				{
+					EventType e( boost::shared_ptr< typename EventType::value_type >( new typename EventType::value_type() ) );
+					std::string dummy; // for newline character in archive
+					archive >> dummy >> e;
+					data.append( e );
+				}
 			}
+			catch (const std::exception& ex) {
+				PyErr_SetString(PyExc_RuntimeError, ex.what());
+			} catch (const std::string& ex) {
+				PyErr_SetString(PyExc_RuntimeError, ex.c_str());
+			} catch (...) {
+				PyErr_SetString(PyExc_RuntimeError, "EventStreamReader unknown exception");
+			}
+
 		}
 		catch (const std::exception& ex) {
-			std::cout << "EventStreamReader exception: " << ex.what() << std::endl;
+			PyErr_SetString(PyExc_RuntimeError, ex.what());
 		} catch (const std::string& ex) {
-			std::cout << "EventStreamReader string exception: " << ex << std::endl;
+			PyErr_SetString(PyExc_RuntimeError, ex.c_str());
 		} catch (...) {
-			std::cout << "EventStreamReader unknown exception" << std::endl;
+			PyErr_SetString(PyExc_RuntimeError, "Init iarchive unknown exception");
 		}
+
 	}
 	virtual ~EventStreamReader() {}
 
