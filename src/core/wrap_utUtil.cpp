@@ -128,12 +128,14 @@ BOOST_PYTHON_MODULE(_ututil)
     bp::class_<std::ostream, boost::shared_ptr<std::ostream>, boost::noncopyable>("std_ostream", bp::no_init);
     bp::class_<ostream, boost::noncopyable, bp::bases<std::ostream> > os("ostream", bp::no_init);
     os.def(bp::init<bp::object&, std::size_t>((bp::arg("python_file_obj"), bp::arg("buffer_size") = 0)));
-    os.def_readwrite("file",&ostream::get_original_file);
+	// XXX fails on windows VS2010
+    //os.def_readwrite("file",&ostream::get_original_file);
 
     bp::class_<std::istream, boost::shared_ptr<std::istream>, boost::noncopyable>("std_istream", bp::no_init);
     bp::class_<istream, boost::noncopyable, bp::bases<std::istream> > is("istream", bp::no_init);
     is.def(bp::init<bp::object&, std::size_t>((bp::arg("python_file_obj"), bp::arg("buffer_size") = 0)));
-    is.def_readwrite("file",&ostream::get_original_file);
+	// XXX fails on windows VS2010
+    //is.def_readwrite("file",&ostream::get_original_file);
 
 
     // EventStreamReaders
@@ -194,51 +196,21 @@ BOOST_PYTHON_MODULE(_ututil)
 //		;
 
 
-    bp::def("readCalibDistance", &readUtCalibFile< Measurement::Distance >
-//		,bp::return_value_policy<bp::manage_new_object>()
-	);
-    bp::def("readCalibPose", &readUtCalibFile< Measurement::Pose >
-//		,bp::return_value_policy<bp::manage_new_object>()
-	);
-    bp::def("readCalibErrorPose", &readUtCalibFile< Measurement::ErrorPose >
-//		,bp::return_value_policy<bp::manage_new_object>()
-	);
-    bp::def("readCalibErrorPosition", &readUtCalibFile< Measurement::ErrorPosition >
-//		,bp::return_value_policy<bp::manage_new_object>()
-	);
-    bp::def("readCalibPosition", &readUtCalibFile< Measurement::Position >
-//		,bp::return_value_policy<bp::manage_new_object>()
-	);
-    bp::def("readCalibRotation", &readUtCalibFile< Measurement::Rotation >
-//		,bp::return_value_policy<bp::manage_new_object>()
-	);
-    bp::def("readCalibMatrix3x3", &readUtCalibFile< Measurement::Matrix3x3 >
-//		,bp::return_value_policy<bp::manage_new_object>()
-	);
-    bp::def("readCalibMatrix3x4", &readUtCalibFile< Measurement::Matrix3x4 >
-//		,bp::return_value_policy<bp::manage_new_object>()
-	);
-    bp::def("readCalibMatrix4x4", &readUtCalibFile< Measurement::Matrix4x4 >
-//		,bp::return_value_policy<bp::manage_new_object>()
-	);
-    bp::def("readCalibVector4D", &readUtCalibFile< Measurement::Vector4D >
-//		,bp::return_value_policy<bp::manage_new_object>()
-	);
-    bp::def("readCalibVector8D", &readUtCalibFile< Measurement::Vector8D >
-//		,bp::return_value_policy<bp::manage_new_object>()
-	);
-    bp::def("readCalibPositionList", &readUtCalibFile< Measurement::PositionList >
-//		,bp::return_value_policy<bp::manage_new_object>()
-	);
-    bp::def("readCalibPositionList2", &readUtCalibFile< Measurement::PositionList2 >
-//		,bp::return_value_policy<bp::manage_new_object>()
-	);
-    bp::def("readCalibPoseList", &readUtCalibFile< Measurement::PoseList >
-//		,bp::return_value_policy<bp::manage_new_object>()
-	);
-    bp::def("readCalibDistanceList", &readUtCalibFile< Measurement::DistanceList >
-//		,bp::return_value_policy<bp::manage_new_object>()
-	);
+    bp::def("readCalibDistance", &readUtCalibFile< Measurement::Distance >);
+    bp::def("readCalibPose", &readUtCalibFile< Measurement::Pose >);
+    bp::def("readCalibErrorPose", &readUtCalibFile< Measurement::ErrorPose >);
+    bp::def("readCalibErrorPosition", &readUtCalibFile< Measurement::ErrorPosition >);
+    bp::def("readCalibPosition", &readUtCalibFile< Measurement::Position >);
+    bp::def("readCalibRotation", &readUtCalibFile< Measurement::Rotation >);
+    bp::def("readCalibMatrix3x3", &readUtCalibFile< Measurement::Matrix3x3 >);
+    bp::def("readCalibMatrix3x4", &readUtCalibFile< Measurement::Matrix3x4 >);
+    bp::def("readCalibMatrix4x4", &readUtCalibFile< Measurement::Matrix4x4 >);
+    bp::def("readCalibVector4D", &readUtCalibFile< Measurement::Vector4D >);
+    bp::def("readCalibVector8D", &readUtCalibFile< Measurement::Vector8D >);
+    bp::def("readCalibPositionList", &readUtCalibFile< Measurement::PositionList >);
+    bp::def("readCalibPositionList2", &readUtCalibFile< Measurement::PositionList2 >);
+    bp::def("readCalibPoseList", &readUtCalibFile< Measurement::PoseList >);
+    bp::def("readCalibDistanceList", &readUtCalibFile< Measurement::DistanceList >);
 
 
 }
