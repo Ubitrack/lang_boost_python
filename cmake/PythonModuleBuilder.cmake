@@ -64,7 +64,7 @@ IF(MSVC)
     SET( ${full_modname}_LINK_FLAGS_DEBUG "${${full_modname}_LINK_FLAGS_DEBUG} /NODEFAULTLIB:msvcrt" )
   ENDIF( ${MSVC_VERSION} GREATER 1499 )
 
-  SET_TARGET_PROPERTIES( ${full_modname} PROPERTIES OUTPUT_NAME ${full_modname}_vc${PROJECT_MSVC_VERSION} )
+  #SET_TARGET_PROPERTIES( ${full_modname} PROPERTIES OUTPUT_NAME ${full_modname}_vc${PROJECT_MSVC_VERSION} )
 
   # Seems like ${full_modname} needs to have incremental linking shut off for vc8. Since this is
   # not the most important feature it is shut off for all visual studio versions.
