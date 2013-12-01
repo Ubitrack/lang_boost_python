@@ -122,7 +122,12 @@ bp::object get_xml_from_attrvalue_node(const Graph::AttributeValue& av) {
 		TiXmlPrinter printer;
 		printer.SetIndent( "  " );
 		np->Accept( &printer );
-		return bp::object(printer.CStr());
+
+		std::string data = "<root xmlns:xsi=\"http://www.xml.org/xsi\" >";
+		data += std::string(printer.CStr());
+		data += "</root>";
+
+		return bp::object(data);
 	} else {
 		return bp::object();
 	}
