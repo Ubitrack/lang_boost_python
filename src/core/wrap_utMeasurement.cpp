@@ -90,13 +90,13 @@ struct measurementlist_exposer
 
 // tests
 Measurement::Position2D test_pos2d() {
-	boost::shared_ptr< Math::Vector<2> > pos(new Math::Vector<2>(1.0, 2.0));
+	boost::shared_ptr< Math::Vector< double, 2 > > pos(new Math::Vector< double, 2 >(1.0, 2.0));
 	Measurement::Position2D m(123, pos);
 	return m;
 }
 
 Measurement::Pose test_posemeasurement() {
-	boost::shared_ptr< Math::Pose > pose(new Math::Pose(Math::Quaternion(0.0, 0.0, 0.0, 1.0), Math::Vector<3>(1.0, 2.0, 3.0)));
+	boost::shared_ptr< Math::Pose > pose(new Math::Pose(Math::Quaternion(0.0, 0.0, 0.0, 1.0), Math::Vector< double, 3 >(1.0, 2.0, 3.0)));
 	Measurement::Pose m(123, pose);
 	return m;
 }
@@ -104,7 +104,7 @@ Measurement::Pose test_posemeasurement() {
 Measurement::PoseList test_poselistmeasurement() {
 	boost::shared_ptr< std::vector<Math::Pose> > vec( new std::vector<Math::Pose>());
 	for ( int i = 0; i < 3; i++ ) {
-		Math::Pose pose(Math::Quaternion(0.0, 0.0, 0.0, 1.0), Math::Vector<3>(1.0, 2.0, 3.0));
+		Math::Pose pose(Math::Quaternion(0.0, 0.0, 0.0, 1.0), Math::Vector< double, 3 >(1.0, 2.0, 3.0));
 		vec->push_back(pose);
 	}
 	Measurement::PoseList m(123, vec);

@@ -35,11 +35,11 @@ namespace bn = boost::numpy;
 namespace {
 
 
-Math::Matrix< 4, 4, double > projectionMatrix3x3ToOpenGL( double l, double r, double b, double t, double n, double f, Math::Matrix< 3, 3, double > m ) {
+Math::Matrix< double, 4, 4 > projectionMatrix3x3ToOpenGL( double l, double r, double b, double t, double n, double f, Math::Matrix< double, 3, 3 > m ) {
 	return Calibration::projectionMatrixToOpenGL( l, r, b, t, n, f, m );
 }
 
-Math::Matrix< 4, 4, double > projectionMatrix3x4ToOpenGL( double l, double r, double b, double t, double n, double f, Math::Matrix< 3, 4, double > m ) {
+Math::Matrix< double, 4, 4 > projectionMatrix3x4ToOpenGL( double l, double r, double b, double t, double n, double f, Math::Matrix< double, 3, 4 > m ) {
 	return Calibration::projectionMatrixToOpenGL( l, r, b, t, n, f, m );
 }
 

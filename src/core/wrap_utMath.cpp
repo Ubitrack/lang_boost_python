@@ -31,7 +31,7 @@ namespace {
 // Converts a vector < n > to numpy array (copy)
 template<typename T, int N>
 struct vector_to_array {
-	static PyObject* convert(Math::Vector<N, T> const& p) {
+	static PyObject* convert(Math::Vector<T, N> const& p) {
 		bp::tuple shape = bp::make_tuple(N);
 		bn::ndarray ret = bn::zeros(shape, bn::dtype::get_builtin<T>());
 		for (int i = 0; i < N; ++i) {
@@ -45,7 +45,7 @@ struct vector_to_array {
 struct vector_to_python_converter {
 	template<typename T, int N>
 	vector_to_python_converter& to_python() {
-		bp::to_python_converter<Math::Vector<N, T>, vector_to_array<T, N>, false //vector_to_array has no get_pytype
+		bp::to_python_converter<Math::Vector<T, N>, vector_to_array<T, N>, false //vector_to_array has no get_pytype
 		>();
 		return *this;
 	}
@@ -54,7 +54,7 @@ struct vector_to_python_converter {
 // Converts a matrix < n, m > to numpy array (copy)
 template<typename T, int N, int M>
 struct matrix_to_ndarray {
-	static PyObject* convert(Math::Matrix<N, M, T> const& p) {
+	static PyObject* convert(Math::Matrix<T, N, M> const& p) {
 		bp::tuple shape = bp::make_tuple(N, M);
 		bn::ndarray ret = bn::zeros(shape, bn::dtype::get_builtin<T>());
 		Py_intptr_t const * strides = ret.get_strides();
@@ -72,7 +72,7 @@ struct matrix_to_ndarray {
 struct matrix_to_python_converter {
 	template<typename T, int N, int M>
 	matrix_to_python_converter& to_python() {
-		bp::to_python_converter<Math::Matrix<N, M, T>,
+		bp::to_python_converter<Math::Matrix<T, N, M>,
 				matrix_to_ndarray<T, N, M>, false //vector_to_array has no get_pytype
 		>();
 		return *this;
@@ -83,7 +83,7 @@ struct matrix_to_python_converter {
 
 template<typename T, int N>
 static void copy_ndarray_to_vector(bn::ndarray const & array,
-		Math::Vector<N, T>& vec) {
+		Math::Vector<T, N>& vec) {
 	for (int i = 0; i < N; ++i) {
 		vec(i) = bp::extract<T>(array[i]);
 	}
@@ -97,7 +97,7 @@ struct vector_from_python {
 	 */
 	vector_from_python() {
 		bp::converter::registry::push_back(&convertible, &construct,
-				bp::type_id<Math::Vector<N, T> >());
+				bp::type_id<Math::Vector<T, N> >());
 	}
 
 	/**
@@ -129,11 +129,11 @@ struct vector_from_python {
 		std::auto_ptr<bn::ndarray> array(
 				reinterpret_cast<bn::ndarray*>(data->convertible));
 		// Find the memory block Boost.Python has prepared for the result.
-		typedef bp::converter::rvalue_from_python_storage<Math::Vector<N, T> > storage_t;
+		typedef bp::converter::rvalue_from_python_storage<Math::Vector<T, N> > storage_t;
 		storage_t * storage = reinterpret_cast<storage_t*>(data);
 		// Use placement new to initialize the result.
-		Math::Vector<N, T>* v =
-				new (storage->storage.bytes) Math::Vector<N, T>();
+		Math::Vector<T, N>* v =
+				new (storage->storage.bytes) Math::Vector<T, N>();
 		// Fill the result with the values from the NumPy array.
 		copy_ndarray_to_vector<T, N>(*array, *v);
 		// Finish up.
@@ -146,7 +146,7 @@ struct vector_from_python {
 
 template<typename T, int N, int M>
 static void copy_ndarray_to_matrix(bn::ndarray const & array,
-		Math::Matrix<N, M, T>& mat) {
+		Math::Matrix<T, N, M>& mat) {
 	Py_intptr_t const * strides = array.get_strides();
 	if ((array.shape(0) == N) && (array.shape(1) == M)) {
 		for (int i = 0; i < N; ++i) {
@@ -169,7 +169,7 @@ struct matrix_from_python {
 	 */
 	matrix_from_python() {
 		bp::converter::registry::push_back(&convertible, &construct,
-				bp::type_id<Math::Matrix<N, M, T> >());
+				bp::type_id<Math::Matrix<T, N, M> >());
 	}
 
 	/**
@@ -203,11 +203,10 @@ struct matrix_from_python {
 		std::auto_ptr<bn::ndarray> array(
 				reinterpret_cast<bn::ndarray*>(data->convertible));
 		// Find the memory block Boost.Python has prepared for the result.
-		typedef bp::converter::rvalue_from_python_storage<Math::Matrix<N, M, T> > storage_t;
+		typedef bp::converter::rvalue_from_python_storage<Math::Matrix<T, N, M> > storage_t;
 		storage_t * storage = reinterpret_cast<storage_t*>(data);
 		// Use placement new to initialize the result.
-		Math::Matrix<N, M, T>* v = new (storage->storage.bytes) Math::Matrix<N,
-				M, T>();
+		Math::Matrix<T, N, M>* v = new (storage->storage.bytes) Math::Matrix<T, N, M>();
 		// Fill the result with the values from the NumPy array.
 		copy_ndarray_to_matrix<T, N, M>(*array, *v);
 		// Finish up.
@@ -221,14 +220,14 @@ struct matrix_from_python {
 
 template< class T, int N >
 static bn::ndarray get_ev_value(bp::object const & self) {
-	Math::Vector<N > const & v = bp::extract<T const &>(self)().value;
+	Math::Vector< double, N> const & v = bp::extract<T const &>(self)().value;
 	return bn::from_data(v.content(), bn::dtype::get_builtin<double>(),
 			bp::make_tuple(N), bp::make_tuple(sizeof(double)), self);
 }
 
 template< class T, int N >
 static bn::ndarray get_ev_covariance(bp::object const & self) {
-	Math::Matrix<N, N> const & v = bp::extract<T const &>(self)().covariance;
+	Math::Matrix<double, N, N> const & v = bp::extract<T const &>(self)().covariance;
 	return bn::from_data(v.content(), bn::dtype::get_builtin<double>(),
 			bp::make_tuple(N, N), bp::make_tuple(sizeof(double) * N, sizeof(double)), self);
 }
@@ -241,7 +240,7 @@ struct errorvector_exposer
     static void expose(C const& c)
     {
         const_cast<C&>(c)
-				.def(bp::init<const Math::Vector< N >&, const Math::Matrix< N, N >& >())
+				.def(bp::init<const Math::Vector< double, N>&, const Math::Matrix<double, N, N>& >())
 				.def("getRMS", &T::getRMS)
 				.def("value", &get_ev_value< T, N >)
 				.def("covariance", &get_ev_covariance< T, N >)
@@ -257,14 +256,14 @@ struct errorvector_exposer
 
 template<class C, typename T>
 static bn::ndarray py_get_translation(bp::object const & self) {
-	Math::Vector<3, T> const & v = bp::extract<C const &>(self)().translation();
+	Math::Vector< T, 3 > const & v = bp::extract<C const &>(self)().translation();
 	return bn::from_data(v.content(), bn::dtype::get_builtin<T>(),
 			bp::make_tuple(3), bp::make_tuple(sizeof(T)), self);
 }
 
 template<class C, typename T>
 static bn::ndarray py_get_covariance(bp::object const & self) {
-	Math::Matrix<6, 6, T> const & v = bp::extract<C const &>(self)().covariance();
+	Math::Matrix< T, 6, 6 > const & v = bp::extract<C const &>(self)().covariance();
 	return bn::from_data(v.content(), bn::dtype::get_builtin<T>(),
 			bp::make_tuple(6, 6), bp::make_tuple(sizeof(T) * 6, sizeof(T)), self);
 }
@@ -272,7 +271,7 @@ static bn::ndarray py_get_covariance(bp::object const & self) {
 
 template<class C, int N, typename T>
 static bn::ndarray py_to_vector(bp::object const & self) {
-	Math::Vector<N, T> v;
+	Math::Vector<T, N> v;
 	bp::extract<C const &>(self)().toVector(v);
 	bp::tuple shape = bp::make_tuple(N);
 	bn::ndarray ret = bn::zeros(shape, bn::dtype::get_builtin<T>());
@@ -284,7 +283,7 @@ static bn::ndarray py_to_vector(bp::object const & self) {
 
 template<class C, typename T>
 static bn::ndarray py_to_matrix4x4(bp::object const & self) {
-	Math::Matrix<4, 4, T> m((const Math::Pose&)bp::extract<C const &>(self)());
+	Math::Matrix< T, 4, 4 > m((const Math::Pose&)bp::extract<C const &>(self)());
 	bp::tuple shape = bp::make_tuple(4,4);
 	bn::ndarray ret = bn::zeros(shape, bn::dtype::get_builtin<T>());
 	Py_intptr_t const * strides = ret.get_strides();
@@ -299,18 +298,18 @@ static bn::ndarray py_to_matrix4x4(bp::object const & self) {
 
 // helpers
 template<class T>
-T quaternion_from_vector(const Math::Vector<4>& vec) {
+T quaternion_from_vector(const Math::Vector< double, 4 >& vec) {
 	return T::fromVector(vec);
 }
 
 template<class T>
-T quaternion_from_logarithm(const Math::Vector<3>& vec) {
+T quaternion_from_logarithm(const Math::Vector< double, 3 >& vec) {
 	return T::fromLogarithm(vec);
 }
 
 
 template<class T>
-T quaternion_from_matrix(const Math::Matrix<3, 3>& m) {
+T quaternion_from_matrix(const Math::Matrix< double, 3, 3 >& m) {
 	boost::numeric::ublas::matrix< double > um(m);
 	return T(um);
 }
@@ -318,27 +317,27 @@ T quaternion_from_matrix(const Math::Matrix<3, 3>& m) {
 
 
 template<class T>
-Math::Vector<7> pose_to_vector(const T& q) {
-	Math::Vector<7> vec;
+Math::Vector< double, 7 > pose_to_vector(const T& q) {
+	Math::Vector< double, 7 > vec;
 	q.toVector(vec);
 	return vec;
 }
 
 template<class T>
-T pose_from_vector(const Math::Vector<4>& vec) {
+T pose_from_vector(const Math::Vector< double, 4 >& vec) {
 	return T::fromVector(vec);
 }
 
 template<class T>
-Math::Matrix<3, 3> quaternion_to_matrix(const T& q) {
-	Math::Matrix<3, 3> mat;
+Math::Matrix< double, 3, 3 > quaternion_to_matrix(const T& q) {
+	Math::Matrix< double, 3, 3 > mat;
 	q.toMatrix(mat);
 	return mat;
 }
 
 template<class T>
 bp::tuple quaternion_to_axisangle(T& q) {
-	Math::Vector<3> axis;
+	Math::Vector< double, 3 > axis;
 	double angle;
 	q.toAxisAngle(axis, angle);
 	return bp::make_tuple(axis, angle);
@@ -350,8 +349,8 @@ T get_value_from_scalar(Math::Scalar<T>& v) {
 }
 
 template<class T>
-Math::Vector<3> rotationvelocity_to_vector(const T& rv) {
-	Math::Vector<3> vec(rv);
+Math::Vector< double, 3 > rotationvelocity_to_vector(const T& rv) {
+	Math::Vector< double, 3 > vec(rv);
 	return vec;
 }
 
@@ -360,13 +359,13 @@ Math::Vector<3> rotationvelocity_to_vector(const T& rv) {
 }
 
 // tests
-Math::Vector<4> test_vec4() {
-	return Math::Vector<4>(1, 2, 2, 1.2);
+Math::Vector< double, 4 > test_vec4() {
+	return Math::Vector< double, 4 >(1, 2, 2, 1.2);
 }
 
-Math::Matrix<3, 3> test_mat33() {
+Math::Matrix< double, 3, 3 > test_mat33() {
 	Math::Quaternion q;
-	Math::Matrix<3, 3> m;
+	Math::Matrix< double, 3, 3 > m;
 	q.toMatrix(m);
 	return m;
 }
@@ -442,16 +441,16 @@ BOOST_PYTHON_MODULE(_utmath)
 		.to_python<double, 7, 7>();
 
 
-	errorvector_exposer<Math::ErrorVector< 2 >, 2 >::expose(
-			bp::class_< Math::ErrorVector< 2 >, boost::shared_ptr< Math::ErrorVector< 2 > > >("ErrorVector2")
+	errorvector_exposer<Math::ErrorVector< double, 2 >, 2 >::expose(
+			bp::class_< Math::ErrorVector< double, 2 >, boost::shared_ptr< Math::ErrorVector< double, 2 > > >("ErrorVector2")
 			);
 
-	errorvector_exposer<Math::ErrorVector< 3 >, 3 >::expose(
-			bp::class_< Math::ErrorVector< 3 >, boost::shared_ptr< Math::ErrorVector< 3 > > >("ErrorVector3")
+	errorvector_exposer<Math::ErrorVector< double, 3 >, 3 >::expose(
+			bp::class_< Math::ErrorVector< double, 3 >, boost::shared_ptr< Math::ErrorVector< double, 3 > > >("ErrorVector3")
 			);
 
-	errorvector_exposer<Math::ErrorVector< 7 >, 7 >::expose(
-			bp::class_< Math::ErrorVector< 7 >, boost::shared_ptr< Math::ErrorVector< 7 > > >("ErrorVector7")
+	errorvector_exposer<Math::ErrorVector< double, 7 >, 7 >::expose(
+			bp::class_< Math::ErrorVector< double, 7 >, boost::shared_ptr< Math::ErrorVector< double, 7 > > >("ErrorVector7")
 			);
 
 
@@ -515,7 +514,7 @@ BOOST_PYTHON_MODULE(_utmath)
 	{
 		bp::scope in_Quaternion =
 				bp::class_<Math::Quaternion, boost::shared_ptr<Math::Quaternion>, bp::bases<boost::math::quaternion<double> > >("Quaternion")
-					.def(bp::init<const Math::Vector<3>&, const double>())
+					.def(bp::init<const Math::Vector< double, 3 >&, const double>())
 					.def(bp::init<const boost::math::quaternion<double>& >())
 					.def(bp::init<double, double, double>())
 					.def(bp::init<double, double, double, double>())
@@ -565,7 +564,7 @@ BOOST_PYTHON_MODULE(_utmath)
 					.def(bp::self * boost::math::quaternion< double >())
 					.def(bp::self / boost::math::quaternion< double >())
 
-					.def("transformVector", (Math::Vector< 3 > (Math::Quaternion::*)(const Math::Vector< 3 > &))&Math::Quaternion::operator*)
+					.def("transformVector", (Math::Vector< double, 3 > (Math::Quaternion::*)(const Math::Vector< double, 3 > &))&Math::Quaternion::operator*)
 
 					.def(bp::self == double())
 					.def(bp::self == std::complex<double>())
@@ -581,11 +580,11 @@ BOOST_PYTHON_MODULE(_utmath)
 
 					.def("negateIfCloser", &Math::Quaternion::negateIfCloser)
 
-					.def("toLogarithm", (Math::Vector< 3 > (Math::Quaternion::*)())&Math::Quaternion::toLogarithm)
+					.def("toLogarithm", (Math::Vector< double, 3 > (Math::Quaternion::*)())&Math::Quaternion::toLogarithm)
 					.def("fromLogarithm", &quaternion_from_logarithm<Math::Quaternion>)
 					.staticmethod("fromLogarithm")
 
-					.def("getEulerAngles", (Math::Vector< 3 > (Math::Quaternion::*)(Math::Quaternion::t_EulerSequence) const)&Math::Quaternion::getEulerAngles)
+					.def("getEulerAngles", (Math::Vector< double, 3 > (Math::Quaternion::*)(Math::Quaternion::t_EulerSequence) const)&Math::Quaternion::getEulerAngles)
 
 					.def("toMatrix", &quaternion_to_matrix<Math::Quaternion>)
 					.def("fromMatrix", &quaternion_from_matrix<Math::Quaternion>)
@@ -617,13 +616,13 @@ BOOST_PYTHON_MODULE(_utmath)
 	bp::def("linearInterpolatePose", (Math::Pose (*)(const Math::Pose&, const Math::Pose&, double)) &Math::linearInterpolate);
 	bp::def("linearInterpolateErrorPose", (Math::ErrorPose (*)(const Math::ErrorPose&, const Math::ErrorPose&, double)) &Math::linearInterpolate);
 	bp::def("linearInterpolateQuaternion", (Math::Quaternion (*)(const Math::Quaternion&, const Math::Quaternion&, double)) &Math::linearInterpolate);
-	bp::def("linearInterpolateVector2", (Math::Vector<2> (*)(const Math::Vector<2>&, const Math::Vector<2>&, double)) &Math::linearInterpolate);
-	bp::def("linearInterpolateVector3", (Math::Vector<3> (*)(const Math::Vector<3>&, const Math::Vector<3>&, double)) &Math::linearInterpolate);
-	bp::def("linearInterpolateVector4", (Math::Vector<4> (*)(const Math::Vector<4>&, const Math::Vector<4>&, double)) &Math::linearInterpolate);
-	bp::def("linearInterpolateVector5", (Math::Vector<5> (*)(const Math::Vector<5>&, const Math::Vector<5>&, double)) &Math::linearInterpolate);
-	bp::def("linearInterpolateVector6", (Math::Vector<6> (*)(const Math::Vector<6>&, const Math::Vector<6>&, double)) &Math::linearInterpolate);
-	bp::def("linearInterpolateVector7", (Math::Vector<7> (*)(const Math::Vector<7>&, const Math::Vector<7>&, double)) &Math::linearInterpolate);
-	bp::def("linearInterpolateVector8", (Math::Vector<8> (*)(const Math::Vector<8>&, const Math::Vector<8>&, double)) &Math::linearInterpolate);
+	bp::def("linearInterpolateVector2", (Math::Vector< double, 2 > (*)(const Math::Vector< double, 2 >&, const Math::Vector< double, 2 >&, double)) &Math::linearInterpolate);
+	bp::def("linearInterpolateVector3", (Math::Vector< double, 3 > (*)(const Math::Vector< double, 3 >&, const Math::Vector< double, 3 >&, double)) &Math::linearInterpolate);
+	bp::def("linearInterpolateVector4", (Math::Vector< double, 4 > (*)(const Math::Vector< double, 4 >&, const Math::Vector< double, 4 >&, double)) &Math::linearInterpolate);
+	bp::def("linearInterpolateVector5", (Math::Vector< double, 5 > (*)(const Math::Vector< double, 5 >&, const Math::Vector< double, 5 >&, double)) &Math::linearInterpolate);
+	bp::def("linearInterpolateVector6", (Math::Vector< double, 6 > (*)(const Math::Vector< double, 6 >&, const Math::Vector< double, 6 >&, double)) &Math::linearInterpolate);
+	bp::def("linearInterpolateVector7", (Math::Vector< double, 7 > (*)(const Math::Vector< double, 7 >&, const Math::Vector< double, 7 >&, double)) &Math::linearInterpolate);
+	bp::def("linearInterpolateVector8", (Math::Vector< double, 8 > (*)(const Math::Vector< double, 8 >&, const Math::Vector< double, 8 >&, double)) &Math::linearInterpolate);
 
 
 
@@ -631,13 +630,13 @@ BOOST_PYTHON_MODULE(_utmath)
 	 * Pose Class
 	 */
 
-	bp::class_<Math::Pose, boost::shared_ptr<Math::Pose> >("Pose", bp::init<const Math::Quaternion&, const Math::Vector<3>&>())
-			.def(bp::init<const Math::Matrix<4, 4>&>())
+	bp::class_<Math::Pose, boost::shared_ptr<Math::Pose> >("Pose", bp::init<const Math::Quaternion&, const Math::Vector< double, 3 >&>())
+			.def(bp::init<const Math::Matrix< double, 4, 4 >&>())
 			.def("rotation",(const Math::Quaternion& (Math::Pose::*)())&Math::Pose::rotation
 					, bp::return_internal_reference<>()
 			)
 			.def("translation", &py_get_translation<Math::Pose, double>
-					//(const Math::Vector< 3 >& (Math::Pose::*)())&Math::Pose::translation
+					//(const Math::Vector< double, 3 >& (Math::Pose::*)())&Math::Pose::translation
 					//,return_value_policy<copy_const_reference>()
 					//,return_internal_reference<>()
 			)
@@ -650,7 +649,7 @@ BOOST_PYTHON_MODULE(_utmath)
 
 			.def("toMatrix", &py_to_matrix4x4<Math::Pose, double>)
 
-			.def(bp::self * Math::Vector< 3 >())
+			.def(bp::self * Math::Vector< double, 3 >())
 			.def(bp::self * bp::self)
 			.def(bp::self == bp::self)
 
@@ -662,7 +661,7 @@ BOOST_PYTHON_MODULE(_utmath)
 	 * ErrorPose Class
 	 */
 
-	bp::class_<Math::ErrorPose, boost::shared_ptr<Math::ErrorPose>, bp::bases< Math::Pose > >("ErrorPose", bp::init<const Math::Quaternion&, const Math::Vector<3>&, const Math::Matrix< 6, 6>& >())
+	bp::class_<Math::ErrorPose, boost::shared_ptr<Math::ErrorPose>, bp::bases< Math::Pose > >("ErrorPose", bp::init<const Math::Quaternion&, const Math::Vector< double, 3 >&, const Math::Matrix< double, 6, 6 >& >())
 			.def("covariance", &py_get_covariance<Math::ErrorPose, double>)
 
 			// missing from/toAdditiveErrorVector
@@ -679,7 +678,7 @@ BOOST_PYTHON_MODULE(_utmath)
 			.def(bp::init<double, double, double>())
 			.def("integrate", (Math::Quaternion (Math::RotationVelocity::*)(double))&Math::RotationVelocity::integrate)
 			.def("angularVelocity", (double (Math::RotationVelocity::*)())&Math::RotationVelocity::angularVelocity)
-			.def("axis", (Math::Vector< 3 > (Math::RotationVelocity::*)())&Math::RotationVelocity::axis)
+			.def("axis", (Math::Vector< double, 3 > (Math::RotationVelocity::*)())&Math::RotationVelocity::axis)
 			.def("toVector", &rotationvelocity_to_vector<Math::RotationVelocity>)
 			.def(bp::self_ns::str(bp::self_ns::self))
 			;
@@ -688,19 +687,19 @@ BOOST_PYTHON_MODULE(_utmath)
 
 					// std::vector<T> support
 	bp::class_<std::vector<Math::Pose> >("PoseList")
-//			.def("__iter__", bp::iterator<std::vector< Math::Vector< 3 > > >())
-//			.def("__len__", &std::vector< Math::Vector< 3 > >::size)
+//			.def("__iter__", bp::iterator<std::vector< Math::Vector< double, 3 > > >())
+//			.def("__len__", &std::vector< Math::Vector< double, 3 > >::size)
 			.def(bp::vector_indexing_suite<std::vector<Math::Pose> >())
 			;
 
-	bp::class_<std::vector<Math::Vector<2> > >("PositionList2")
-			.def(bp::vector_indexing_suite<std::vector<Math::Vector<2> > >())
+	bp::class_<std::vector<Math::Vector< double, 2 > > >("PositionList2")
+			.def(bp::vector_indexing_suite<std::vector<Math::Vector< double, 2 > > >())
 			;
 
-	bp::class_<std::vector<Math::Vector<3> > >("PositionList")
-//			.def("__iter__",bp::iterator<std::vector<Math::Vector<3> > >())
-//			.def("__len__",&std::vector<Math::Vector<3> >::size)
-			.def(bp::vector_indexing_suite<std::vector< Math::Vector< 3 > > >())
+	bp::class_<std::vector<Math::Vector< double, 3 > > >("PositionList")
+//			.def("__iter__",bp::iterator<std::vector<Math::Vector< double, 3 > > >())
+//			.def("__len__",&std::vector<Math::Vector< double, 3 > >::size)
+			.def(bp::vector_indexing_suite<std::vector< Math::Vector< double, 3 > > >())
 			;
 
 	bp::class_<std::vector<Math::Scalar<double> > >("DistanceList")
@@ -716,12 +715,12 @@ BOOST_PYTHON_MODULE(_utmath)
     bp::class_<std::vector< Math::ErrorPose > >("ErrorPoseList")
 			.def(bp::vector_indexing_suite<std::vector< Math::ErrorPose > >())
 			;
-    bp::class_<std::vector< Math::ErrorVector< 2 > > >("ErrorPositionList2")
-    		.def(bp::vector_indexing_suite<std::vector< Math::ErrorVector< 2 > > >())
+    bp::class_<std::vector< Math::ErrorVector< double, 2 > > >("ErrorPositionList2")
+    		.def(bp::vector_indexing_suite<std::vector< Math::ErrorVector< double, 2 > > >())
     		;
 
-    bp::class_<std::vector< Math::ErrorVector< 3 > > >("ErrorPositionList")
-    		.def(bp::vector_indexing_suite<std::vector< Math::ErrorVector< 3 > > >())
+    bp::class_<std::vector< Math::ErrorVector< double, 3 > > >("ErrorPositionList")
+    		.def(bp::vector_indexing_suite<std::vector< Math::ErrorVector< double, 3 > > >())
     		;
 */
 
