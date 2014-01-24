@@ -17,7 +17,12 @@
 #include <utMath/Pose.h>
 #include <utMath/RotationVelocity.h>
 
+
 #include <utMeasurement/Measurement.h>
+
+// custom functions wrapped from utMath
+#include <utMath/Stochastic/Average.h>
+
 
 using namespace Ubitrack;
 
@@ -354,6 +359,17 @@ Math::Vector< double, 3 > rotationvelocity_to_vector(const T& rv) {
 	return vec;
 }
 
+
+template< class EventType, class ResultType >
+ResultType calculate_average(boost::python::list elist) {
+	 Math::Stochastic::Average< EventType, ResultType > avg;
+	 std::vector< EventType > elvec;
+	 boost::python::ssize_t len = boost::python::len(elist);
+	 for(int i=0; i<len;i++){
+		 elvec.push_back(boost::python::extract<EventType>(elist[i]));
+	 }
+	 return avg.mean(elvec);
+}
 
 
 }
@@ -723,6 +739,10 @@ BOOST_PYTHON_MODULE(_utmath)
     		.def(bp::vector_indexing_suite<std::vector< Math::ErrorVector< double, 3 > > >())
     		;
 */
+
+	// Pose and Position Average with Covariance
+	bp::def("averagePoseListError", &calculate_average< Math::Pose, Math::ErrorPose>);
+	bp::def("averagePositionListError", &calculate_average< Math::Vector< double, 3 >, Math::ErrorVector< double, 3 >>);
 
 	/*
 	 * Testing functions
