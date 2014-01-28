@@ -742,7 +742,7 @@ BOOST_PYTHON_MODULE(_utmath)
 
 	// Pose and Position Average with Covariance
 	bp::def("averagePoseListError", &calculate_average< Math::Pose, Math::ErrorPose>);
-	bp::def("averagePositionListError", &calculate_average< Math::Vector< double, 3 >, Math::ErrorVector< double, 3 >>);
+	bp::def("averagePositionListError", &calculate_average< Math::Vector< double, 3 >, Math::ErrorVector< double, 3 > >);
 
 	/*
 	 * Testing functions
