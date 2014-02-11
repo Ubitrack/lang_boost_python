@@ -7,7 +7,7 @@ set(the_description "The Python Scribtable UbiTrack component")
 option(BUILD_${the_component} "Include ${the_component} component into the UbiTrack python build" ON})
 
 # needs more ENV{} magic ;)
-option(UBITRACK_INSTALL_ROOT "" "/usr/local"})
+set(UBITRACK_INSTALL_ROOT "/usr/local")
 
 set(HEADERS "")
 set(SOURCES "PythonComponent")
@@ -31,8 +31,8 @@ endif()
 
 
 set(UBITRACK_COMPONENT_INSTALL_DIRECTORY "ubitrack")
-set(UBITRACK_COMPONENT_INSTALL_PATH "${UBITRACK_INSTALL_ROOT}/${UBITRACK_LIB_INSTALL_PATH}/${UBITRACK_COMPONENT_INSTALL_DIRECTORY}")
-set(UBITRACK_COMPONENT_BIN_INSTALL_PATH "${UBITRACK_INSTALL_ROOT}/bin/${UBITRACK_COMPONENT_INSTALL_DIRECTORY}")
+set(UBITRACK_COMPONENT_INSTALL_PATH "${UBITRACK_LIB_INSTALL_PATH}/${UBITRACK_COMPONENT_INSTALL_DIRECTORY}")
+set(UBITRACK_COMPONENT_BIN_INSTALL_PATH "bin/${UBITRACK_COMPONENT_INSTALL_DIRECTORY}")
 
 if (${BUILD_${the_component}})
 
@@ -47,33 +47,34 @@ if (${BUILD_${the_component}})
 		DEBUG_POSTFIX "${UBITRACK_DEBUG_POSTFIX}"
 		ARCHIVE_OUTPUT_DIRECTORY ${UBITRACK_COMPONENT_INSTALL_PATH}
 		LIBRARY_OUTPUT_DIRECTORY ${UBITRACK_COMPONENT_INSTALL_PATH}
-		RUNTIME_OUTPUT_DIRECTORY ${EXECUTABLE_OUTPUT_PATH}
+		RUNTIME_OUTPUT_DIRECTORY ${UBITRACK_COMPONENT_BIN_INSTALL_PATH}
 		INSTALL_NAME_DIR lib
 	)
 
-if(MSVC)
-  set_target_properties(${the_component} PROPERTIES COMPILE_FLAGS "${UBITRACK_COMPILE_FLAGS}")
-  set_target_properties(${the_component} PROPERTIES LINK_FLAGS "${UBITRACK_LINK_FLAGS}")
-endif()
-
-if (NOT Boost_USE_STATIC_LIBS)
 	if(MSVC)
-		# force dynamic linking of boost libs on windows ..
-		set(COMPILE_DEFINITIONS $COMPILE_DEFINITIONS} "BOOST_ALL_DYN_LINK")
-	endif(MSVC)
-endif (NOT Boost_USE_STATIC_LIBS)
-
-set_target_properties(${the_component} PROPERTIES COMPILE_DEFINITIONS "${COMPILE_DEFINITIONS}")
-
-if(MSVC)
-	if(CMAKE_CROSSCOMPILING)
-		set_target_properties(${the_component} PROPERTIES LINK_FLAGS "/NODEFAULTLIB:secchk")
+	  set_target_properties(${the_component} PROPERTIES COMPILE_FLAGS "${UBITRACK_COMPILE_FLAGS}")
+	  set_target_properties(${the_component} PROPERTIES LINK_FLAGS "${UBITRACK_LINK_FLAGS}")
 	endif()
-	set_target_properties(${the_component} PROPERTIES LINK_FLAGS "/NODEFAULTLIB:libc /DEBUG")
-endif()
 
-install(TARGETS ${the_component}
-	RUNTIME DESTINATION ${UBITRACK_COMPONENT_BIN_INSTALL_PATH} COMPONENT main
-	LIBRARY DESTINATION ${UBITRACK_COMPONENT_INSTALL_PATH} COMPONENT main
-	ARCHIVE DESTINATION ${UBITRACK_COMPONENT_INSTALL_PATH} COMPONENT main
-)
+	if (NOT Boost_USE_STATIC_LIBS)
+		if(MSVC)
+			# force dynamic linking of boost libs on windows ..
+			set(COMPILE_DEFINITIONS $COMPILE_DEFINITIONS} "BOOST_ALL_DYN_LINK")
+		endif(MSVC)
+	endif (NOT Boost_USE_STATIC_LIBS)
+
+	set_target_properties(${the_component} PROPERTIES COMPILE_DEFINITIONS "${COMPILE_DEFINITIONS}")
+
+	if(MSVC)
+		if(CMAKE_CROSSCOMPILING)
+			set_target_properties(${the_component} PROPERTIES LINK_FLAGS "/NODEFAULTLIB:secchk")
+		endif()
+		set_target_properties(${the_component} PROPERTIES LINK_FLAGS "/NODEFAULTLIB:libc /DEBUG")
+	endif()
+
+	install(TARGETS ${the_component}
+		RUNTIME DESTINATION ${UBITRACK_COMPONENT_BIN_INSTALL_PATH} COMPONENT main
+		LIBRARY DESTINATION ${UBITRACK_COMPONENT_INSTALL_PATH} COMPONENT main
+		ARCHIVE DESTINATION ${UBITRACK_COMPONENT_INSTALL_PATH} COMPONENT main
+	)
+endif (${BUILD_${the_component}})
