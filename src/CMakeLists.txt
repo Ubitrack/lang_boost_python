@@ -5,3 +5,5 @@ add_subdirectory(dataflow)
 add_subdirectory(facade)
 add_subdirectory(vision)
 add_subdirectory(visualization)
+
+add_subdirectory(components)
