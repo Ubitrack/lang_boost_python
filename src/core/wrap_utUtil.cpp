@@ -55,6 +55,13 @@ typename T::value_type readUtCalibFile(const std::string& sFile) {
 }
 
 
+// read calib files
+template< class T >
+void writeUtCalibFile(const std::string& sFile, typename T::value_type& value) {
+	Util::writeCalibFile(sFile, value);
+}
+
+
 } // end anon ns
 
 
@@ -212,5 +219,21 @@ BOOST_PYTHON_MODULE(_ututil)
     bp::def("readCalibPoseList", &readUtCalibFile< Measurement::PoseList >);
     bp::def("readCalibDistanceList", &readUtCalibFile< Measurement::DistanceList >);
 
+
+    bp::def("writeCalibDistance", &writeUtCalibFile< Measurement::Distance >);
+    bp::def("writeCalibPose", &writeUtCalibFile< Measurement::Pose >);
+    bp::def("writeCalibErrorPose", &writeUtCalibFile< Measurement::ErrorPose >);
+    bp::def("writeCalibErrorPosition", &writeUtCalibFile< Measurement::ErrorPosition >);
+    bp::def("writeCalibPosition", &writeUtCalibFile< Measurement::Position >);
+    bp::def("writeCalibRotation", &writeUtCalibFile< Measurement::Rotation >);
+    bp::def("writeCalibMatrix3x3", &writeUtCalibFile< Measurement::Matrix3x3 >);
+    bp::def("writeCalibMatrix3x4", &writeUtCalibFile< Measurement::Matrix3x4 >);
+    bp::def("writeCalibMatrix4x4", &writeUtCalibFile< Measurement::Matrix4x4 >);
+    bp::def("writeCalibVector4D", &writeUtCalibFile< Measurement::Vector4D >);
+    bp::def("writeCalibVector8D", &writeUtCalibFile< Measurement::Vector8D >);
+    bp::def("writeCalibPositionList", &writeUtCalibFile< Measurement::PositionList >);
+    bp::def("writeCalibPositionList2", &writeUtCalibFile< Measurement::PositionList2 >);
+    bp::def("writeCalibPoseList", &writeUtCalibFile< Measurement::PoseList >);
+    bp::def("writeCalibDistanceList", &writeUtCalibFile< Measurement::DistanceList >);
 
 }
