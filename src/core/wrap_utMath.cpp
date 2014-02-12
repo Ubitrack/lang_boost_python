@@ -380,7 +380,7 @@ static std::vector< Math::Vector< T, 3 > > positionlist_from_ndarray(bn::ndarray
 	
 	if (array.shape(1) == 3) {
 		for (int i = 0; i < array.shape(0); ++i) {
-			std::cout << "get item " << i << std::endl;
+			std::cout << "get item " << i << " strides0: " << strides[0] <<  " strides1: " << strides[1] << std::endl;
 			Math::Vector< T, 3 > v(*reinterpret_cast<T const *>(array.get_data() + i * strides[1] + 0 * strides[0]),
 								   *reinterpret_cast<T const *>(array.get_data() + i * strides[1] + 1 * strides[0]),
 								   *reinterpret_cast<T const *>(array.get_data() + i * strides[1] + 2 * strides[0])
