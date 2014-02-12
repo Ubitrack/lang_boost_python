@@ -372,6 +372,29 @@ ResultType calculate_average(boost::python::list elist) {
 }
 
 
+
+template< typename T >
+static std::vector< Math::Vector< T, 3 > > positionlist_from_ndarray(bn::ndarray const & array) {
+	Py_intptr_t const * strides = array.get_strides();
+	std::vector< Math::Vector< T, 3 > > plist;
+	
+	if (array.shape(1) == 3) {
+		for (int i = 0; i < array.shape(0); ++i) {
+			std::cout << "get item " << i << std::endl;
+			Math::Vector< T, 3 > v(*reinterpret_cast<T const *>(array.get_data() + i * strides[1] + 0 * strides[0]),
+								   *reinterpret_cast<T const *>(array.get_data() + i * strides[1] + 1 * strides[0]),
+								   *reinterpret_cast<T const *>(array.get_data() + i * strides[1] + 2 * strides[0])
+								  );
+			plist.push_back(v);
+		}
+	} else {
+		std::cout << "Dimensions mismatch - should raise an error here .. "
+				<< std::endl;
+	}
+	return plist;
+}
+
+
 }
 
 // tests
@@ -716,6 +739,8 @@ BOOST_PYTHON_MODULE(_utmath)
 //			.def("__iter__",bp::iterator<std::vector<Math::Vector< double, 3 > > >())
 //			.def("__len__",&std::vector<Math::Vector< double, 3 > >::size)
 			.def(bp::vector_indexing_suite<std::vector< Math::Vector< double, 3 > > >())
+			.def("fromList", &positionlist_from_ndarray< double >)
+			.staticmethod("fromList")
 			;
 
 	bp::class_<std::vector<Math::Scalar<double> > >("DistanceList")
