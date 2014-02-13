@@ -374,22 +374,11 @@ ResultType calculate_average(boost::python::list elist) {
 
 
 template< typename T >
-static std::vector< Math::Vector< T, 3 > > positionlist_from_ndarray(bn::ndarray const & array) {
-	Py_intptr_t const * strides = array.get_strides();
-	std::vector< Math::Vector< T, 3 > > plist;
-	
-	if (array.shape(1) == 3) {
-		for (int i = 0; i < array.shape(0); ++i) {
-			std::cout << "get item " << i << " strides0: " << strides[0] <<  " strides1: " << strides[1] << std::endl;
-			Math::Vector< T, 3 > v(*reinterpret_cast<T const *>(array.get_data() + i * strides[1] + 0 * strides[0]),
-								   *reinterpret_cast<T const *>(array.get_data() + i * strides[1] + 1 * strides[0]),
-								   *reinterpret_cast<T const *>(array.get_data() + i * strides[1] + 2 * strides[0])
-								  );
-			plist.push_back(v);
-		}
-	} else {
-		std::cout << "Dimensions mismatch - should raise an error here .. "
-				<< std::endl;
+static std::vector< typename T > construct_listtype(boost::python::list data) {
+	std::vector< typename T > plist;
+	boost::python::ssize_t len = boost::python::len(data);
+	for(int i=0; i<len;i++){
+		plist.push_back(boost::python::extract< typename T >(data[i]));
 	}
 	return plist;
 }
@@ -729,17 +718,21 @@ BOOST_PYTHON_MODULE(_utmath)
 //			.def("__iter__", bp::iterator<std::vector< Math::Vector< double, 3 > > >())
 //			.def("__len__", &std::vector< Math::Vector< double, 3 > >::size)
 			.def(bp::vector_indexing_suite<std::vector<Math::Pose> >())
+			.def("fromList", &construct_listtype< Math::Pose >)
+			.staticmethod("fromList")
 			;
 
 	bp::class_<std::vector<Math::Vector< double, 2 > > >("PositionList2")
 			.def(bp::vector_indexing_suite<std::vector<Math::Vector< double, 2 > > >())
+			.def("fromList", &construct_listtype< Math::Vector< double, 2 > >)
+			.staticmethod("fromList")
 			;
 
 	bp::class_<std::vector<Math::Vector< double, 3 > > >("PositionList")
 //			.def("__iter__",bp::iterator<std::vector<Math::Vector< double, 3 > > >())
 //			.def("__len__",&std::vector<Math::Vector< double, 3 > >::size)
 			.def(bp::vector_indexing_suite<std::vector< Math::Vector< double, 3 > > >())
-			.def("fromList", &positionlist_from_ndarray< double >)
+			.def("fromList", &construct_listtype< Math::Vector< double, 3 > >)
 			.staticmethod("fromList")
 			;
 
