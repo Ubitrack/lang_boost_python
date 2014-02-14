@@ -374,11 +374,11 @@ ResultType calculate_average(boost::python::list elist) {
 
 
 template< typename T >
-static std::vector< typename T > construct_listtype(boost::python::list data) {
-	std::vector< typename T > plist;
+static std::vector< T > construct_listtype(boost::python::list data) {
+	std::vector< T > plist;
 	boost::python::ssize_t len = boost::python::len(data);
 	for(int i=0; i<len;i++){
-		plist.push_back(boost::python::extract< typename T >(data[i]));
+		plist.push_back(boost::python::extract< T >(data[i]));
 	}
 	return plist;
 }
