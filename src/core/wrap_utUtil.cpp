@@ -48,16 +48,23 @@ void translateException( const Ubitrack::Util::Exception& e) {
 
 // read calib files
 template< class T >
-typename T::value_type readUtCalibFile(const std::string& sFile) {
+T readUtCalibFile(const std::string& sFile) {
+	T value;
+	Util::readCalibFile< T >(sFile, value);
+	return value;
+}
+
+template< class T >
+typename T::value_type readUtCalibFileDropMeasurement(const std::string& sFile) {
 	typename T::value_type value;
-	Util::readCalibFileDropMeasurement<typename T::value_type>(sFile, value);
+	Util::readCalibFileDropMeasurement< typename T::value_type >(sFile, value);
 	return value;
 }
 
 
 // read calib files
 template< class T >
-void writeUtCalibFile(const std::string& sFile, typename T::value_type& value) {
+void writeUtCalibFile(const std::string& sFile, T& value) {
 	Util::writeCalibFile(sFile, value);
 }
 
@@ -203,37 +210,75 @@ BOOST_PYTHON_MODULE(_ututil)
 //		;
 
 
-    bp::def("readCalibDistance", &readUtCalibFile< Measurement::Distance >);
-    bp::def("readCalibPose", &readUtCalibFile< Measurement::Pose >);
-    bp::def("readCalibErrorPose", &readUtCalibFile< Measurement::ErrorPose >);
-    bp::def("readCalibErrorPosition", &readUtCalibFile< Measurement::ErrorPosition >);
-    bp::def("readCalibPosition", &readUtCalibFile< Measurement::Position >);
-    bp::def("readCalibRotation", &readUtCalibFile< Measurement::Rotation >);
-    bp::def("readCalibMatrix3x3", &readUtCalibFile< Measurement::Matrix3x3 >);
-    bp::def("readCalibMatrix3x4", &readUtCalibFile< Measurement::Matrix3x4 >);
-    bp::def("readCalibMatrix4x4", &readUtCalibFile< Measurement::Matrix4x4 >);
-    bp::def("readCalibVector4D", &readUtCalibFile< Measurement::Vector4D >);
-    bp::def("readCalibVector8D", &readUtCalibFile< Measurement::Vector8D >);
-    bp::def("readCalibPositionList", &readUtCalibFile< Measurement::PositionList >);
-    bp::def("readCalibPositionList2", &readUtCalibFile< Measurement::PositionList2 >);
-    bp::def("readCalibPoseList", &readUtCalibFile< Measurement::PoseList >);
-    bp::def("readCalibDistanceList", &readUtCalibFile< Measurement::DistanceList >);
+
+    // currently this returns the value only (dropping the measurement, because of technical problems with returning the "custom" shared pointers
+
+    // segfaults ..
+    //bp::def("readCalibMeasurementDistance", &readUtCalibFileDropMeasurement< Measurement::Distance > );
+
+    bp::def("readCalibMeasurementPose", &readUtCalibFileDropMeasurement< Measurement::Pose > );
+    bp::def("readCalibMeasurementErrorPose", &readUtCalibFileDropMeasurement< Measurement::ErrorPose > );
+    bp::def("readCalibMeasurementErrorPosition", &readUtCalibFileDropMeasurement< Measurement::ErrorPosition > );
+    bp::def("readCalibMeasurementPosition", &readUtCalibFileDropMeasurement< Measurement::Position > );
+    bp::def("readCalibMeasurementRotation", &readUtCalibFileDropMeasurement< Measurement::Rotation > );
+    bp::def("readCalibMeasurementMatrix3x3", &readUtCalibFileDropMeasurement< Measurement::Matrix3x3 > );
+    bp::def("readCalibMeasurementMatrix3x4", &readUtCalibFileDropMeasurement< Measurement::Matrix3x4 > );
+    bp::def("readCalibMeasurementMatrix4x4", &readUtCalibFileDropMeasurement< Measurement::Matrix4x4 > );
+    bp::def("readCalibMeasurementVector4D", &readUtCalibFileDropMeasurement< Measurement::Vector4D > );
+    bp::def("readCalibMeasurementVector8D", &readUtCalibFileDropMeasurement< Measurement::Vector8D > );
+    bp::def("readCalibMeasurementPositionList", &readUtCalibFileDropMeasurement< Measurement::PositionList > );
+    bp::def("readCalibMeasurementPositionList2", &readUtCalibFileDropMeasurement< Measurement::PositionList2 > );
+    bp::def("readCalibMeasurementPoseList", &readUtCalibFileDropMeasurement< Measurement::PoseList > );
+    bp::def("readCalibMeasurementDistanceList", &readUtCalibFileDropMeasurement< Measurement::DistanceList > );
+
+    bp::def("readCalibDistance", &readUtCalibFile< Math::Scalar< double > >);
+    bp::def("readCalibPose", &readUtCalibFile< Math::Pose >);
+    bp::def("readCalibErrorPose", &readUtCalibFile< Math::ErrorPose >);
+    bp::def("readCalibErrorPosition", &readUtCalibFile< Math::ErrorVector< double, 3 > >);
+    bp::def("readCalibPosition", &readUtCalibFile< Math::Vector3d >);
+    bp::def("readCalibRotation", &readUtCalibFile< Math::Quaternion >);
+    bp::def("readCalibMatrix3x3", &readUtCalibFile< Math::Matrix3x3d >);
+    bp::def("readCalibMatrix3x4", &readUtCalibFile< Math::Matrix3x4d >);
+    bp::def("readCalibMatrix4x4", &readUtCalibFile< Math::Matrix4x4d >);
+    bp::def("readCalibVector4D", &readUtCalibFile< Math::Vector4d >);
+    bp::def("readCalibVector8D", &readUtCalibFile< Math::Vector< double, 8 > >);
+    bp::def("readCalibPositionList", &readUtCalibFile< std::vector< Math::Vector3d > >);
+    bp::def("readCalibPositionList2", &readUtCalibFile< std::vector< Math::Vector2d > >);
+    bp::def("readCalibPoseList", &readUtCalibFile< std::vector< Math::Pose > >);
+    bp::def("readCalibDistanceList", &readUtCalibFile< std::vector< Math::Scalar< double > > >);
 
 
-    bp::def("writeCalibDistance", &writeUtCalibFile< Measurement::Distance >);
-    bp::def("writeCalibPose", &writeUtCalibFile< Measurement::Pose >);
-    bp::def("writeCalibErrorPose", &writeUtCalibFile< Measurement::ErrorPose >);
-    bp::def("writeCalibErrorPosition", &writeUtCalibFile< Measurement::ErrorPosition >);
-    bp::def("writeCalibPosition", &writeUtCalibFile< Measurement::Position >);
-    bp::def("writeCalibRotation", &writeUtCalibFile< Measurement::Rotation >);
-    bp::def("writeCalibMatrix3x3", &writeUtCalibFile< Measurement::Matrix3x3 >);
-    bp::def("writeCalibMatrix3x4", &writeUtCalibFile< Measurement::Matrix3x4 >);
-    bp::def("writeCalibMatrix4x4", &writeUtCalibFile< Measurement::Matrix4x4 >);
-    bp::def("writeCalibVector4D", &writeUtCalibFile< Measurement::Vector4D >);
-    bp::def("writeCalibVector8D", &writeUtCalibFile< Measurement::Vector8D >);
-    bp::def("writeCalibPositionList", &writeUtCalibFile< Measurement::PositionList >);
-    bp::def("writeCalibPositionList2", &writeUtCalibFile< Measurement::PositionList2 >);
-    bp::def("writeCalibPoseList", &writeUtCalibFile< Measurement::PoseList >);
-    bp::def("writeCalibDistanceList", &writeUtCalibFile< Measurement::DistanceList >);
+
+    bp::def("writeCalibMeasurementDistance", &writeUtCalibFile< Measurement::Distance >);
+    bp::def("writeCalibMeasurementPose", &writeUtCalibFile< Measurement::Pose >);
+    bp::def("writeCalibMeasurementErrorPose", &writeUtCalibFile< Measurement::ErrorPose >);
+    bp::def("writeCalibMeasurementErrorPosition", &writeUtCalibFile< Measurement::ErrorPosition >);
+    bp::def("writeCalibMeasurementPosition", &writeUtCalibFile< Measurement::Position >);
+    bp::def("writeCalibMeasurementRotation", &writeUtCalibFile< Measurement::Rotation >);
+    bp::def("writeCalibMeasurementMatrix3x3", &writeUtCalibFile< Measurement::Matrix3x3 >);
+    bp::def("writeCalibMeasurementMatrix3x4", &writeUtCalibFile< Measurement::Matrix3x4 >);
+    bp::def("writeCalibMeasurementMatrix4x4", &writeUtCalibFile< Measurement::Matrix4x4 >);
+    bp::def("writeCalibMeasurementVector4D", &writeUtCalibFile< Measurement::Vector4D >);
+    bp::def("writeCalibMeasurementVector8D", &writeUtCalibFile< Measurement::Vector8D >);
+    bp::def("writeCalibMeasurementPositionList", &writeUtCalibFile< Measurement::PositionList >);
+    bp::def("writeCalibMeasurementPositionList2", &writeUtCalibFile< Measurement::PositionList2 >);
+    bp::def("writeCalibMeasurementPoseList", &writeUtCalibFile< Measurement::PoseList >);
+    bp::def("writeCalibMeasurementDistanceList", &writeUtCalibFile< Measurement::DistanceList >);
+
+    bp::def("writeCalibDistance", &writeUtCalibFile< Math::Scalar< double > >);
+    bp::def("writeCalibPose", &writeUtCalibFile< Math::Pose >);
+    bp::def("writeCalibErrorPose", &writeUtCalibFile< Math::ErrorPose >);
+    bp::def("writeCalibErrorPosition", &writeUtCalibFile< Math::ErrorVector< double, 3 > >);
+    bp::def("writeCalibPosition", &writeUtCalibFile< Math::Vector3d >);
+    bp::def("writeCalibRotation", &writeUtCalibFile< Math::Quaternion >);
+    bp::def("writeCalibMatrix3x3", &writeUtCalibFile< Math::Matrix3x3d >);
+    bp::def("writeCalibMatrix3x4", &writeUtCalibFile< Math::Matrix3x4d >);
+    bp::def("writeCalibMatrix4x4", &writeUtCalibFile< Math::Matrix4x4d >);
+    bp::def("writeCalibVector4D", &writeUtCalibFile< Math::Vector4d >);
+    bp::def("writeCalibVector8D", &writeUtCalibFile< Math::Vector< double, 8 > >);
+    bp::def("writeCalibPositionList", &writeUtCalibFile< std::vector< Math::Vector3d > >);
+    bp::def("writeCalibPositionList2", &writeUtCalibFile< std::vector< Math::Vector2d > >);
+    bp::def("writeCalibPoseList", &writeUtCalibFile< std::vector< Math::Pose > >);
+    bp::def("writeCalibDistanceList", &writeUtCalibFile< std::vector< Math::Scalar< double > > >);
 
 }
