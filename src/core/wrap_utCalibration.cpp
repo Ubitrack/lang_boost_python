@@ -25,7 +25,7 @@
 #include <streambuf>
 #include <iostream>
 
-#include <utCalibration/Projection.h>
+#include <utAlgorithm/Projection.h>
 
 using namespace Ubitrack;
 
@@ -36,11 +36,11 @@ namespace {
 
 
 Math::Matrix< double, 4, 4 > projectionMatrix3x3ToOpenGL( double l, double r, double b, double t, double n, double f, Math::Matrix< double, 3, 3 > m ) {
-	return Calibration::projectionMatrixToOpenGL( l, r, b, t, n, f, m );
+	return Algorithm::projectionMatrixToOpenGL( l, r, b, t, n, f, m );
 }
 
 Math::Matrix< double, 4, 4 > projectionMatrix3x4ToOpenGL( double l, double r, double b, double t, double n, double f, Math::Matrix< double, 3, 4 > m ) {
-	return Calibration::projectionMatrixToOpenGL( l, r, b, t, n, f, m );
+	return Algorithm::projectionMatrixToOpenGL( l, r, b, t, n, f, m );
 }
 
 
