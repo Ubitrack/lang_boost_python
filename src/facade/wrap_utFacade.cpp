@@ -16,6 +16,7 @@
 #include <utComponents/ApplicationPushSink.h>
 #include <utComponents/ApplicationPullSink.h>
 #include <utComponents/ApplicationPushSource.h>
+#include <utComponents/ApplicationPullSource.h>
 
 #include <iostream>
 
@@ -26,10 +27,32 @@ namespace bn = boost::numpy;
 
 namespace {
 
-template< class MT >
-struct measurement_callback_wrapper_t
+// decode a Python exception into a string
+std::string handle_pyerror()
 {
-	measurement_callback_wrapper_t( bp::object callable ) : _callable( callable ) {}
+    using namespace boost::python;
+    using namespace boost;
+
+    PyObject *exc,*val,*tb;
+    object formatted_list, formatted;
+    PyErr_Fetch(&exc,&val,&tb);
+    handle<> hexc(exc),hval(allow_null(val)),htb(allow_null(tb)); 
+    object traceback(import("traceback"));
+    if (!tb) {
+        object format_exception_only(traceback.attr("format_exception_only"));
+        formatted_list = format_exception_only(hexc,hval);
+    } else {
+        object format_exception(traceback.attr("format_exception"));
+        formatted_list = format_exception(hexc,hval,htb);
+    }
+    formatted = str("\n").join(formatted_list);
+    return extract<std::string>(formatted);}
+
+
+template< class MT >
+struct measurement_callback_wrapper_sink_t
+{
+	measurement_callback_wrapper_sink_t( bp::object callable ) : _callable( callable ) {}
 
     bool operator()(const MT& m)
     {
@@ -46,16 +69,57 @@ template< class OT, class MT >
 void setWrappedCallback( OT* self,  bp::object function )
 {
 	self->setCallback(boost::function<void (const MT&)>(
-			measurement_callback_wrapper_t< MT >( function ) ));
+			measurement_callback_wrapper_sink_t< MT >( function ) ));
 }
 
 template< class MT >
 void setWrappedCallbackFacade( Facade::AdvancedFacade* self, const std::string& name, bp::object function )
 {
 	self->setCallback(name, boost::function<void (const MT&)>(
-			measurement_callback_wrapper_t< MT >( function ) ));
+			measurement_callback_wrapper_sink_t< MT >( function ) ));
 }
 
+template< class MT >
+struct measurement_callback_wrapper_source_t
+{
+	measurement_callback_wrapper_source_t( bp::object callable ) : _callable( callable ) {}
+
+    MT operator()(const Measurement::Timestamp t)
+    {
+        PyGILState_STATE gstate = PyGILState_Ensure();
+		MT result;
+		try {
+			bp::object ob = _callable(t);
+			result = bp::extract<MT>(ob);
+		}
+		catch (const bp::error_already_set&) {
+	        if (PyErr_Occurred()) {
+	            UBITRACK_THROW(handle_pyerror()); 
+	        }
+	        bp::handle_exception();
+	        PyErr_Clear();
+		}
+        PyGILState_Release( gstate );
+        return result;
+    }
+
+    bp::object _callable;
+};
+
+template< class OT, class MT >
+void setWrappedSourceCallback( OT* self,  bp::object function )
+{
+	self->setCallback(boost::function< MT (const Ubitrack::Measurement::Timestamp)>(
+			measurement_callback_wrapper_source_t< MT >( function ) ));
+}
+
+// template< class MT >
+// void setWrappedSourceCallbackFacade( Facade::AdvancedFacade* self, const std::string& name, bp::object function )
+// {
+// 	self->setCallback(name, boost::function< MT (const Ubitrack::Measurement::Timestamp)>(
+// 			measurement_callback_wrapper_source_t< MT >( function ) ));
+// }
+//
 
 template< class ComponentType, class EventType >
 void expose_pushsink_for(const std::string& event_name)
@@ -64,6 +128,16 @@ void expose_pushsink_for(const std::string& event_name)
 	pushsink_name.append(event_name);
 	bp::class_< ComponentType, boost::shared_ptr< ComponentType >, bp::bases< Dataflow::Component >, boost::noncopyable>(pushsink_name.c_str(), bp::no_init)
 		.def("setCallback", &setWrappedCallback< ComponentType, EventType >)
+		;
+}
+
+template< class ComponentType, class EventType >
+void expose_pullsource_for(const std::string& event_name)
+{
+	std::string pullsource_name("ApplicationPullSource");
+	pullsource_name.append(event_name);
+	bp::class_< ComponentType, boost::shared_ptr< ComponentType >, bp::bases< Dataflow::Component >, boost::noncopyable>(pullsource_name.c_str(), bp::no_init)
+		.def("setCallback", &setWrappedSourceCallback< ComponentType, EventType >)
 		;
 }
 
@@ -148,6 +222,24 @@ BOOST_PYTHON_MODULE(_utfacade)
 
 	expose_pullsink_for< Measurement::ImageMeasurement >("VisionImage");
 
+	// pull sources
+	expose_pullsource_for< Components::ApplicationPullSourceButton, Measurement::Button >("Button");
+	expose_pullsource_for< Components::ApplicationPullSourcePose, Measurement::Pose >("Pose");
+	expose_pullsource_for< Components::ApplicationPullSourceErrorPose, Measurement::ErrorPose >("ErrorPose");
+	expose_pullsource_for< Components::ApplicationPullSourcePosition, Measurement::Position >("Position");
+	expose_pullsource_for< Components::ApplicationPullSourcePosition2D, Measurement::Position2D >("Position2D");
+	expose_pullsource_for< Components::ApplicationPullSourceRotation, Measurement::Rotation >("Rotation");
+	expose_pullsource_for< Components::ApplicationPullSourceMatrix4x4, Measurement::Matrix4x4 >("Matrix4x4");
+	expose_pullsource_for< Components::ApplicationPullSourceMatrix3x3, Measurement::Matrix3x3 >("Matrix3x3");
+	expose_pullsource_for< Components::ApplicationPullSourceMatrix3x4, Measurement::Matrix3x4 >("Matrix3x4");
+
+	expose_pullsource_for< Components::ApplicationPullSourcePositionList, Measurement::PositionList >("PositionList");
+	expose_pullsource_for< Components::ApplicationPullSourcePositionList2, Measurement::PositionList2 >("PositionList2");
+	//expose_pullsource_for< Components::ApplicationPullSourceErrorPositionList, Measurement::ErrorPositionList >("ErrorPositionList");
+	//expose_pullsource_for< Components::ApplicationPullSourceErrorPositionList2, Measurement::ErrorPositionList2 >("ErrorPositionList2");
+
+	//expose_pullsource_for< Components::ApplicationPullSource< Measurement::ImageMeasurement >, Measurement::ImageMeasurement >("VisionImage");
+
 
 	bp::class_< Facade::AdvancedFacade, boost::shared_ptr< Facade::AdvancedFacade >, boost::noncopyable>("AdvancedFacade", bp::init< bp::optional< const std::string& > >())
 		.def("loadDataflow", (void (Facade::AdvancedFacade::*)(const std::string&, bool))&Facade::AdvancedFacade::loadDataflow)
@@ -217,6 +309,27 @@ BOOST_PYTHON_MODULE(_utfacade)
 
 		.def("getApplicationPullSinkVisionImage", &Facade::AdvancedFacade::componentByName< Components::ApplicationPullSink< Measurement::ImageMeasurement > >)
 
+		// pull sources
+		.def("getApplicationPullSourceButton", &Facade::AdvancedFacade::componentByName< Components::ApplicationPullSourceButton >)
+		.def("getApplicationPullSourcePose", &Facade::AdvancedFacade::componentByName< Components::ApplicationPullSourcePose >)
+		.def("getApplicationPullSourceErrorPose", &Facade::AdvancedFacade::componentByName< Components::ApplicationPullSourceErrorPose >)
+		.def("getApplicationPullSourcePosition", &Facade::AdvancedFacade::componentByName< Components::ApplicationPullSourcePosition >)
+		.def("getApplicationPullSourcePosition2D", &Facade::AdvancedFacade::componentByName< Components::ApplicationPullSourcePosition2D >)
+		.def("getApplicationPullSourceRotation", &Facade::AdvancedFacade::componentByName< Components::ApplicationPullSourceRotation >)
+		.def("getApplicationPullSourceMatrix4x4", &Facade::AdvancedFacade::componentByName< Components::ApplicationPullSourceMatrix4x4 >)
+		.def("getApplicationPullSourceMatrix3x3", &Facade::AdvancedFacade::componentByName< Components::ApplicationPullSourceMatrix3x3 >)
+		.def("getApplicationPullSourceMatrix3x4", &Facade::AdvancedFacade::componentByName< Components::ApplicationPullSourceMatrix3x4 >)
+
+		.def("getApplicationPullSourcePositionList", &Facade::AdvancedFacade::componentByName< Components::ApplicationPullSourcePositionList >)
+		.def("getApplicationPullSourcePositionList2", &Facade::AdvancedFacade::componentByName< Components::ApplicationPullSourcePositionList2 >)
+		//.def("getApplicationPullSourceErrorPositionList", &Facade::AdvancedFacade::componentByName< Components::ApplicationPullSourceErrorPositionList >)
+		//.def("getApplicationPullSourceErrorPositionList2", &Facade::AdvancedFacade::componentByName< Components::ApplicationPullSourceErrorPositionList2 >)
+
+		//.def("getApplicationPullSourceVisionImage", &Facade::AdvancedFacade::componentByName< Components::ApplicationPushSink< Measurement::ImageMeasurement > >)
+
+
+
+
 		// push sinks
 		.def("setCallbackButton", &setWrappedCallbackFacade< Measurement::Button >)
 		.def("setCallbackPose", &setWrappedCallbackFacade< Measurement::Pose >)
@@ -234,8 +347,22 @@ BOOST_PYTHON_MODULE(_utfacade)
 
 		.def("setCallbackVisionImage", &setWrappedCallbackFacade< Measurement::ImageMeasurement >)
 
+		// pull source (not supported by AdvancedFacade ..)
+		// .def("setSourceCallbackButton", &setWrappedSourceCallbackFacade< Measurement::Button >)
+		// .def("setSourceCallbackPose", &setWrappedSourceCallbackFacade< Measurement::Pose >)
+		// .def("setSourceCallbackErrorPose", &setWrappedSourceCallbackFacade< Measurement::ErrorPose >)
+		// .def("setSourceCallbackPosition", &setWrappedSourceCallbackFacade< Measurement::Position >)
+		// .def("setSourceCallbackPosition2D", &setWrappedSourceCallbackFacade< Measurement::Position2D >)
+		// .def("setSourceCallbackRotation", &setWrappedSourceCallbackFacade< Measurement::Rotation >)
+		// .def("setSourceCallbackMatrix3x3", &setWrappedSourceCallbackFacade< Measurement::Matrix4x4 >)
+		// .def("setSourceCallbackMatrix4x4", &setWrappedSourceCallbackFacade< Measurement::Matrix3x3 >)
+		//
+		// .def("setSourceCallbackPositionList", &setWrappedSourceCallbackFacade< Measurement::PositionList >)
+		// .def("setSourceCallbackPositionList2", &setWrappedSourceCallbackFacade< Measurement::PositionList2 >)
+//		.def("setSourceCallbackErrorPositionList", &setWrappedSourceCallbackFacade< Measurement::ErrorPositionList >)
+//		.def("setSourceCallbackErrorPositionList2", &setWrappedSourceCallbackFacade< Measurement::ErrorPositionList2 >)
 
-
+		//.def("setSourceCallbackVisionImage", &setWrappedSourceCallbackFacade< Measurement::ImageMeasurement >)
 
 
 

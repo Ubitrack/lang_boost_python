@@ -76,3 +76,29 @@ def test_pull_positionlist():
     assert p0[0] == 1 and p0[1] == 0 and p0[2] == 0
     
 
+@with_setup(setup_func, teardown_func)
+def test_pullsource_pose():
+
+    thisdir = os.path.dirname(__file__)
+    f.loadDataflow(os.path.join(thisdir, "test_pull_source_pose.dfg"), True)
+    
+    x = f.getApplicationPullSourcePose("pose")
+    if x is None:
+        raise RuntimeError("Wrapping is not working properly !!!!")
+
+    ctr = 0
+    def pull_cb(ts):
+        ctr += 1
+        p = math.Pose()
+        return measurement.Pose(ts, p)
+
+    
+    f.startDataflow()
+    
+    time.sleep(3)
+    
+    f.stopDataflow()
+
+    assert ctr > 0
+
+
