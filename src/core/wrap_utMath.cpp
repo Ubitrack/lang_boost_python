@@ -362,13 +362,15 @@ Math::Vector< double, 3 > rotationvelocity_to_vector(const T& rv) {
 
 template< class EventType, class ResultType >
 ResultType calculate_average(boost::python::list elist) {
-	 Math::Stochastic::Average< EventType, ResultType > avg;
 	 std::vector< EventType > elvec;
 	 boost::python::ssize_t len = boost::python::len(elist);
 	 for(int i=0; i<len;i++){
 		 elvec.push_back(boost::python::extract<EventType>(elist[i]));
 	 }
-	 return avg.mean(elvec);
+
+	 Math::Stochastic::Average< ResultType > avg;
+     avg = std::for_each(elvec.begin(), elvec.end(), avg);
+	 return avg.getAverage();
 }
 
 
