@@ -69,7 +69,13 @@ const std::string serializeMeasurementNetwork(Measurement::Timestamp sendtime, s
 }
 
 template< class T >
-Measurement::Measurement<T> deserializeMeasurement(std::string& data) {
+Measurement::Measurement<T> deserializeMeasurement(bp::object obj) {
+	bp::extract<std::string> obj_ext(obj);
+	if (!obj_ext.check()) {
+		throw std::runtime_error("argument must be python string");
+	}
+	std::string data = obj_ext();
+
 	Measurement::Measurement<T> result ( 0, boost::shared_ptr< T >( new typename T() ) );
 
 	// create ifstream
@@ -88,7 +94,12 @@ Measurement::Measurement<T> deserializeMeasurement(std::string& data) {
 }
 
 template< class T >
-bp::object deserializeMeasurementNetwork(std::string& data) {
+bp::object deserializeMeasurementNetwork(bp::object obj) {
+	bp::extract<std::string> obj_ext(obj);
+	if (!obj_ext.check()) {
+		throw std::runtime_error("argument must be python string");
+	}
+	std::string data = obj_ext();
 
     std::istringstream stream( data );
     boost::archive::text_iarchive archive( stream );
@@ -115,8 +126,14 @@ bp::object deserializeMeasurementNetwork(std::string& data) {
 }
 
 // not nice, but we don't know which type the archive has until we know its name ...
-std::string nameFromNetworkArchive(std::string& data) {
-    std::istringstream stream( data );
+std::string nameFromNetworkArchive(bp::object obj) {
+	bp::extract<std::string> obj_ext(obj);
+	if (!obj_ext.check()) {
+		throw std::runtime_error("argument must be python string");
+	}
+	std::string data = obj_ext();
+
+	std::istringstream stream( data );
     boost::archive::text_iarchive archive( stream );
 
     std::string name;
