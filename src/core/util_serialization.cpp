@@ -49,7 +49,14 @@ const std::string serializeMeasurement(Measurement::Measurement<T>& m) {
 }
 
 template< class T >
-const std::string serializeMeasurementNetwork(Measurement::Timestamp sendtime, std::string& name, Measurement::Measurement<T>& m) {
+const std::string serializeMeasurementNetwork(Measurement::Timestamp sendtime, bp::object name_obj, Measurement::Measurement<T>& m) {
+	bp::extract<std::string> name_obj_ext(name_obj);
+	if (!name_obj_ext.check()) {
+		throw std::runtime_error("2nd argument must be python string");
+	}
+	std::string name = name_obj_ext();
+
+
 	std::ostringstream stream;
 	boost::archive::text_oarchive packet( stream );
 	std::string suffix("\n");
@@ -119,9 +126,9 @@ bp::object deserializeMeasurementNetwork(bp::object obj) {
 
 	// create list as result
 	bp::list result;
+	result.append(bp::object(sendtime));
 	result.append(bp::object(name));
 	result.append(bp::object(mm));
-	result.append(bp::object(sendtime));
 	return result;
 }
 
