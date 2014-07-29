@@ -35,7 +35,7 @@ namespace {
 
 
 template< class T >
-const std::string serializeMeasurement(T& m) {
+const std::string serializeMeasurement(Measurement::Measurement<T>& m) {
 	std::ostringstream stream;
 	boost::archive::text_oarchive packet( stream );
 	packet << m;
