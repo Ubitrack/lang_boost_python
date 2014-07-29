@@ -13,3 +13,6 @@ add_python_module("_utmeasurement" ${CURRENT_PACKAGE} "MODULE_SRCS_UTMEASUREMENT
 
 SET (MODULE_SRCS_UTCALIBRATION "wrap_utCalibration.cpp")
 add_python_module("_utcalibration" ${CURRENT_PACKAGE} "MODULE_SRCS_UTCALIBRATION") 
+
+SET (MODULE_SRCS_UTIL_SERIALIZATION "util_serialization.cpp")
+add_python_module("_serialization" ${CURRENT_PACKAGE} "MODULE_SRCS_UTIL_SERIALIZATION") 
