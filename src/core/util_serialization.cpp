@@ -83,7 +83,7 @@ Measurement::Measurement<T> deserializeMeasurement(bp::object obj) {
 	}
 	std::string data = obj_ext();
 
-	Measurement::Measurement<T> result ( 0, boost::shared_ptr< T >( new typename T() ) );
+	Measurement::Measurement<T> result ( 0, boost::shared_ptr< T >( new T() ) );
 
 	// create ifstream
 	std::istringstream stream( data );
