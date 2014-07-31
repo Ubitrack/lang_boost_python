@@ -90,7 +90,7 @@ public:
 					EventType e( boost::shared_ptr< typename EventType::value_type >( new typename EventType::value_type() ) );
 					std::string dummy; // for newline character in archive
 					archive >> dummy >> e;
-					data.append( e );
+					data.push_back( e );
 				}
 			}
 			catch (const std::exception& ex) {
@@ -117,11 +117,15 @@ public:
 	virtual ~EventStreamReader() {}
 
 	bp::list values() {
-		return data;
+                bp::list result;
+                for (typename std::vector< EventType >::iterator it = data.begin(); it != data.end(); ++it) {
+                    result.append(*it);
+                }
+		return result;
 	}
 
 protected:
-	bp::list data;
+        std::vector< EventType > data;
 };
 
 BOOST_PYTHON_FUNCTION_OVERLOADS(logging_overloads, Ubitrack::Util::initLogging, 0, 1)

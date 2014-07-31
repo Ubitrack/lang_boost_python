@@ -103,7 +103,7 @@ def test_pullsource_pose():
     time.sleep(3)
     
     f.stopDataflow()
-
+    x.setCallback(None)
     assert ctr > 0
 
 
