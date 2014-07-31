@@ -45,6 +45,15 @@ def test_basic_datatypes():
     assert p.get() == pr
 
 
+@with_setup(setup_func, teardown_func)
+def test_positionrecord():
+    "test reading a position3d recording"
+    sb = util.streambuf(open("position_record.log", "r"), 1024)
+    st = util.PositionStreamReader(sb)
+    v = st.values()
+    for i in v:
+        print i.time(), i.get()
+
 
 def disabled_t_e_s_t_s():
     return

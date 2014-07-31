@@ -75,10 +75,11 @@ def test_pull_positionlist():
     p0 = ps[0]
     assert p0[0] == 1 and p0[1] == 0 and p0[2] == 0
     
+pullsrc_ctr = 0 
 
 @with_setup(setup_func, teardown_func)
 def test_pullsource_pose():
-
+    global pullsrc_ctr
     thisdir = os.path.dirname(__file__)
     f.loadDataflow(os.path.join(thisdir, "test_pull_source_pose.dfg"), True)
     
@@ -86,12 +87,16 @@ def test_pullsource_pose():
     if x is None:
         raise RuntimeError("Wrapping is not working properly !!!!")
 
-    ctr = 0
+    pullsrc_ctr = 0
     def pull_cb(ts):
-        ctr += 1
-        p = math.Pose()
+        global pullsrc_ctr
+        from ubitrack.core import math, measurement
+        import numpy as np
+        pullsrc_ctr += 1
+        p = math.Pose(math.Quaternion(), np.array([1,2,3]))
         return measurement.Pose(ts, p)
 
+    x.setCallback(pull_cb)
     
     f.startDataflow()
     
