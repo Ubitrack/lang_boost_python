@@ -49,10 +49,16 @@ def test_basic_datatypes():
 def test_positionrecord():
     "test reading a position3d recording"
     sb = util.streambuf(open("position_record.log", "r"), 1024)
+    print sb
     st = util.PositionStreamReader(sb)
+    print st
     v = st.values()
+    print v
     for i in v:
-        print i.time(), i.get()
+        print i
+        p = i.get()
+        print p
+        print i.time()
 
 
 def disabled_t_e_s_t_s():
