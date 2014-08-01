@@ -206,6 +206,7 @@ BOOST_PYTHON_MODULE(_ututil)
     //is.def_readwrite("file",&ostream::get_original_file);
 
 	// EventStreamIterators
+/*
 	bp::class_< std::vector< Measurement::Pose > >("PoseMeasurementIterator")
 		.def(bp::vector_indexing_suite< std::vector< Measurement::Pose > >() );
 	bp::class_< std::vector< Measurement::ErrorPose > >("ErrorPoseMeasurementIterator")
@@ -230,6 +231,7 @@ BOOST_PYTHON_MODULE(_ututil)
 		.def(bp::vector_indexing_suite< std::vector< Measurement::PositionList2 > >() );
 	bp::class_< std::vector< Measurement::PoseList > >("PoseListMeasurementIterator")
 		.def(bp::vector_indexing_suite< std::vector< Measurement::PoseList > >() );
+*/
 
 
     // EventStreamReaders
