@@ -95,6 +95,48 @@ public:
 					data.push_back( e );
 				}
 			}
+			catch (const boost::archive::archive_exception& e) {
+				switch (e.code) {
+					case boost::archive::archive_exception::unregistered_class:
+						PyErr_SetString(PyExc_RuntimeError, "Boost::archive error: unregistered_class");
+						break;
+                                        case boost::archive::archive_exception::invalid_signature:
+                                                PyErr_SetString(PyExc_RuntimeError, "Boost::archive error: invalid_signature");
+                                                break;
+                                        case boost::archive::archive_exception::unsupported_version:
+                                                PyErr_SetString(PyExc_RuntimeError, "Boost::archive error: unsupported_version");
+                                                break;
+                                        case boost::archive::archive_exception::pointer_conflict:
+                                                PyErr_SetString(PyExc_RuntimeError, "Boost::archive error: pointer_conflict");
+                                                break;
+                                        case boost::archive::archive_exception::incompatible_native_format:
+                                                PyErr_SetString(PyExc_RuntimeError, "Boost::archive error: incompatible_native_format");
+                                                break;
+                                        case boost::archive::archive_exception::array_size_too_short:
+                                                PyErr_SetString(PyExc_RuntimeError, "Boost::archive error: array_size_too_short");
+                                                break;
+                                        case boost::archive::archive_exception::input_stream_error:
+                                                // corresponds to end of stream, so this is ignored
+                                                //PyErr_SetString(PyExc_RuntimeError, "Boost::archive error: input_stream_error");
+                                                break;
+                                        case boost::archive::archive_exception::invalid_class_name:
+                                                PyErr_SetString(PyExc_RuntimeError, "Boost::archive error: invalid_class_name");
+                                                break;
+                                        case boost::archive::archive_exception::unsupported_class_version:
+                                                PyErr_SetString(PyExc_RuntimeError, "Boost::archive error: unsupported_class_version");
+                                                break;
+                                        case boost::archive::archive_exception::multiple_code_instantiation:
+                                                PyErr_SetString(PyExc_RuntimeError, "Boost::archive error: multiple_code_instantiation");
+                                                break;
+                                        case boost::archive::archive_exception::output_stream_error:
+                                                PyErr_SetString(PyExc_RuntimeError, "Boost::archive error: output_stream_error");
+                                                break;
+					default:
+                                               PyErr_SetString(PyExc_RuntimeError, e.what());
+                                               break;
+				}
+
+			}
 			catch (const std::exception& ex) {
 				// end of archive
 				if (std::string(ex.what()).compare("input stream error") != 0 ) {
