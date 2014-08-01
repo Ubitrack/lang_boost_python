@@ -1,3 +1,5 @@
+
+#include <boost/python/suite/indexing/vector_indexing_suite.hpp>
 #include <boost/python.hpp>
 #include <boost/python/implicit.hpp>
 #include <boost/python/module.hpp>
@@ -116,12 +118,18 @@ public:
 	}
 	virtual ~EventStreamReader() {}
 
+	/*
 	bp::list values() {
                 bp::list result;
                 for (typename std::vector< EventType >::iterator it = data.begin(); it != data.end(); ++it) {
                     result.append(*it);
                 }
 		return result;
+	}
+	*/
+
+	std::vector< EventType > values() {
+		return data;
 	}
 
 protected:
@@ -154,6 +162,32 @@ BOOST_PYTHON_MODULE(_ututil)
     is.def(bp::init<bp::object&, std::size_t>((bp::arg("python_file_obj"), bp::arg("buffer_size") = 0)));
 	// XXX fails on windows VS2010
     //is.def_readwrite("file",&ostream::get_original_file);
+
+	// EventStreamIterators
+	bp::class_< std::vector< Measurement::Pose > >("PoseMeasurementIterator")
+		.def(bp::vector_indexing_suite< std::vector< Measurement::Pose > >() );
+	bp::class_< std::vector< Measurement::ErrorPose > >("ErrorPoseMeasurementIterator")
+		.def(bp::vector_indexing_suite< std::vector< Measurement::ErrorPose > >() );
+	bp::class_< std::vector< Measurement::ErrorPosition > >("ErrorPositionMeasurementIterator")
+		.def(bp::vector_indexing_suite< std::vector< Measurement::ErrorPosition > >() );
+	bp::class_< std::vector< Measurement::Rotation > >("RotationMeasurementIterator")
+		.def(bp::vector_indexing_suite< std::vector< Measurement::Rotation > >() );
+	bp::class_< std::vector< Measurement::Position > >("PositionMeasurementIterator")
+		.def(bp::vector_indexing_suite< std::vector< Measurement::Position > >() );
+	bp::class_< std::vector< Measurement::Position2D > >("Position2DMeasurementIterator")
+		.def(bp::vector_indexing_suite< std::vector< Measurement::Position2D > >() );
+	bp::class_< std::vector< Measurement::Matrix3x3 > >("Matrix3x3MeasurementIterator")
+		.def(bp::vector_indexing_suite< std::vector< Measurement::Matrix3x3 > >() );
+	bp::class_< std::vector< Measurement::Matrix3x4 > >("Matrix3x4MeasurementIterator")
+		.def(bp::vector_indexing_suite< std::vector< Measurement::Matrix3x4 > >() );
+	bp::class_< std::vector< Measurement::Matrix4x4 > >("Matrix4x4MeasurementIterator")
+		.def(bp::vector_indexing_suite< std::vector< Measurement::Matrix4x4 > >() );
+	bp::class_< std::vector< Measurement::PositionList > >("PositionListMeasurementIterator")
+		.def(bp::vector_indexing_suite< std::vector< Measurement::PositionList > >() );
+	bp::class_< std::vector< Measurement::PositionList2 > >("PositionList2MeasurementIterator")
+		.def(bp::vector_indexing_suite< std::vector< Measurement::PositionList2 > >() );
+	bp::class_< std::vector< Measurement::PoseList > >("PoseListMeasurementIterator")
+		.def(bp::vector_indexing_suite< std::vector< Measurement::PoseList > >() );
 
 
     // EventStreamReaders
