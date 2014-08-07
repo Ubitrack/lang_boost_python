@@ -71,6 +71,22 @@ void writeUtCalibFile(const std::string& sFile, T& value) {
 }
 
 
+template<class T>
+struct register_measurement_vector {
+
+	register_measurement_vector(char const* name) {
+        bp::type_info info = bp::type_id<T>();
+        const bp::converter::registration* reg = bp::converter::registry::query(info);
+        if (reg == NULL)  {
+            bp::class_< T >(name)
+                .def(bp::vector_indexing_suite< T >() );
+        } else if ((*reg).m_to_python == NULL) {
+            bp::class_< T >(name)
+                .def(bp::vector_indexing_suite< T >() );
+        }
+	}
+};
+
 } // end anon ns
 
 
@@ -206,32 +222,18 @@ BOOST_PYTHON_MODULE(_ututil)
     //is.def_readwrite("file",&ostream::get_original_file);
 
 	// EventStreamIterators
-/*
-	bp::class_< std::vector< Measurement::Pose > >("PoseMeasurementIterator")
-		.def(bp::vector_indexing_suite< std::vector< Measurement::Pose > >() );
-	bp::class_< std::vector< Measurement::ErrorPose > >("ErrorPoseMeasurementIterator")
-		.def(bp::vector_indexing_suite< std::vector< Measurement::ErrorPose > >() );
-	bp::class_< std::vector< Measurement::ErrorPosition > >("ErrorPositionMeasurementIterator")
-		.def(bp::vector_indexing_suite< std::vector< Measurement::ErrorPosition > >() );
-	bp::class_< std::vector< Measurement::Rotation > >("RotationMeasurementIterator")
-		.def(bp::vector_indexing_suite< std::vector< Measurement::Rotation > >() );
-	bp::class_< std::vector< Measurement::Position > >("PositionMeasurementIterator")
-		.def(bp::vector_indexing_suite< std::vector< Measurement::Position > >() );
-	bp::class_< std::vector< Measurement::Position2D > >("Position2DMeasurementIterator")
-		.def(bp::vector_indexing_suite< std::vector< Measurement::Position2D > >() );
-	bp::class_< std::vector< Measurement::Matrix3x3 > >("Matrix3x3MeasurementIterator")
-		.def(bp::vector_indexing_suite< std::vector< Measurement::Matrix3x3 > >() );
-	bp::class_< std::vector< Measurement::Matrix3x4 > >("Matrix3x4MeasurementIterator")
-		.def(bp::vector_indexing_suite< std::vector< Measurement::Matrix3x4 > >() );
-	bp::class_< std::vector< Measurement::Matrix4x4 > >("Matrix4x4MeasurementIterator")
-		.def(bp::vector_indexing_suite< std::vector< Measurement::Matrix4x4 > >() );
-	bp::class_< std::vector< Measurement::PositionList > >("PositionListMeasurementIterator")
-		.def(bp::vector_indexing_suite< std::vector< Measurement::PositionList > >() );
-	bp::class_< std::vector< Measurement::PositionList2 > >("PositionList2MeasurementIterator")
-		.def(bp::vector_indexing_suite< std::vector< Measurement::PositionList2 > >() );
-	bp::class_< std::vector< Measurement::PoseList > >("PoseListMeasurementIterator")
-		.def(bp::vector_indexing_suite< std::vector< Measurement::PoseList > >() );
-*/
+    register_measurement_vector< std::vector< Measurement::Pose > >("PoseMeasurementIterator");
+    register_measurement_vector< std::vector< Measurement::ErrorPose > >("ErrorPoseMeasurementIterator");
+    register_measurement_vector< std::vector< Measurement::ErrorPosition > >("ErrorPositionMeasurementIterator");
+    register_measurement_vector< std::vector< Measurement::Rotation > >("RotationMeasurementIterator");
+    register_measurement_vector< std::vector< Measurement::Position > >("PositionMeasurementIterator");
+    register_measurement_vector< std::vector< Measurement::Position2D > >("Position2DMeasurementIterator");
+    register_measurement_vector< std::vector< Measurement::Matrix3x3 > >("Matrix3x3MeasurementIterator");
+    register_measurement_vector< std::vector< Measurement::Matrix3x4 > >("Matrix3x4MeasurementIterator");
+    register_measurement_vector< std::vector< Measurement::Matrix4x4 > >("Matrix4x4MeasurementIterator");
+    register_measurement_vector< std::vector< Measurement::PositionList > >("PositionListMeasurementIterator");
+    register_measurement_vector< std::vector< Measurement::PositionList2 > >("PositionList2MeasurementIterator");
+    register_measurement_vector< std::vector< Measurement::PoseList > >("PoseListMeasurementIterator");
 
 
     // EventStreamReaders
