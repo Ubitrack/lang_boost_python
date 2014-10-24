@@ -204,6 +204,7 @@ BOOST_PYTHON_MODULE(_utgraph)
 		.def_readonly("Name", &UTQLGraph::Edge::m_Name)
 		.def("getSource", &get_SourceNode_from_weak_ptr)
 		.def("getTarget", &get_TargetNode_from_weak_ptr)
+		.def_readonly("EdgeReference", &Graph::UTQLEdge::m_EdgeReference)
 		;
 
 
