@@ -11,6 +11,7 @@
 
 #include <utDataflow/Component.h>
 #include <utDataflow/DataflowNetwork.h>
+#include <utDataflow/EventQueue.h>
 #include <utDataflow/Port.h>
 
 #include <utDataflow/PushConsumer.h>
@@ -24,7 +25,9 @@ namespace bp = boost::python;
 namespace bn = boost::numpy;
 
 namespace {
-
+	unsigned int getQueueLength() {
+		return Dataflow::EventQueue::singleton().getCurrentQueueLength();
+	}
 }
 
 
@@ -58,5 +61,7 @@ BOOST_PYTHON_MODULE(_utdataflow)
 		.def("connect", &Dataflow::Port::connect)
 		.def("disconnect", &Dataflow::Port::disconnect)
 		;
+
+	bp::def("getEventQueueLength", &getQueueLength);
 
 }
