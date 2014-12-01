@@ -16,7 +16,7 @@ if sys.platform.startswith("win32"):
 setup_args = dict(
     #version='${PACKAGE_VERSION}',
     package_dir={ '': os.path.join(CMCSOURCE, 'lib') },
-    packages=['ubitrack', 'ubitrack.core', 'ubitrack.dataflow', 'ubitrack.facade', 'ubitrack.vision', 'ubitrack.visualization'],
+    packages=['ubitrack', 'ubitrack.core', 'ubitrack.dataflow', 'ubitrack.facade', 'ubitrack.haptics', 'ubitrack.vision', 'ubitrack.visualization'],
     ext_modules=[Extension("ubitrack_modules", [os.path.join(CMBINARY, "build/modules/")])],
     name='ubitrack',
     version='1.0',

@@ -113,8 +113,8 @@ macro( FIND_UBITRACK_LIBRARY MYLIBRARY)
 endmacro()
 
 unset( UBITRACK_LIBRARIES )
-FIND_UBITRACK_LIBRARY( UBITRACK_LIBRARY utcore utdataflow utvision utfacade )
-#message( STATUS "Ubitrack Libraries: ${UBITRACK_LIBRARIES}" )
+FIND_UBITRACK_LIBRARY( UBITRACK_LIBRARY utcore utdataflow utvision utfacade uthaptics )
+message( STATUS "Ubitrack Libraries: ${UBITRACK_LIBRARIES}" )
 
 # handle the QUIETLY and REQUIRED arguments and set FMOD_FOUND to TRUE if all listed variables are TRUE
 include( FindPackageHandleStandardArgs )
