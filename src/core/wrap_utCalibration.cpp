@@ -37,6 +37,7 @@
 #include <utAlgorithm/ToolTip/TipCalibration.h>
 #include <utAlgorithm/PoseEstimation3D3D/AbsoluteOrientation.h>
 #include <utAlgorithm/PoseEstimation3D3D/CovarianceEstimation.h>
+#include <utAlgorithm/PoseEstimation6D6D/TsaiLenz.h>
 
 
 #include <queue> // std::queue
@@ -124,6 +125,13 @@ namespace {
 		Ubitrack::Math::ErrorPose ep(resultPoseBA, cov);
 		return ep;
 	}
+
+
+	Math::Pose performHandEyeCalibration(const std::vector< Ubitrack::Math::Pose > &posesA, const std::vector< Ubitrack::Math::Pose > &posesB) {
+		return Algorithm::PoseEstimation6D6D::performHandEyeCalibration( posesA, posesB );
+
+	}
+
 
 
 	Math::Vector<double, 3> tde_interpolate(const std::vector<Measurement::Position>& data, Measurement::Timestamp t){
@@ -271,5 +279,6 @@ BOOST_PYTHON_MODULE(_utcalibration)
 	bp::def("tipCalibrationPose", &tipCalibrationPose);
 	bp::def("absoluteOrientation", &estimatePose6D_3D3D);
 	bp::def("absoluteOrientationError", &estimatePose6D_3D3D_Error);
+	bp::def("performHandEyeCalibration", &performHandEyeCalibration);
 	bp::def("estimateTimeDelay", &estimateTimeDelay);
 }
