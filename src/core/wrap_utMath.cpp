@@ -329,7 +329,7 @@ Math::Vector< double, 7 > pose_to_vector(const T& q) {
 }
 
 template<class T>
-T pose_from_vector(const Math::Vector< double, 4 >& vec) {
+T pose_from_vector(const Math::Vector< double, 7 >& vec) {
 	return T::fromVector(vec);
 }
 
