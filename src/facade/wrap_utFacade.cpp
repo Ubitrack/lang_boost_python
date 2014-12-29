@@ -12,6 +12,7 @@
 #include <boost/python/to_python_converter.hpp>
 
 #include <utFacade/AdvancedFacade.h>
+#include <utFacade/DataflowObserver.h>
 #include <utComponents/ApplicationEndpointsVision.h>
 #include <utComponents/ApplicationPushSink.h>
 #include <utComponents/ApplicationPullSink.h>
@@ -26,6 +27,35 @@ namespace bp = boost::python;
 namespace bn = boost::numpy;
 
 namespace {
+
+class PyDataflowObserver: public Facade::DataflowObserver {
+
+public:
+	PyDataflowObserver(bp::object add_notifier_, bp::object del_notifier_)
+		: Facade::DataflowObserver()
+		, add_notifier(add_notifier_)
+		, del_notifier(del_notifier_)
+	{}
+	virtual ~PyDataflowObserver() {}
+
+	virtual void notifyAddComponent( const std::string& sPatternName, const std::string& sComponentName, const Graph::UTQLSubgraph& pattern ) {
+		PyGILState_STATE gstate = PyGILState_Ensure();
+		add_notifier(sPatternName, sComponentName, pattern);
+		PyGILState_Release( gstate );
+	}
+
+	virtual void notifyDeleteComponent( const std::string& sPatternName, const std::string& sComponentName ) {
+		PyGILState_STATE gstate = PyGILState_Ensure();
+		del_notifier(sPatternName, sComponentName);
+		PyGILState_Release( gstate );
+	}
+
+
+private:
+	bp::object add_notifier;
+	bp::object del_notifier;
+};
+
 
 // decode a Python exception into a string
 std::string handle_pyerror()
@@ -77,6 +107,18 @@ void setWrappedCallbackFacade( Facade::AdvancedFacade* self, const std::string& 
 {
 	self->setCallback(name, boost::function<void (const MT&)>(
 			measurement_callback_wrapper_sink_t< MT >( function ) ));
+}
+
+void addDataflowObserver( Facade::AdvancedFacade* self, bp::object py_observer )
+{
+	PyDataflowObserver* observer = bp::extract< PyDataflowObserver* >(py_observer);
+	self->addDataflowObserver(observer);
+}
+
+void removeDataflowObserver( Facade::AdvancedFacade* self, bp::object py_observer )
+{
+	PyDataflowObserver* observer = bp::extract< PyDataflowObserver* >(py_observer);
+	self->removeDataflowObserver(observer);
 }
 
 template< class MT >
@@ -240,6 +282,8 @@ BOOST_PYTHON_MODULE(_utfacade)
 
 	//expose_pullsource_for< Components::ApplicationPullSource< Measurement::ImageMeasurement >, Measurement::ImageMeasurement >("VisionImage");
 
+	bp::class_< PyDataflowObserver, boost::shared_ptr< PyDataflowObserver >, boost::noncopyable>("DataflowObserver", bp::init< bp::object, bp::object>());
+
 
 	bp::class_< Facade::AdvancedFacade, boost::shared_ptr< Facade::AdvancedFacade >, boost::noncopyable>("AdvancedFacade", bp::init< bp::optional< const std::string& > >())
 		.def("loadDataflow", (void (Facade::AdvancedFacade::*)(const std::string&, bool))&Facade::AdvancedFacade::loadDataflow)
@@ -366,8 +410,8 @@ BOOST_PYTHON_MODULE(_utfacade)
 
 
 
-		//.def("addDataflowObserver", &Facade::AdvancedFacade::addDataflowObserver)
-		//.def("removeDataflowObserver", &Facade::AdvancedFacade::removeDataflowObserver)
+		.def("addDataflowObserver", &addDataflowObserver)
+		.def("removeDataflowObserver", &removeDataflowObserver)
 		;
 
 
