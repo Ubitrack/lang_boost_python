@@ -385,6 +385,10 @@ static std::vector< T > construct_listtype(boost::python::list data) {
 	return plist;
 }
 
+Math::Vector< double, 3 > quaternion_transformVector(Math::Quaternion* q, const Math::Vector< double, 3 > &v) {
+	Math::Vector< double, 3 > r = (*q) * v;
+	return r;
+}
 
 }
 
@@ -594,7 +598,8 @@ BOOST_PYTHON_MODULE(_utmath)
 					.def(bp::self * boost::math::quaternion< double >())
 					.def(bp::self / boost::math::quaternion< double >())
 
-					.def("transformVector", (Math::Vector< double, 3 > (Math::Quaternion::*)(const Math::Vector< double, 3 > &))&Math::Quaternion::operator*)
+					//.def("transformVector", (Math::Vector< double, 3 > (Math::Quaternion::*)(const Math::Vector< double, 3 > &))&Math::Quaternion::operator*)
+					.def("transformVector", &quaternion_transformVector)
 
 					.def(bp::self == double())
 					.def(bp::self == std::complex<double>())
