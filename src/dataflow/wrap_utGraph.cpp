@@ -94,6 +94,42 @@ UTQLGraph::NodePtr get_TargetNode_from_weak_ptr(const UTQLGraph::Edge& e) {
 	return sp;
 }
 
+std::string get_SourceNodeName_from_weak_ptr(const UTQLGraph::Edge& e) {
+	UTQLGraph::NodePtr sp = e.m_Source.lock ();
+	std::string ret = "";
+	if (sp) {
+		ret = sp->m_Name;
+	}
+	return ret;
+}
+
+std::string get_TargetNodeName_from_weak_ptr(const UTQLGraph::Edge& e) {
+	UTQLGraph::NodePtr sp = e.m_Target.lock ();
+	std::string ret = "";
+	if (sp) {
+		ret = sp->m_Name;
+	}
+	return ret;
+}
+
+std::string get_SourceNodeQualifiedName_from_weak_ptr(const UTQLGraph::Edge& e) {
+	UTQLGraph::NodePtr sp = e.m_Source.lock ();
+	std::string ret = "";
+	if (sp) {
+		ret = sp->m_QualifiedName;
+	}
+	return ret;
+}
+
+std::string get_TargetNodeQualifiedName_from_weak_ptr(const UTQLGraph::Edge& e) {
+	UTQLGraph::NodePtr sp = e.m_Target.lock ();
+	std::string ret = "";
+	if (sp) {
+		ret = sp->m_QualifiedName;
+	}
+	return ret;
+}
+
 bp::list get_InEdgeList_from_weak_ptr(const UTQLGraph::Node& n) {
 	bp::list edges;
 	for (UTQLGraph::Node::EdgeList::const_iterator it = n.m_InEdges.begin(); it != n.m_InEdges.end(); it++) {
@@ -204,6 +240,10 @@ BOOST_PYTHON_MODULE(_utgraph)
 		.def_readonly("Name", &UTQLGraph::Edge::m_Name)
 		.def("getSource", &get_SourceNode_from_weak_ptr)
 		.def("getTarget", &get_TargetNode_from_weak_ptr)
+		.def("getSourceName", &get_SourceNodeName_from_weak_ptr)
+		.def("getTargetName", &get_TargetNodeName_from_weak_ptr)
+		.def("getSourceQualifiedName", &get_SourceNodeQualifiedName_from_weak_ptr)
+		.def("getTargetQualifiedName", &get_TargetNodeQualifiedName_from_weak_ptr)
 		.def_readonly("EdgeReference", &Graph::UTQLEdge::m_EdgeReference)
 		;
 
