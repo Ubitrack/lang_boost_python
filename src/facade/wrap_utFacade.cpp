@@ -286,6 +286,7 @@ BOOST_PYTHON_MODULE(_utfacade)
 
 
 	bp::class_< Facade::AdvancedFacade, boost::shared_ptr< Facade::AdvancedFacade >, boost::noncopyable>("AdvancedFacade", bp::init< bp::optional< const std::string& > >())
+		.def(bp::init<bool, const std::string&>())
 		.def("loadDataflow", (void (Facade::AdvancedFacade::*)(const std::string&, bool))&Facade::AdvancedFacade::loadDataflow)
 		.def("loadDataflow", (void (Facade::AdvancedFacade::*)(std::istream&, bool))&Facade::AdvancedFacade::loadDataflow)
 		.def("clearDataflow", &Facade::AdvancedFacade::clearDataflow)
