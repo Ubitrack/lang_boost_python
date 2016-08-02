@@ -318,16 +318,16 @@ macro(_Boost_ADJUST_LIB_VARS basename)
       # if the generator supports configuration types then set
       # optimized and debug libraries, or if the CMAKE_BUILD_TYPE has a value
       if(CMAKE_CONFIGURATION_TYPES OR CMAKE_BUILD_TYPE)
-        #set(Boost_${basename}_LIBRARY optimized ${Boost_${basename}_LIBRARY_RELEASE} debug ${Boost_${basename}_LIBRARY_DEBUG})
-        set(Boost_${basename}_LIBRARY ${Boost_${basename}_LIBRARY_RELEASE} debug ${Boost_${basename}_LIBRARY_DEBUG})
+        set(Boost_${basename}_LIBRARY optimized ${Boost_${basename}_LIBRARY_RELEASE} debug ${Boost_${basename}_LIBRARY_DEBUG})
+        #set(Boost_${basename}_LIBRARY ${Boost_${basename}_LIBRARY_RELEASE} debug ${Boost_${basename}_LIBRARY_DEBUG})
       else()
         # if there are no configuration types and CMAKE_BUILD_TYPE has no value
         # then just use the release libraries
         set(Boost_${basename}_LIBRARY ${Boost_${basename}_LIBRARY_RELEASE} )
       endif()
       # FIXME: This probably should be set for both cases
+      set(Boost_${basename}_LIBRARIES optimized ${Boost_${basename}_LIBRARY_RELEASE} debug ${Boost_${basename}_LIBRARY_DEBUG})
       #set(Boost_${basename}_LIBRARIES optimized ${Boost_${basename}_LIBRARY_RELEASE} debug ${Boost_${basename}_LIBRARY_DEBUG})
-      set(Boost_${basename}_LIBRARIES ${Boost_${basename}_LIBRARY_RELEASE} debug ${Boost_${basename}_LIBRARY_DEBUG})
     endif()
 
     # if only the release version was found, set the debug variable also to the release version
@@ -356,8 +356,8 @@ macro(_Boost_ADJUST_LIB_VARS basename)
       # Remove superfluous "debug" / "optimized" keywords from
       # Boost_LIBRARY_DIRS
       foreach(_boost_my_lib ${Boost_${basename}_LIBRARY})
-        get_filename_component(_boost_my_lib_path "${_boost_my_lib}" PATH)
-        list(APPEND Boost_LIBRARY_DIRS ${_boost_my_lib_path})
+         get_filename_component(_boost_my_lib_path "${_boost_my_lib}" PATH)
+         list(APPEND Boost_LIBRARY_DIRS ${_boost_my_lib_path})
       endforeach()
       list(REMOVE_DUPLICATES Boost_LIBRARY_DIRS)
 
@@ -443,6 +443,12 @@ function(_Boost_GUESS_COMPILER_PREFIX _ret)
     else()
       set (_boost_COMPILER "-il")
     endif()
+  elseif (MSVC14)
+    set(_boost_COMPILER "-vc140")
+  elseif (MSVC12)
+    set(_boost_COMPILER "-vc120")
+  elseif (MSVC12)
+    set(_boost_COMPILER "-vc120")
   elseif (MSVC11)
     set(_boost_COMPILER "-vc110")
   elseif (MSVC10)
@@ -531,7 +537,7 @@ else()
   # The user has not requested an exact version.  Among known
   # versions, find those that are acceptable to the user request.
   set(_Boost_KNOWN_VERSIONS ${Boost_ADDITIONAL_VERSIONS}
-    "1.57.0" "1.57" "1.56.0" "1.56" "1.55.0" "1.55" "1.54.0" "1.54"
+    "1.59.0" "1.59" "1.58.0" "1.58" "1.57.0" "1.57" "1.56.0" "1.56" "1.55.0" "1.55" "1.54.0" "1.54"
     "1.53.0" "1.53" "1.52.0" "1.52" "1.51.0" "1.51"
     "1.50.0" "1.50" "1.49.0" "1.49" "1.48.0" "1.48" "1.47.0" "1.47" "1.46.1"
     "1.46.0" "1.46" "1.45.0" "1.45" "1.44.0" "1.44" "1.43.0" "1.43" "1.42.0" "1.42"
@@ -1185,7 +1191,7 @@ set(Boost_ERROR_REASON)
         string( TOUPPER ${COMPONENT} UPPERCOMPONENT )
         if( Boost_${UPPERCOMPONENT}_FOUND )
           if(NOT Boost_FIND_QUIETLY)
-            message (STATUS "  ${COMPONENT}")
+            message (STATUS "  ${COMPONENT} ")
           endif()
           set(Boost_LIBRARIES ${Boost_LIBRARIES} ${Boost_${UPPERCOMPONENT}_LIBRARY})
         endif()

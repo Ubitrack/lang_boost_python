@@ -8,6 +8,7 @@ SET(_BOOST_NUMPY_SEARCH
   $ENV{PROGRAMW6432}/boost.numpy  
   $ENV{BOOST_ROOT}
   $ENV{BOOST_DIR}
+  ${EXTERNAL_LIBRARIES_DIR}/boost_numpy
   /usr
   /usr/local)
  

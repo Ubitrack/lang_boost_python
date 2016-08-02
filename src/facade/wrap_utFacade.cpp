@@ -238,9 +238,9 @@ BOOST_PYTHON_MODULE(_utfacade)
 	expose_pushsource_for< Components::ApplicationPushSourceMatrix3x4 >("Matrix3x4");
 
 	expose_pushsource_for< Components::ApplicationPushSourcePositionList >("PositionList");
-	expose_pushsource_for< Components::ApplicationPushSourcePosition2DList >("Position2DList");
-	//expose_pushsource_for< Components::ApplicationPushSourceErrorPositionList >("ErrorPositionList");
-	//expose_pushsource_for< Components::ApplicationPushSourceErrorPositionList2 >("ErrorPositionList2");
+	expose_pushsource_for< Components::ApplicationPushSourcePositionList2 >("Position2DList");
+	expose_pushsource_for< Components::ApplicationPushSourceErrorPositionList >("ErrorPositionList");
+	expose_pushsource_for< Components::ApplicationPushSourceErrorPositionList2 >("ErrorPositionList2");
 
 	//expose_pushsource_for< Components::ApplicationPushSource< Measurement::ImageMeasurement > >("VisionImage");
 
@@ -259,8 +259,8 @@ BOOST_PYTHON_MODULE(_utfacade)
 
 	expose_pullsink_for< Measurement::PositionList >("PositionList");
 	expose_pullsink_for< Measurement::PositionList2 >("PositionList2");
-//	expose_pullsink_for< Measurement::ErrorPositionList >("ErrorPositionList");
-//	expose_pullsink_for< Measurement::ErrorPositionList2 >("ErrorPositionList2");
+	expose_pullsink_for< Measurement::ErrorPositionList >("ErrorPositionList");
+	expose_pullsink_for< Measurement::ErrorPositionList2 >("ErrorPositionList2");
 
 	expose_pullsink_for< Measurement::ImageMeasurement >("VisionImage");
 
@@ -277,8 +277,8 @@ BOOST_PYTHON_MODULE(_utfacade)
 
 	expose_pullsource_for< Components::ApplicationPullSourcePositionList, Measurement::PositionList >("PositionList");
 	expose_pullsource_for< Components::ApplicationPullSourcePositionList2, Measurement::PositionList2 >("PositionList2");
-	//expose_pullsource_for< Components::ApplicationPullSourceErrorPositionList, Measurement::ErrorPositionList >("ErrorPositionList");
-	//expose_pullsource_for< Components::ApplicationPullSourceErrorPositionList2, Measurement::ErrorPositionList2 >("ErrorPositionList2");
+	expose_pullsource_for< Components::ApplicationPullSourceErrorPositionList, Measurement::ErrorPositionList >("ErrorPositionList");
+	expose_pullsource_for< Components::ApplicationPullSourceErrorPositionList2, Measurement::ErrorPositionList2 >("ErrorPositionList2");
 
 	//expose_pullsource_for< Components::ApplicationPullSource< Measurement::ImageMeasurement >, Measurement::ImageMeasurement >("VisionImage");
 
@@ -309,8 +309,8 @@ BOOST_PYTHON_MODULE(_utfacade)
 
 		.def("getApplicationPushSinkPositionList", &Facade::AdvancedFacade::componentByName< Components::ApplicationPushSinkPositionList >)
 		.def("getApplicationPushSinkPositionList2", &Facade::AdvancedFacade::componentByName< Components::ApplicationPushSinkPositionList2 >)
-		//.def("getApplicationPushSinkErrorPositionList", &Facade::AdvancedFacade::componentByName< Components::ApplicationPushSinkErrorPositionList >)
-		//.def("getApplicationPushSinkErrorPositionList2", &Facade::AdvancedFacade::componentByName< Components::ApplicationPushSinkErrorPositionList2 >)
+		.def("getApplicationPushSinkErrorPositionList", &Facade::AdvancedFacade::componentByName< Components::ApplicationPushSinkErrorPositionList >)
+		.def("getApplicationPushSinkErrorPositionList2", &Facade::AdvancedFacade::componentByName< Components::ApplicationPushSinkErrorPositionList2 >)
 
 		.def("getApplicationPushSinkVisionImage", &Facade::AdvancedFacade::componentByName< Components::ApplicationPushSink< Measurement::ImageMeasurement > >)
 
@@ -327,9 +327,9 @@ BOOST_PYTHON_MODULE(_utfacade)
 		.def("getApplicationPushSourceMatrix3x3", &Facade::AdvancedFacade::componentByName< Components::ApplicationPushSourceMatrix3x3 >)
 
 		.def("getApplicationPushSourcePositionList", &Facade::AdvancedFacade::componentByName< Components::ApplicationPushSourcePositionList >)
-		.def("getApplicationPushSourcePosition2DList", &Facade::AdvancedFacade::componentByName< Components::ApplicationPushSourcePosition2DList >)
-		//.def("getApplicationPushSourceErrorPositionList", &Facade::AdvancedFacade::componentByName< Components::ApplicationPushSourceErrorPositionList >)
-		//.def("getApplicationPushSourceErrorPositionList2", &Facade::AdvancedFacade::componentByName< Components::ApplicationPushSourceErrorPositionList2 >)
+		.def("getApplicationPushSourcePosition2DList", &Facade::AdvancedFacade::componentByName< Components::ApplicationPushSourcePositionList2 >)
+		.def("getApplicationPushSourceErrorPositionList", &Facade::AdvancedFacade::componentByName< Components::ApplicationPushSourceErrorPositionList >)
+		.def("getApplicationPushSourceErrorPositionList2", &Facade::AdvancedFacade::componentByName< Components::ApplicationPushSourceErrorPositionList2 >)
 
 		//.def("getApplicationPushSourceVisionImage", &Facade::AdvancedFacade::componentByName< Components::ApplicationPushSource< Measurement::ImageMeasurement > >)
 
@@ -348,8 +348,8 @@ BOOST_PYTHON_MODULE(_utfacade)
 
 		.def("getApplicationPullSinkPositionList", &Facade::AdvancedFacade::componentByName< Components::ApplicationPullSink< Measurement::PositionList > >)
 		.def("getApplicationPullSinkPositionList2", &Facade::AdvancedFacade::componentByName< Components::ApplicationPullSink< Measurement::PositionList2 > >)
-//		.def("getApplicationPullSinkErrorPositionList", &Facade::AdvancedFacade::componentByName< Components::ApplicationPullSink< Measurement::ErrorPositionList > >)
-//		.def("getApplicationPullSinkErrorPositionList2", &Facade::AdvancedFacade::componentByName< Components::ApplicationPullSink< Measurement::ErrorPositionList2 > >)
+		.def("getApplicationPullSinkErrorPositionList", &Facade::AdvancedFacade::componentByName< Components::ApplicationPullSink< Measurement::ErrorPositionList > >)
+		.def("getApplicationPullSinkErrorPositionList2", &Facade::AdvancedFacade::componentByName< Components::ApplicationPullSink< Measurement::ErrorPositionList2 > >)
 
 
 		.def("getApplicationPullSinkVisionImage", &Facade::AdvancedFacade::componentByName< Components::ApplicationPullSink< Measurement::ImageMeasurement > >)
@@ -367,8 +367,8 @@ BOOST_PYTHON_MODULE(_utfacade)
 
 		.def("getApplicationPullSourcePositionList", &Facade::AdvancedFacade::componentByName< Components::ApplicationPullSourcePositionList >)
 		.def("getApplicationPullSourcePositionList2", &Facade::AdvancedFacade::componentByName< Components::ApplicationPullSourcePositionList2 >)
-		//.def("getApplicationPullSourceErrorPositionList", &Facade::AdvancedFacade::componentByName< Components::ApplicationPullSourceErrorPositionList >)
-		//.def("getApplicationPullSourceErrorPositionList2", &Facade::AdvancedFacade::componentByName< Components::ApplicationPullSourceErrorPositionList2 >)
+		.def("getApplicationPullSourceErrorPositionList", &Facade::AdvancedFacade::componentByName< Components::ApplicationPullSourceErrorPositionList >)
+		.def("getApplicationPullSourceErrorPositionList2", &Facade::AdvancedFacade::componentByName< Components::ApplicationPullSourceErrorPositionList2 >)
 
 		//.def("getApplicationPullSourceVisionImage", &Facade::AdvancedFacade::componentByName< Components::ApplicationPushSink< Measurement::ImageMeasurement > >)
 
@@ -404,8 +404,8 @@ BOOST_PYTHON_MODULE(_utfacade)
 		//
 		// .def("setSourceCallbackPositionList", &setWrappedSourceCallbackFacade< Measurement::PositionList >)
 		// .def("setSourceCallbackPositionList2", &setWrappedSourceCallbackFacade< Measurement::PositionList2 >)
-//		.def("setSourceCallbackErrorPositionList", &setWrappedSourceCallbackFacade< Measurement::ErrorPositionList >)
-//		.def("setSourceCallbackErrorPositionList2", &setWrappedSourceCallbackFacade< Measurement::ErrorPositionList2 >)
+		//.def("setSourceCallbackErrorPositionList", &setWrappedSourceCallbackFacade< Measurement::ErrorPositionList >)
+		//.def("setSourceCallbackErrorPositionList2", &setWrappedSourceCallbackFacade< Measurement::ErrorPositionList2 >)
 
 		//.def("setSourceCallbackVisionImage", &setWrappedSourceCallbackFacade< Measurement::ImageMeasurement >)
 

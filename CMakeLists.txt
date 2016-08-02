@@ -23,8 +23,10 @@ SET(requiredLibs)
 
 # Version of ${PROJECT_NAME}
 SET( ${PROJECT_NAME}_MAJOR_VERSION 1 )
-SET( ${PROJECT_NAME}_MINOR_VERSION 0 )
+SET( ${PROJECT_NAME}_MINOR_VERSION 3 )
 SET( ${PROJECT_NAME}_BUILD_VERSION 0 )
+
+include(cmake/UbiTrackDetectCXXCompiler.cmake)
 
 # enable g++ C++0x extensions
 #IF(CMAKE_COMPILER_IS_GNUCXX)
@@ -59,6 +61,7 @@ ELSE()
   ENDIF(ENV_UBITRACKLIB_EXTERNAL32)
 ENDIF(X86_64)
 
+MESSAGE(STATUS "Ubitrack Externals Dir: ${EXTERNAL_LIBRARIES_DIR}")
 
 # UbiTrack  
 FIND_PACKAGE(Ubitrack REQUIRED)
@@ -145,22 +148,30 @@ ENDIF(BOOST_NUMPY_FOUND)
 
 # Find Lapack library. Required to compile.
 IF(WIN32 AND DEFINED EXTERNAL_LIBRARIES_DIR)
-  SET(LAPACK_ROOT_DIR "${EXTERNAL_LIBRARIES_DIR}/lapack")
+  set(LAPACK_ROOT_DIR "${EXTERNAL_LIBRARIES_DIR}/lapack")
+  set(CLAPACK_DIR "${EXTERNAL_LIBRARIES_DIR}/clapack")
 ENDIF(WIN32 AND DEFINED EXTERNAL_LIBRARIES_DIR)
 
 SET(HAVE_LAPACK 0)
 IF(WIN32)
-  FIND_PACKAGE(LAPACK)
+  FIND_PACKAGE(CLAPACK)
+  IF(CLAPACK_FOUND)
+    SET(LAPACK_FOUND ${CLAPACK_FOUND})
+    add_definitions(-DHAVE_CLAPACK)
+    include_directories(${CLAPACK_INCLUDE_DIR})
+    SET(LAPACK_LIBRARIES ${CLAPACK_LIBRARIES})
+  ENDIF(CLAPACK_FOUND)
+
   IF(NOT LAPACK_FOUND AND DEFINED EXTERNAL_LIBRARIES_DIR)
     SET(LAPACK_LIB_DIR "${EXTERNAL_LIBRARIES_DIR}/lapack/lib")
     # for now just manually define the libraries ..
     SET(LAPACK_LIBRARIES "${LAPACK_LIB_DIR}/atlas.lib" 
-	"${LAPACK_LIB_DIR}/cblas.lib" 
-	"${LAPACK_LIB_DIR}/f77blas.lib"
-	"${LAPACK_LIB_DIR}/g2c.lib"
-	"${LAPACK_LIB_DIR}/gcc.lib"
-	"${LAPACK_LIB_DIR}/lapack.lib"
-	)
+               "${LAPACK_LIB_DIR}/cblas.lib" 
+               "${LAPACK_LIB_DIR}/f77blas.lib"
+               "${LAPACK_LIB_DIR}/g2c.lib"
+               "${LAPACK_LIB_DIR}/gcc.lib"
+               "${LAPACK_LIB_DIR}/lapack.lib"
+               )
     SET(LAPACK_FOUND 1)
   ENDIF(NOT LAPACK_FOUND AND DEFINED EXTERNAL_LIBRARIES_DIR)
 ELSE()
@@ -179,7 +190,7 @@ IF(WIN32 AND DEFINED EXTERNAL_LIBRARIES_DIR)
 ENDIF(WIN32 AND DEFINED EXTERNAL_LIBRARIES_DIR)
 
 SET(HAVE_OPENCV 0)
-FIND_PACKAGE(OpenCV)
+FIND_PACKAGE(OpenCV COMPONENTS calib3d core features2d flann highgui imgcodecs imgproc ml objdetect video videoio)
 IF(OPENCV_FOUND)
   MESSAGE(STATUS "Found: opencv, includes: ${OPENCV_INCLUDE_DIR}, libraries: ${OPENCV_LIBRARIES}")
   ADD_DEFINITIONS(-DHAVE_OPENCV)

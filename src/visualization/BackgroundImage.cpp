@@ -31,6 +31,57 @@
 
 namespace Ubitrack { namespace Python {
 
+
+bool BackgroundImage::getImageFormat(const Measurement::ImageMeasurement& image, bool use_gpu, int& umatConvertCode,
+		GLenum& imgFormat, int& numOfChannels)
+	{
+		bool ret = true;
+		switch (image->pixelFormat()) {
+		case Vision::Image::LUMINANCE:
+			imgFormat = GL_LUMINANCE;
+			numOfChannels = 1;
+			break;
+		case Vision::Image::RGB:
+			numOfChannels = use_gpu ? 4 : 3;
+			imgFormat = use_gpu ? GL_RGBA : GL_RGB;
+			umatConvertCode = cv::COLOR_RGB2RGBA;
+			break;
+#ifndef GL_BGR_EXT
+		case Vision::Image::BGR:
+			imgFormat = image_isOnGPU ? GL_RGBA : GL_RGB;
+			numOfChannels = use_gpu ? 4 : 3;
+			umatConvertCode = cv::COLOR_BGR2RGBA;
+			break;
+		case Vision::Image::BGRA:
+			numOfChannels = 4;
+			imgFormat = use_gpu ? GL_RGBA : GL_BGRA;
+			umatConvertCode = cv::COLOR_BGRA2RGBA;
+			break;
+#else
+		case Vision::Image::BGR:
+			numOfChannels = use_gpu ? 4 : 3;
+			imgFormat = use_gpu ? GL_RGBA : GL_BGR_EXT;
+			umatConvertCode = cv::COLOR_BGR2RGBA;
+			break;
+		case Vision::Image::BGRA:
+			numOfChannels = 4;
+			imgFormat = use_gpu ? GL_RGBA : GL_BGRA_EXT;
+			umatConvertCode = cv::COLOR_BGRA2RGBA;
+			break;
+#endif
+		case Vision::Image::RGBA:
+			numOfChannels = 4;
+			imgFormat = GL_RGBA;
+			break;
+		default:
+			// Log Error ?
+			ret = false;
+			break;
+		}
+		return ret;
+	}
+
+
 BackgroundImage::BackgroundImage( )
 	: m_bTextureInitialized( false )
 	, m_lastImageTimestamp(0)
@@ -89,20 +140,10 @@ void BackgroundImage::draw( int m_width, int m_height )
 	boost::mutex::scoped_lock l( m_imageLock );
 
 	// find out texture format
+	int umatConvertCode = -1;
 	GLenum imgFormat = GL_LUMINANCE;
-	switch ( m_image->nChannels ) {
-		case 1: imgFormat = GL_LUMINANCE; break;
-#ifndef GL_BGR_EXT
-		case 3: imgFormat = GL_RGB; break;
-#else
-		case 3:
-			if ( m_image->channelSeq[ 0 ] == 'B' && m_image->channelSeq[ 1 ] == 'G' && m_image->channelSeq[ 2 ] == 'R' )
-				imgFormat = GL_BGR_EXT;
-			else
-				imgFormat = GL_RGB;
-			break;
-#endif
-	}
+	int numOfChannels = 1;
+	getImageFormat(m_image, false, umatConvertCode, imgFormat, numOfChannels);
 
 	// texture version
 	glEnable( GL_TEXTURE_2D );
@@ -113,11 +154,11 @@ void BackgroundImage::draw( int m_width, int m_height )
 
 		// generate power-of-two sizes
 		m_pow2Width = 1;
-		while ( m_pow2Width < (unsigned)m_image->width )
+		while ( m_pow2Width < (unsigned)m_image->width() )
 			m_pow2Width <<= 1;
 
 		m_pow2Height = 1;
-		while ( m_pow2Height < (unsigned)m_image->height )
+		while ( m_pow2Height < (unsigned)m_image->height() )
 			m_pow2Height <<= 1;
 
 		// create new empty texture
@@ -139,15 +180,15 @@ void BackgroundImage::draw( int m_width, int m_height )
 
 	// only update texture if lastTS < image.time()
 	if (m_lastImageTimestamp < m_image.time()) {
-		glTexSubImage2D( GL_TEXTURE_2D, 0, 0, 0, m_image->width, m_image->height,
-			imgFormat, GL_UNSIGNED_BYTE, m_image->imageData );
+		glTexSubImage2D( GL_TEXTURE_2D, 0, 0, 0, m_image->width(), m_image->height(),
+			imgFormat, GL_UNSIGNED_BYTE, m_image->Mat().data);
 	}
 
 	// display textured rectangle
-	double y0 = m_image->origin ? 0 : m_height;
+	double y0 = m_image->origin() ? 0 : m_height;
 	double y1 = m_height - y0;
-	double tx = double( m_image->width ) / m_pow2Width;
-	double ty = double( m_image->height ) / m_pow2Height;
+	double tx = double( m_image->width() ) / m_pow2Width;
+	double ty = double( m_image->height() ) / m_pow2Height;
 
 	// draw two triangles
 	glBegin( GL_TRIANGLE_STRIP );
@@ -187,11 +228,11 @@ void BackgroundImage::imageIn( const Ubitrack::Measurement::ImageMeasurement& im
 {
 	//LOG4CPP_DEBUG( logger, "received background image with timestamp " << img.time() );
 	boost::mutex::scoped_lock l( m_imageLock );
-	if(img->depth == IPL_DEPTH_32F){
-		boost::shared_ptr<Ubitrack::Vision::Image> p(new Ubitrack::Vision::Image(img->width , img->height , 1, IPL_DEPTH_8U ));
-		float* depthData = (float*) img->imageData;
-		unsigned char* up =(unsigned char*) p->imageData;
-		for(unsigned int i=0;i<img->width*img->height;i++)
+	if(img->depth() == IPL_DEPTH_32F){
+		boost::shared_ptr<Ubitrack::Vision::Image> p(new Ubitrack::Vision::Image(img->width(), img->height(), 1, IPL_DEPTH_8U));
+		float* depthData = (float*) img->Mat().data;
+		unsigned char* up =(unsigned char*) p->Mat().data;
+		for (unsigned int i = 0; i<img->width()*img->height(); i++)
 			if(depthData[i] != depthData[i])
 				up[i] = 0;
 			else

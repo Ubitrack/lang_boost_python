@@ -50,17 +50,18 @@ template< typename T >
 static bn::ndarray convert_image_as_array(Measurement::ImageMeasurement const & im) {
     bn::dtype typenum = bn::dtype::get_builtin<T>();
 
-    unsigned int frame_bytes = im->width * im->height * im->nChannels;
+	unsigned int frame_bytes = im->width() * im->height() * im->channels();
 
     bp::tuple shape;
-    if (im->nChannels == 1) {
+	if (im->channels() == 1) {
     	shape = bp::make_tuple(im->dimension().height, im->dimension().width);
-    } else if (im->nChannels == 3) {
+	}
+	else if (im->channels() == 3) {
     	shape = bp::make_tuple(im->dimension().height, im->dimension().width, 3);
     }
 
 	bn::ndarray ret = bn::zeros(shape, typenum);
-	unsigned char* srcData = (unsigned char*) im->imageData;
+	unsigned char* srcData = (unsigned char*) im->Mat().data;
 	unsigned char* dstData = (unsigned char*) ret.get_data();
 	memcpy(dstData, srcData, sizeof(unsigned char)*frame_bytes);
 	return ret;
@@ -69,7 +70,7 @@ static bn::ndarray convert_image_as_array(Measurement::ImageMeasurement const & 
 
 static bn::ndarray get_image_as_array(bp::object const & self) {
 	Measurement::ImageMeasurement im = bp::extract<Measurement::ImageMeasurement const &>(self)();
-    switch (im->depth) {
+    switch (im->depth()) {
     case CV_16U:
     	return convert_image_as_array<unsigned short>(im);
     	break;
