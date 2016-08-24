@@ -311,6 +311,7 @@ BOOST_PYTHON_MODULE(_ututil)
     bp::def("readCalibMeasurementVector4D", &readUtCalibFileDropMeasurement< Measurement::Vector4D > );
     bp::def("readCalibMeasurementVector8D", &readUtCalibFileDropMeasurement< Measurement::Vector8D > );
     bp::def("readCalibMeasurementPositionList", &readUtCalibFileDropMeasurement< Measurement::PositionList > );
+    bp::def("readCalibMeasurementCameraIntrinsics", &readUtCalibFileDropMeasurement< Measurement::CameraIntrinsics > );
     bp::def("readCalibMeasurementPositionList2", &readUtCalibFileDropMeasurement< Measurement::PositionList2 > );
     bp::def("readCalibMeasurementPoseList", &readUtCalibFileDropMeasurement< Measurement::PoseList > );
     bp::def("readCalibMeasurementDistanceList", &readUtCalibFileDropMeasurement< Measurement::DistanceList > );
@@ -326,6 +327,7 @@ BOOST_PYTHON_MODULE(_ututil)
     bp::def("readCalibMatrix4x4", &readUtCalibFile< Math::Matrix4x4d >);
     bp::def("readCalibVector4D", &readUtCalibFile< Math::Vector4d >);
     bp::def("readCalibVector8D", &readUtCalibFile< Math::Vector< double, 8 > >);
+    bp::def("readCalibCameraIntrinsics", &readUtCalibFile< Math::CameraIntrinsics<double> >);
     bp::def("readCalibPositionList", &readUtCalibFile< std::vector< Math::Vector3d > >);
     bp::def("readCalibPositionList2", &readUtCalibFile< std::vector< Math::Vector2d > >);
     bp::def("readCalibPoseList", &readUtCalibFile< std::vector< Math::Pose > >);
@@ -344,6 +346,7 @@ BOOST_PYTHON_MODULE(_ututil)
     bp::def("writeCalibMeasurementMatrix4x4", &writeUtCalibFile< Measurement::Matrix4x4 >);
     bp::def("writeCalibMeasurementVector4D", &writeUtCalibFile< Measurement::Vector4D >);
     bp::def("writeCalibMeasurementVector8D", &writeUtCalibFile< Measurement::Vector8D >);
+    bp::def("writeCalibMeasurementCameraIntrinsics", &writeUtCalibFile< Measurement::CameraIntrinsics >);
     bp::def("writeCalibMeasurementPositionList", &writeUtCalibFile< Measurement::PositionList >);
     bp::def("writeCalibMeasurementPositionList2", &writeUtCalibFile< Measurement::PositionList2 >);
     bp::def("writeCalibMeasurementPoseList", &writeUtCalibFile< Measurement::PoseList >);
@@ -360,6 +363,7 @@ BOOST_PYTHON_MODULE(_ututil)
     bp::def("writeCalibMatrix4x4", &writeUtCalibFile< Math::Matrix4x4d >);
     bp::def("writeCalibVector4D", &writeUtCalibFile< Math::Vector4d >);
     bp::def("writeCalibVector8D", &writeUtCalibFile< Math::Vector< double, 8 > >);
+    bp::def("writeCalibCameraIntrinsics", &writeUtCalibFile< Math::CameraIntrinsics<double> >);
     bp::def("writeCalibPositionList", &writeUtCalibFile< std::vector< Math::Vector3d > >);
     bp::def("writeCalibPositionList2", &writeUtCalibFile< std::vector< Math::Vector2d > >);
     bp::def("writeCalibPoseList", &writeUtCalibFile< std::vector< Math::Pose > >);

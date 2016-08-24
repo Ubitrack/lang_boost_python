@@ -16,6 +16,7 @@
 #include <utMath/Quaternion.h>
 #include <utMath/Pose.h>
 #include <utMath/RotationVelocity.h>
+#include <utMath/CameraIntrinsics.h>
 
 
 #include <utMeasurement/Measurement.h>
@@ -392,6 +393,32 @@ Math::Vector< double, 3 > quaternion_transformVector(Math::Quaternion* q, const 
 
 }
 
+// camera intrinsics
+template<class T>
+Math::Matrix< double, 3, 3 > intrinsics_get_matrix(const Math::CameraIntrinsics<T>& i) {
+	Math::Matrix< double, 3, 3 > mat(i.matrix);
+	return mat;
+}
+
+template<class T>
+Math::Vector< double, 2 > intrinsics_get_dimension(const Math::CameraIntrinsics<T>& i) {
+	Math::Vector< double, 2 > vec(i.dimension);
+	return vec;
+}
+
+template<class T>
+Math::Vector< double, 6 > intrinsics_get_radial_params(const Math::CameraIntrinsics<T>& i) {
+	Math::Vector< T, 6 > vec(i.radial_params);
+	return vec;
+}
+
+template<class T>
+Math::Vector< double, 2 > intrinsics_get_tangential_params(const Math::CameraIntrinsics<T>& i) {
+	Math::Vector< T, 2 > vec(i.tangential_params);
+	return vec;
+}
+
+
 // tests
 Math::Vector< double, 4 > test_vec4() {
 	return Math::Vector< double, 4 >(1, 2, 2, 1.2);
@@ -718,6 +745,24 @@ BOOST_PYTHON_MODULE(_utmath)
 			.def(bp::self_ns::str(bp::self_ns::self))
 			;
 
+
+
+
+	/*
+	 * CameraIntrinsics Class
+	 */
+
+	bp::class_<Math::CameraIntrinsics<double>, boost::shared_ptr<Math::CameraIntrinsics<double> > >("CameraIntrinsics", bp::init<const Math::Matrix< double, 3, 3>&, const Math::Vector< double, 2 >&, const Math::Vector< double, 2 >& >())
+		.def(bp::init<const Math::CameraIntrinsics<double> &>())
+		.def("intrinsics", &intrinsics_get_matrix<double>)
+		.def("dimension", &intrinsics_get_dimension<double>)
+		.def("tangential_params", &intrinsics_get_tangential_params<double>)
+		.def("radial_params", &intrinsics_get_radial_params<double>)
+		.def("angleVertical", &Math::CameraIntrinsics<double>::angleVertical)
+		.def("angleHorizontal", &Math::CameraIntrinsics<double>::angleHorizontal)
+		.def("angleDiagonal", &Math::CameraIntrinsics<double>::angleDiagonal)
+		.def(bp::self_ns::str(bp::self_ns::self))
+		;
 
 
 					// std::vector<T> support

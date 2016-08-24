@@ -172,6 +172,7 @@ BOOST_PYTHON_MODULE(_serialization)
     bp::def("serializeVector4D", &serializeMeasurement< Math::Vector4d >);
     bp::def("serializeVector8D", &serializeMeasurement< Math::Vector< double, 8 > >);
     bp::def("serializePositionList", &serializeMeasurement< std::vector< Math::Vector3d > >);
+    bp::def("serializeCameraIntrinsics", &serializeMeasurement< Math::CameraIntrinsics<double> >);
     bp::def("serializePositionList2", &serializeMeasurement< std::vector< Math::Vector2d > >);
     bp::def("serializePoseList", &serializeMeasurement< std::vector< Math::Pose > >);
     bp::def("serializeDistanceList", &serializeMeasurement< std::vector< Math::Scalar< double > > >);
@@ -187,6 +188,7 @@ BOOST_PYTHON_MODULE(_serialization)
     bp::def("serializeNetworkMatrix4x4", &serializeMeasurementNetwork< Math::Matrix4x4d >);
     bp::def("serializeNetworkVector4D", &serializeMeasurementNetwork< Math::Vector4d >);
     bp::def("serializeNetworkVector8D", &serializeMeasurementNetwork< Math::Vector< double, 8 > >);
+    bp::def("serializeNetworkCameraIntrinsics", &serializeMeasurementNetwork< Math::CameraIntrinsics<double> >);
     bp::def("serializeNetworkPositionList", &serializeMeasurementNetwork< std::vector< Math::Vector3d > >);
     bp::def("serializeNetworkPositionList2", &serializeMeasurementNetwork< std::vector< Math::Vector2d > >);
     bp::def("serializeNetworkPoseList", &serializeMeasurementNetwork< std::vector< Math::Pose > >);
@@ -203,6 +205,7 @@ BOOST_PYTHON_MODULE(_serialization)
     bp::def("deserializeMatrix4x4", &deserializeMeasurement< Math::Matrix4x4d >);
     bp::def("deserializeVector4D", &deserializeMeasurement< Math::Vector4d >);
     bp::def("deserializeVector8D", &deserializeMeasurement< Math::Vector< double, 8 > >);
+    bp::def("deserializeCameraIntrinsics", &deserializeMeasurement< Math::CameraIntrinsics<double> >);
     bp::def("deserializePositionList", &deserializeMeasurement< std::vector< Math::Vector3d > >);
     bp::def("deserializePositionList2", &deserializeMeasurement< std::vector< Math::Vector2d > >);
     bp::def("deserializePoseList", &deserializeMeasurement< std::vector< Math::Pose > >);
@@ -219,6 +222,7 @@ BOOST_PYTHON_MODULE(_serialization)
     bp::def("deserializeNetworkMatrix4x4", &deserializeMeasurementNetwork< Math::Matrix4x4d >);
     bp::def("deserializeNetworkVector4D", &deserializeMeasurementNetwork< Math::Vector4d >);
     bp::def("deserializeNetworkVector8D", &deserializeMeasurementNetwork< Math::Vector< double, 8 > >);
+    bp::def("deserializeNetworkCameraIntrinsics", &deserializeMeasurementNetwork< Math::CameraIntrinsics<double> >);
     bp::def("deserializeNetworkPositionList", &deserializeMeasurementNetwork< std::vector< Math::Vector3d > >);
     bp::def("deserializeNetworkPositionList2", &deserializeMeasurementNetwork< std::vector< Math::Vector2d > >);
     bp::def("deserializeNetworkPoseList", &deserializeMeasurementNetwork< std::vector< Math::Pose > >);

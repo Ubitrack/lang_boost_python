@@ -174,6 +174,11 @@ BOOST_PYTHON_MODULE(_utmeasurement)
 			bp::class_<Measurement::RotationVelocity>("RotationVelocity")
 			);
 
+	measurement_exposer<Measurement::CameraIntrinsics >::expose(
+			bp::class_<Measurement::CameraIntrinsics >("CameraIntrinsics")
+			);
+
+
 	measurementlist_exposer<Measurement::PoseList >::expose(
 			bp::class_<Measurement::PoseList>("PoseList")
 			);
