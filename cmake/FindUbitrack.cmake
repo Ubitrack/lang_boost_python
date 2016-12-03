@@ -112,7 +112,7 @@ macro( FIND_UBITRACK_LIBRARY MYLIBRARY)
 	ENDFOREACH(MYLIBRARYNAME)
 endmacro()
 
-set(UBITRACK_LIBRARIES_NEEDED "utcore" "utdataflow" "utvision" "utfacade" "uthaptics" )
+set(UBITRACK_LIBRARIES_NEEDED "utcore" "utdataflow" "utvision" "utfacade" "component_haptic_calibration" )
 
 unset( UBITRACK_LIBRARIES )
 FIND_UBITRACK_LIBRARY( UBITRACK_LIBRARY ${UBITRACK_LIBRARIES_NEEDED} )
