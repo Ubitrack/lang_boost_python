@@ -32,46 +32,34 @@
 namespace Ubitrack { namespace Python {
 
 
-bool BackgroundImage::getImageFormat(const Measurement::ImageMeasurement& image, bool use_gpu, int& umatConvertCode,
-		GLenum& imgFormat, int& numOfChannels)
+	bool BackgroundImage::getGlFormat(const Vision::Image::ImageFormatProperties& fmt, GLenum& glFormat)
 	{
 		bool ret = true;
-		switch (image->pixelFormat()) {
+
+		switch (fmt.imageFormat) {
 		case Vision::Image::LUMINANCE:
-			imgFormat = GL_LUMINANCE;
-			numOfChannels = 1;
+			glFormat = GL_LUMINANCE;
 			break;
 		case Vision::Image::RGB:
-			numOfChannels = use_gpu ? 4 : 3;
-			imgFormat = use_gpu ? GL_RGBA : GL_RGB;
-			umatConvertCode = cv::COLOR_RGB2RGBA;
+			glFormat = GL_RGB;
 			break;
 #ifndef GL_BGR_EXT
 		case Vision::Image::BGR:
-			imgFormat = image_isOnGPU ? GL_RGBA : GL_RGB;
-			numOfChannels = use_gpu ? 4 : 3;
-			umatConvertCode = cv::COLOR_BGR2RGBA;
+			glFormat = GL_BGR;
 			break;
 		case Vision::Image::BGRA:
-			numOfChannels = 4;
-			imgFormat = use_gpu ? GL_RGBA : GL_BGRA;
-			umatConvertCode = cv::COLOR_BGRA2RGBA;
+			glFormat = GL_BGRA;
 			break;
 #else
 		case Vision::Image::BGR:
-			numOfChannels = use_gpu ? 4 : 3;
-			imgFormat = use_gpu ? GL_RGBA : GL_BGR_EXT;
-			umatConvertCode = cv::COLOR_BGR2RGBA;
+			glFormat = GL_BGR_EXT;
 			break;
 		case Vision::Image::BGRA:
-			numOfChannels = 4;
-			imgFormat = use_gpu ? GL_RGBA : GL_BGRA_EXT;
-			umatConvertCode = cv::COLOR_BGRA2RGBA;
+			glFormat = GL_BGRA_EXT;
 			break;
 #endif
 		case Vision::Image::RGBA:
-			numOfChannels = 4;
-			imgFormat = GL_RGBA;
+			glFormat = GL_RGBA;
 			break;
 		default:
 			// Log Error ?
@@ -141,9 +129,14 @@ void BackgroundImage::draw( int m_width, int m_height )
 
 	// find out texture format
 	int umatConvertCode = -1;
-	GLenum imgFormat = GL_LUMINANCE;
+	GLenum glFormat = GL_LUMINANCE;
+	GLenum glDatatype = GL_UNSIGNED_BYTE;
 	int numOfChannels = 1;
-	getImageFormat(m_image, false, umatConvertCode, imgFormat, numOfChannels);
+	Vision::Image::ImageFormatProperties fmt;
+	m_image->getFormatProperties(fmt);
+
+	// also take care of different GL_... Datatypes (e.g. CV16U/CV_32F)
+	getGlFormat(fmt, glFormat);
 
 	// texture version
 	glEnable( GL_TEXTURE_2D );
@@ -171,7 +164,7 @@ void BackgroundImage::draw( int m_width, int m_height )
 		glTexEnvf( GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_DECAL );
 
 		// load empty texture image (defines texture size)
-		glTexImage2D( GL_TEXTURE_2D, 0, 3, m_pow2Width, m_pow2Height, 0, imgFormat, GL_UNSIGNED_BYTE, 0 );
+		glTexImage2D( GL_TEXTURE_2D, 0, 3, m_pow2Width, m_pow2Height, 0, glFormat, glDatatype, 0 );
 		//LOG4CPP_DEBUG( logger, "glTexImage2D( width=" << m_pow2Width << ", height=" << m_pow2Height << " ): " << glGetError() );
 	}
 
@@ -181,7 +174,7 @@ void BackgroundImage::draw( int m_width, int m_height )
 	// only update texture if lastTS < image.time()
 	if (m_lastImageTimestamp < m_image.time()) {
 		glTexSubImage2D( GL_TEXTURE_2D, 0, 0, 0, m_image->width(), m_image->height(),
-			imgFormat, GL_UNSIGNED_BYTE, m_image->Mat().data);
+			glFormat, glDatatype, m_image->Mat().data);
 	}
 
 	// display textured rectangle
@@ -228,21 +221,7 @@ void BackgroundImage::imageIn( const Ubitrack::Measurement::ImageMeasurement& im
 {
 	//LOG4CPP_DEBUG( logger, "received background image with timestamp " << img.time() );
 	boost::mutex::scoped_lock l( m_imageLock );
-	if(img->depth() == IPL_DEPTH_32F){
-		boost::shared_ptr<Ubitrack::Vision::Image> p(new Ubitrack::Vision::Image(img->width(), img->height(), 1, IPL_DEPTH_8U));
-		float* depthData = (float*) img->Mat().data;
-		unsigned char* up =(unsigned char*) p->Mat().data;
-		for (unsigned int i = 0; i<img->width()*img->height(); i++)
-			if(depthData[i] != depthData[i])
-				up[i] = 0;
-			else
-				up[i] = depthData[i]*255;
-
-		m_image = Ubitrack::Measurement::ImageMeasurement(img.time(), p);
-	} else
-		m_image = img;
-
-	//m_pModule->invalidate( this );
+	m_image = img;
 }
 
 } } // namespace Ubitrack::Python

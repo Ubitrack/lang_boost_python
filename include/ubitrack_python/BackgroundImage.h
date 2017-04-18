@@ -55,8 +55,7 @@ public:
 
 protected:
 
-	bool getImageFormat(const Measurement::ImageMeasurement& image, bool use_gpu, int& umatConvertCode,
-		GLenum& imgFormat, int& numOfChannels);
+	bool getGlFormat(const Vision::Image::ImageFormatProperties& fmt, GLenum& glFormat);
 
 
 	Ubitrack::Measurement::ImageMeasurement m_image;
