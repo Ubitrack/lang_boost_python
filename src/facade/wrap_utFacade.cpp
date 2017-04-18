@@ -220,6 +220,7 @@ BOOST_PYTHON_MODULE(_utfacade)
 {
 	// push sinks
 	expose_pushsink_for< Components::ApplicationPushSinkButton, Measurement::Button >("Button");
+	expose_pushsink_for< Components::ApplicationPushSinkDistance, Measurement::Distance >("Distance");
 	expose_pushsink_for< Components::ApplicationPushSinkPose, Measurement::Pose >("Pose");
 	expose_pushsink_for< Components::ApplicationPushSinkErrorPose, Measurement::ErrorPose >("ErrorPose");
 	expose_pushsink_for< Components::ApplicationPushSinkPosition, Measurement::Position >("Position");
@@ -238,6 +239,7 @@ BOOST_PYTHON_MODULE(_utfacade)
 
 	// push sources
 	expose_pushsource_for< Components::ApplicationPushSourceButton >("Button");
+	expose_pushsource_for< Components::ApplicationPushSourceDistance >("Distance");
 	expose_pushsource_for< Components::ApplicationPushSourcePose >("Pose");
 	expose_pushsource_for< Components::ApplicationPushSourceErrorPose>("ErrorPose");
 	expose_pushsource_for< Components::ApplicationPushSourcePosition >("Position");
@@ -257,6 +259,7 @@ BOOST_PYTHON_MODULE(_utfacade)
 
 	// pull sinks
 	expose_pullsink_for< Measurement::Button >("Button");
+	expose_pullsink_for< Measurement::Distance >("Distance");
 	expose_pullsink_for< Measurement::Pose >("Pose");
 	expose_pullsink_for< Measurement::ErrorPose >("ErrorPose");
 	expose_pullsink_for< Measurement::Position2D >("Position2D");
@@ -276,6 +279,7 @@ BOOST_PYTHON_MODULE(_utfacade)
 
 	// pull sources
 	expose_pullsource_for< Components::ApplicationPullSourceButton, Measurement::Button >("Button");
+	expose_pullsource_for< Components::ApplicationPullSourceDistance, Measurement::Distance >("Distance");
 	expose_pullsource_for< Components::ApplicationPullSourcePose, Measurement::Pose >("Pose");
 	expose_pullsource_for< Components::ApplicationPullSourceErrorPose, Measurement::ErrorPose >("ErrorPose");
 	expose_pullsource_for< Components::ApplicationPullSourcePosition, Measurement::Position >("Position");
@@ -308,6 +312,7 @@ BOOST_PYTHON_MODULE(_utfacade)
 
 		// push sinks
 		.def("getApplicationPushSinkButton", &Facade::AdvancedFacade::componentByName< Components::ApplicationPushSinkButton >)
+		.def("getApplicationPushSinkDistance", &Facade::AdvancedFacade::componentByName< Components::ApplicationPushSinkDistance >)
 		.def("getApplicationPushSinkPose", &Facade::AdvancedFacade::componentByName< Components::ApplicationPushSinkPose >)
 		.def("getApplicationPushSinkErrorPose", &Facade::AdvancedFacade::componentByName< Components::ApplicationPushSinkErrorPose >)
 		.def("getApplicationPushSinkPosition", &Facade::AdvancedFacade::componentByName< Components::ApplicationPushSinkPosition >)
@@ -327,6 +332,7 @@ BOOST_PYTHON_MODULE(_utfacade)
 
 		// push sources
 		.def("getApplicationPushSourceButton", &Facade::AdvancedFacade::componentByName< Components::ApplicationPushSourceButton >)
+		.def("getApplicationPushSourceDistance", &Facade::AdvancedFacade::componentByName< Components::ApplicationPushSourceDistance >)
 		.def("getApplicationPushSourcePose", &Facade::AdvancedFacade::componentByName< Components::ApplicationPushSourcePose >)
 		.def("getApplicationPushSourceErrorPose", &Facade::AdvancedFacade::componentByName< Components::ApplicationPushSourceErrorPose >)
 		.def("getApplicationPushSourcePosition", &Facade::AdvancedFacade::componentByName< Components::ApplicationPushSourcePosition >)
@@ -347,6 +353,7 @@ BOOST_PYTHON_MODULE(_utfacade)
 
 		// pull sinks
 		.def("getApplicationPullSinkButton", &Facade::AdvancedFacade::componentByName< Components::ApplicationPullSink< Measurement::Button > >)
+		.def("getApplicationPullSinkDistance", &Facade::AdvancedFacade::componentByName< Components::ApplicationPullSink< Measurement::Distance > >)
 		.def("getApplicationPullSinkPose", &Facade::AdvancedFacade::componentByName< Components::ApplicationPullSink< Measurement::Pose > >)
 		.def("getApplicationPullSinkErrorPose", &Facade::AdvancedFacade::componentByName< Components::ApplicationPullSink< Measurement::ErrorPose > >)
 		.def("getApplicationPullSinkPosition", &Facade::AdvancedFacade::componentByName< Components::ApplicationPullSink< Measurement::Position > >)
@@ -366,6 +373,7 @@ BOOST_PYTHON_MODULE(_utfacade)
 
 		// pull sources
 		.def("getApplicationPullSourceButton", &Facade::AdvancedFacade::componentByName< Components::ApplicationPullSourceButton >)
+		.def("getApplicationPullSourceDistance", &Facade::AdvancedFacade::componentByName< Components::ApplicationPullSourceDistance >)
 		.def("getApplicationPullSourcePose", &Facade::AdvancedFacade::componentByName< Components::ApplicationPullSourcePose >)
 		.def("getApplicationPullSourceErrorPose", &Facade::AdvancedFacade::componentByName< Components::ApplicationPullSourceErrorPose >)
 		.def("getApplicationPullSourcePosition", &Facade::AdvancedFacade::componentByName< Components::ApplicationPullSourcePosition >)
@@ -387,6 +395,7 @@ BOOST_PYTHON_MODULE(_utfacade)
 
 		// push sinks
 		.def("setCallbackButton", &setWrappedCallbackFacade< Measurement::Button >)
+		.def("setCallbackDistance", &setWrappedCallbackFacade< Measurement::Distance >)
 		.def("setCallbackPose", &setWrappedCallbackFacade< Measurement::Pose >)
 		.def("setCallbackErrorPose", &setWrappedCallbackFacade< Measurement::ErrorPose >)
 		.def("setCallbackPosition", &setWrappedCallbackFacade< Measurement::Position >)

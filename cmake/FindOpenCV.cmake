@@ -59,11 +59,11 @@ ELSE (CMAKE_VERSION VERSION_GREATER 2.8.7)
 ENDIF (CMAKE_VERSION VERSION_GREATER 2.8.7)
 
 IF(NOT DEFINED OPENCV_ROOT_DIR)
-	FIND_PATH (OPENCV_ROOT_DIR
-	  NAMES OpenCVConfig.cmake include/opencv/cv.h include/cv/cv.h
-			include/opencv2/opencv.hpp
-	  PATHS ENV OPENCVROOT
-	  DOC "OpenCV root directory")
+  FIND_PATH (OPENCV_ROOT_DIR
+    NAMES OpenCVConfig.cmake include/opencv/cv.h include/cv/cv.h
+      include/opencv2/opencv.hpp
+    PATHS ENV OPENCVROOT
+    DOC "OpenCV root directory")
 ENDIF(NOT DEFINED OPENCV_ROOT_DIR)
 
 IF (OPENCV_USE_STATIC_LIBS)
@@ -255,8 +255,8 @@ IF (OPENCV_ROOT_DIR)
     IF (${_OPENCV_LIBRARY_BASE}_DEBUG AND ${_OPENCV_LIBRARY_BASE}_RELEASE)
       SET (${_OPENCV_LIBRARY_BASE}
         #optimized ${${_OPENCV_LIBRARY_BASE}_RELEASE}
-		${${_OPENCV_LIBRARY_BASE}_RELEASE}
-		debug ${${_OPENCV_LIBRARY_BASE}_DEBUG}
+    ${${_OPENCV_LIBRARY_BASE}_RELEASE}
+    debug ${${_OPENCV_LIBRARY_BASE}_DEBUG}
         CACHE DOC
         "OpenCV ${_OPENCV_COMPONENT} library")
       # Debug only
