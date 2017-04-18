@@ -28,6 +28,28 @@ SET( ${PROJECT_NAME}_BUILD_VERSION 0 )
 
 include(cmake/UbiTrackDetectCXXCompiler.cmake)
 
+
+
+if(APPLE)
+  set(CMAKE_MACOSX_RPATH TRUE)
+# The following settings were copied from
+# https://cmake.org/Wiki/CMake_RPATH_handling
+# to avoid the rpath issue that appears on OS X El Capitan
+
+  # use, i.e. don't skip the full RPATH for the build tree
+  set(CMAKE_SKIP_BUILD_RPATH  FALSE)
+
+  # when building, don't use the install RPATH already
+  # (but later on when installing)
+  set(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE) # Changed to TRUE by A.O. 
+
+  set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
+
+  # add the automatically determined parts of the RPATH
+  # which point to directories outside the build tree to the install RPATH
+  set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
+endif()
+
 # enable g++ C++0x extensions
 #IF(CMAKE_COMPILER_IS_GNUCXX)
 #	SET(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} "-std=gnu++0x")
@@ -129,7 +151,7 @@ endif(MSVC)
 set(Boost_USE_STATIC_LIBS   OFF)
 set(Boost_USE_MULTITHREADED ON)
 set(Boost_USE_STATIC_RUNTIME OFF)
-find_package( Boost 1.49 COMPONENTS thread date_time system filesystem regex chrono locale serialization program_options python REQUIRED)
+find_package( Boost 1.49 COMPONENTS thread date_time system filesystem regex chrono locale serialization program_options python numpy REQUIRED)
 if(Boost_FOUND)
   add_definitions("-DBOOST_FILESYSTEM_VERSION=3")
   add_definitions(-DHAVE_BOOST)
@@ -138,6 +160,7 @@ if(Boost_FOUND)
   SET(HAVE_BOOST 1)
 endif(Boost_FOUND)
 
+if (Boost_VERSION VERSION_LESS "1.63.0")
 find_package(BoostNumpy REQUIRED)
 IF(BOOST_NUMPY_FOUND)
   add_definitions(-DHAVE_BOOST_NUMPY)
@@ -145,6 +168,7 @@ IF(BOOST_NUMPY_FOUND)
   INCLUDE_DIRECTORIES( ${BOOST_NUMPY_INCLUDE_DIR} )
   SET(requiredLibs ${requiredLibs} ${BOOST_NUMPY_LIBRARY} )
 ENDIF(BOOST_NUMPY_FOUND)
+endif (Boost_VERSION VERSION_LESS "1.63.0")
 
 # Find Lapack library. Required to compile.
 IF(WIN32 AND DEFINED EXTERNAL_LIBRARIES_DIR)

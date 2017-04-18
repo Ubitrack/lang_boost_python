@@ -1,5 +1,11 @@
 #define NPY_NO_DEPRECATED_API NPY_1_7_API_VERSION
+
+#ifndef HAVE_BOOST_NUMPY
+#include <boost/python/numpy.hpp>
+#else
 #include <boost/numpy.hpp>
+#endif
+
 #include <numpy/arrayobject.h>
 #include <complex>
 
@@ -28,7 +34,11 @@
 using namespace Ubitrack;
 
 namespace bp = boost::python;
+#ifndef HAVE_BOOST_NUMPY
+namespace bn = boost::python::numpy;
+#else
 namespace bn = boost::numpy;
+#endif
 
 namespace {
 
