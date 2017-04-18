@@ -32,43 +32,92 @@
 namespace Ubitrack { namespace Python {
 
 
-	bool BackgroundImage::getGlFormat(const Vision::Image::ImageFormatProperties& fmt, GLenum& glFormat)
-	{
-		bool ret = true;
 
-		switch (fmt.imageFormat) {
-		case Vision::Image::LUMINANCE:
-			glFormat = GL_LUMINANCE;
-			break;
-		case Vision::Image::RGB:
-			glFormat = GL_RGB;
-			break;
+bool BackgroundImage::getImageFormat(const Vision::Image::ImageFormatProperties& fmtSrc,
+        Vision::Image::ImageFormatProperties& fmtDst,
+        bool use_gpu, int& umatConvertCode,
+        GLenum& glFormat, GLenum& glDatatype)
+{
+    bool ret = true;
+
+    // determine datatype
+    switch(fmtSrc.depth) {
+    case CV_8U:
+        glDatatype = GL_UNSIGNED_BYTE;
+        break;
+    case CV_16U:
+        glDatatype = GL_UNSIGNED_SHORT;
+        break;
+    case CV_32F:
+        glDatatype = GL_FLOAT;
+        break;
+    case CV_64F:
+        glDatatype = GL_DOUBLE;
+        break;
+    default:
+        // assume unsigned byte
+        glDatatype = GL_UNSIGNED_BYTE;
+        // Log Error ?
+        ret = false;
+        break;
+    }
+
+    // determine image properties
+    switch (fmtSrc.imageFormat) {
+    case Vision::Image::LUMINANCE:
+        glFormat = GL_LUMINANCE;
+        fmtDst.channels = 1;
+        break;
+    case Vision::Image::RGB:
+        glFormat = use_gpu ? GL_RGBA : GL_RGB;
+        fmtDst.channels = use_gpu ? 4 : 3;
+        fmtDst.imageFormat = use_gpu ? Vision::Image::RGBA : Vision::Image::RGB;
+        umatConvertCode = cv::COLOR_RGB2RGBA;
+        break;
 #ifndef GL_BGR_EXT
-		case Vision::Image::BGR:
-			glFormat = GL_BGR;
-			break;
-		case Vision::Image::BGRA:
-			glFormat = GL_BGRA;
-			break;
+    case Vision::Image::BGR:
+        fmtDst.channels = use_gpu ? 4 : 3;
+        glFormat = image_isOnGPU ? GL_RGBA : GL_RGB;
+        fmtDst.imageFormat = use_gpu ? Vision::Image::RGBA : Vision::Image::BGR;
+        umatConvertCode = cv::COLOR_BGR2RGBA;
+        break;
+    case Vision::Image::BGRA:
+        fmt.channels = 4;
+        glFormat = use_gpu ? GL_RGBA : GL_BGRA;
+        fmtDst.imageFormat = use_gpu ? Vision::Image::RGBA : Vision::Image::BGRA;
+        umatConvertCode = cv::COLOR_BGRA2RGBA;
+        break;
 #else
-		case Vision::Image::BGR:
-			glFormat = GL_BGR_EXT;
-			break;
-		case Vision::Image::BGRA:
-			glFormat = GL_BGRA_EXT;
-			break;
+    case Vision::Image::BGR:
+        fmtDst.channels = use_gpu ? 4 : 3;
+        glFormat = use_gpu ? GL_RGBA : GL_BGR_EXT;
+        fmtDst.imageFormat = use_gpu ? Vision::Image::RGBA : Vision::Image::BGR;
+        umatConvertCode = cv::COLOR_BGR2RGBA;
+        break;
+    case Vision::Image::BGRA:
+        fmtDst.channels = 4;
+        glFormat = use_gpu ? GL_RGBA : GL_BGRA_EXT;
+        fmtDst.imageFormat = use_gpu ? Vision::Image::RGBA : Vision::Image::BGRA;
+        umatConvertCode = cv::COLOR_BGRA2RGBA;
+        break;
 #endif
-		case Vision::Image::RGBA:
-			glFormat = GL_RGBA;
-			break;
-		default:
-			// Log Error ?
-			ret = false;
-			break;
-		}
-		return ret;
-	}
+    case Vision::Image::RGBA:
+        fmtDst.channels = 4;
+        glFormat = GL_RGBA;
+        fmtDst.imageFormat = Vision::Image::RGBA;
+        break;
+    default:
+        // Log Error ?
+        ret = false;
+        break;
+    }
 
+    // update dependent parameters
+    fmtDst.bitsPerPixel = fmtSrc.bitsPerPixel / fmtSrc.channels * fmtDst.channels;
+    fmtDst.matType = CV_MAKE_TYPE(fmtDst.depth, fmtDst.channels);
+
+    return ret;
+}
 
 BackgroundImage::BackgroundImage( )
 	: m_bTextureInitialized( false )
@@ -128,15 +177,16 @@ void BackgroundImage::draw( int m_width, int m_height )
 	boost::mutex::scoped_lock l( m_imageLock );
 
 	// find out texture format
-	int umatConvertCode = -1;
-	GLenum glFormat = GL_LUMINANCE;
-	GLenum glDatatype = GL_UNSIGNED_BYTE;
-	int numOfChannels = 1;
-	Vision::Image::ImageFormatProperties fmt;
-	m_image->getFormatProperties(fmt);
+    // find out texture format
+    int umatConvertCode = -1;
+    GLenum glFormat = GL_LUMINANCE;
+    GLenum glDatatype = GL_UNSIGNED_BYTE;
+    int numOfChannels = 1;
+    Vision::Image::ImageFormatProperties fmtSrc, fmtDst;
+    m_image->getFormatProperties(fmtSrc);
+    m_image->getFormatProperties(fmtDst);
 
-	// also take care of different GL_... Datatypes (e.g. CV16U/CV_32F)
-	getGlFormat(fmt, glFormat);
+    getImageFormat(fmtSrc, fmtDst, false, umatConvertCode, glFormat, glDatatype);
 
 	// texture version
 	glEnable( GL_TEXTURE_2D );
@@ -164,7 +214,7 @@ void BackgroundImage::draw( int m_width, int m_height )
 		glTexEnvf( GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_DECAL );
 
 		// load empty texture image (defines texture size)
-		glTexImage2D( GL_TEXTURE_2D, 0, 3, m_pow2Width, m_pow2Height, 0, glFormat, glDatatype, 0 );
+        glTexImage2D( GL_TEXTURE_2D, 0, 3, m_pow2Width, m_pow2Height, 0, glFormat, glDatatype, 0 );
 		//LOG4CPP_DEBUG( logger, "glTexImage2D( width=" << m_pow2Width << ", height=" << m_pow2Height << " ): " << glGetError() );
 	}
 

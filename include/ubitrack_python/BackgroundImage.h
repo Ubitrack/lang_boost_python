@@ -47,7 +47,7 @@ public:
 	 * passes image to the parent module
 	 * @param img an image Measurement
 	 */
-	void imageIn( const Ubitrack::Measurement::ImageMeasurement& img );
+	void imageIn( const Measurement::ImageMeasurement& img );
 
 	/** deletes OpenGL state */
     virtual void glCleanup();
@@ -55,10 +55,13 @@ public:
 
 protected:
 
-	bool getGlFormat(const Vision::Image::ImageFormatProperties& fmt, GLenum& glFormat);
+	bool getImageFormat(const Vision::Image::ImageFormatProperties& fmtSrc,
+            Vision::Image::ImageFormatProperties& fmtDst,
+			bool use_gpu, int& umatConvertCode,
+			GLenum& glFormat, GLenum& glDatatype);
 
 
-	Ubitrack::Measurement::ImageMeasurement m_image;
+	Measurement::ImageMeasurement m_image;
 	boost::mutex m_imageLock;
 
 	// variables for textured drawing
