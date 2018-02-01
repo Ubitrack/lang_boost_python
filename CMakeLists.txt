@@ -1,8 +1,12 @@
-cmake_minimum_required(VERSION 2.8)
+SET(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
 SET(PROJECT_NAME "ubitrack_python")
-
 PROJECT(${PROJECT_NAME})
+
+cmake_minimum_required(VERSION 3.4.0)
+
+include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
+conan_basic_setup(KEEP_RPATHS)
 
 # Add a cache variable PREFER_STATIC_LIBRARIES to have the choice of generating a project
 # linking against static libraries if they exist. Default is NO since most people will not use this.
