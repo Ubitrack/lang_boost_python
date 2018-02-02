@@ -72,19 +72,8 @@ IF(MSVC)
 
 ENDIF(MSVC)
 
-#IF( NOT APPLE )
-#  SET( ${full_modname}_FULL_VERSION ${${PROJECT_NAME}_MAJOR_VERSION}.${${PROJECT_NAME}_MINOR_VERSION}.${${PROJECT_NAME}_BUILD_VERSION} ) 
-#  SET_TARGET_PROPERTIES( ${full_modname} PROPERTIES VERSION ${${full_modname}_FULL_VERSION} )
-#ENDIF( NOT APPLE )
-
 # set compile flags for ${full_modname} project
 SET_TARGET_PROPERTIES( ${full_modname} PROPERTIES COMPILE_FLAGS "${${full_modname}_COMPILE_FLAGS}" )
-
-#install(TARGETS ${full_modname}
-#	  RUNTIME DESTINATION "bin" COMPONENT main
-#	  LIBRARY DESTINATION "${CMAKE_BINARY_DIR}/build/modules/${CURRENT_PACKAGE}" COMPONENT main
-#	  ARCHIVE DESTINATION "${CMAKE_BINARY_DIR}/build/modules/${CURRENT_PACKAGE}" COMPONENT main
-#	  )
 
 add_custom_command(
   OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/timestamp.${full_modname}

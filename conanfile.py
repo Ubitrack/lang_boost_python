@@ -18,9 +18,11 @@ class UbitrackCoreConan(ConanFile):
     settings = "os", "compiler", "build_type", "arch"
     generators = "cmake"
     requires = (
+        "Boost/[>=1.63.0]@camposs/stable",
         "ubitrack_core/%s@ubitrack/stable" % version,
         "ubitrack_vision/%s@ubitrack/stable" % version,
         "ubitrack_dataflow/%s@ubitrack/stable" % version,
+        "ubitrack_hapticcalibration/%s@ubitrack/stable" % version,
         "ubitrack_facade/%s@ubitrack/stable" % version,
        )
 
@@ -28,6 +30,7 @@ class UbitrackCoreConan(ConanFile):
     exports_sources = "cmake/*", "include/*", "doc/*", "lib/*", "src/*", "tests/*", "CMakeLists.txt"
 
     def configure(self):
+        self.options['Boost'].python = self.options.python
         self.options['Boost'].without_python = False
 
     def imports(self):
@@ -36,10 +39,10 @@ class UbitrackCoreConan(ConanFile):
        
     def build(self):
         cmake = CMake(self)
-        cmake.definitions['BUILD_SHARED_LIBS'] = self.options.shared
-        cmake.definitions['ENABLE_BASICFACADE'] = self.options.enable_basicfacade
-        cmake.definitions['ENABLE_DOTNET_WRAPPER'] = self.options.enable_dotnet
-        cmake.definitions['ENABLE_JAVA_WRAPPER'] = self.options.enable_java
+        cmake.definitions['PYTHON_EXECUTABLE'] = self.python_exec
+        cmake.definitions['PYTHON_INCLUDE_DIR'] = self.python_include
+        cmake.definitions['PYTHON_NUMPY_INCLUDE_DIR'] = self.numpy_include
+        cmake.definitions['PYTHON_LIBRARY'] = self.python_lib
         cmake.configure()
         cmake.build()
         cmake.install()
@@ -95,10 +98,15 @@ class UbitrackCoreConan(ConanFile):
         stdlib_dir = os.path.dirname(self.get_python_path("stdlib")).replace('\\', '/')
         return stdlib_dir
         
+    @property
+    def numpy_include(self):
+        cmd = "import os; os.environ['DISTUTILS_USE_SDK']='1'; import numpy.distutils; print numpy.distutils.misc_util.get_numpy_include_dirs()[0]" 
+        return self.run_python_command(cmd)
+                  
     def get_python_path(self, dir_name):
         cmd = "import sysconfig; print(sysconfig.get_path('{0}'))".format(dir_name)
-        return self.run_python_command(cmd)    
-                  
+        return self.run_python_command(cmd)   
+
     def run_python_command(self, cmd):
         pyexec = self.python_exec
         if pyexec:
