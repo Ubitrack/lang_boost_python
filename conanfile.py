@@ -40,10 +40,9 @@ class UbitrackCoreConan(ConanFile):
        
     def build(self):
         cmake = CMake(self)
-        cmake.definitions['PYTHON_EXECUTABLE'] = self.python_exec
-        cmake.definitions['PYTHON_INCLUDE_DIR'] = self.python_include
+        cmake.definitions['PYTHON_EXECUTABLE'] = self.python_exec.replace("\\", "/")
+        cmake.definitions['PYTHON_VERSION_FULL'] = self.python_version
         cmake.definitions['PYTHON_NUMPY_INCLUDE_DIR'] = self.numpy_include
-        cmake.definitions['PYTHON_LIBRARY'] = self.python_lib
         cmake.configure()
         cmake.build()
         cmake.install()
