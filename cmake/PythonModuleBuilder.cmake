@@ -86,7 +86,4 @@ add_custom_target(copy${full_modname} ALL DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/ti
 ADD_DEPENDENCIES(copy${full_modname} ${full_modname})
 ADD_DEPENDENCIES(pybuild copy${full_modname})
 
-
-
-
 endmacro()

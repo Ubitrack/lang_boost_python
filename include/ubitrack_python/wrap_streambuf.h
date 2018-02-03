@@ -28,6 +28,11 @@
 #include <streambuf>
 #include <iostream>
 
+
+#if PY_MAJOR_VERSION >= 3
+#define IS_PY3K
+#endif
+
 namespace bp = boost::python;
 
 namespace Ubitrack { namespace Python {
@@ -238,8 +243,13 @@ class streambuf : public std::basic_streambuf<char>
       read_buffer = py_read(buffer_size);
       char *read_buffer_data;
       bp::ssize_t py_n_read;
+      #ifdef IS_PY3K
+      if (PyBytes_AsStringAndSize(read_buffer.ptr(),
+                                   &read_buffer_data, &py_n_read) == -1) {
+      #else
       if (PyString_AsStringAndSize(read_buffer.ptr(),
                                    &read_buffer_data, &py_n_read) == -1) {
+      #endif
         setg(0, 0, 0);
         throw std::invalid_argument(
           "The method 'read' of the Python file object "

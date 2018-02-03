@@ -1,5 +1,3 @@
-SET(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
-
 SET(PROJECT_NAME "ubitrack_python")
 PROJECT(${PROJECT_NAME})
 
@@ -8,26 +6,16 @@ cmake_minimum_required(VERSION 3.4.0)
 include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
 conan_basic_setup(KEEP_RPATHS)
 
+SET(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
+
 include(GNUInstallDirs)
 include(cmake/UbitrackConfig)
-
-
-# Add a cache variable PREFER_STATIC_LIBRARIES to have the choice of generating a project
-# linking against static libraries if they exist. Default is NO since most people will not use this.
-IF( NOT DEFINED PREFER_STATIC_LIBRARIES )
-  SET( PREFER_STATIC_LIBRARIES "NO" CACHE BOOL "Decides if CMake should prefer static libraries to dynamic libraries when both exist." )
-  MARK_AS_ADVANCED(PREFER_STATIC_LIBRARIES)
-ENDIF( NOT DEFINED PREFER_STATIC_LIBRARIES )
-
-IF( PREFER_STATIC_LIBRARIES )
-  SET( CMAKE_FIND_LIBRARY_SUFFIXES .a;${CMAKE_FIND_LIBRARY_SUFFIXES} )
-ENDIF( PREFER_STATIC_LIBRARIES )
+INCLUDE(cmake/PythonModuleBuilder.cmake)
 
 SET( ${PROJECT_NAME}_COMPILE_FLAGS "-D${PROJECT_NAME}_EXPORTS" )
 SET( ${PROJECT_NAME}_SOURCE_DIR ${${PROJECT_NAME}_SOURCE_DIR} )
 
-SET(optionalLibs)
-SET(requiredLibs ${CONAN_LIBS})
+set(UBITRACK_EXTRA_LIBS)
 
 # Version of ${PROJECT_NAME}
 SET( ${PROJECT_NAME}_MAJOR_VERSION 1 )
@@ -42,27 +30,29 @@ IF(OPENGL_FOUND)
   SET(HAVE_OPENGL 1)
   MESSAGE(STATUS "Found OpenGL: ${OPENGL_INCLUDE_DIR} - ${OPENGL_LIBRARIES}")
   INCLUDE_DIRECTORIES(${OPENGL_INCLUDE_DIR})
-  SET(requiredLibs ${requiredLibs} ${OPENGL_LIBRARIES})
+  set(UBITRACK_EXTRA_LIBS ${UBITRACK_EXTRA_LIBS} ${OPENGL_gl_LIBRARY} ${OPENGL_glu_LIBRARY})
 ENDIF(OPENGL_FOUND)
-
-INCLUDE(cmake/PythonModuleBuilder.cmake)
 
 INCLUDE_DIRECTORIES(${PYTHON_INCLUDE_DIR})
 INCLUDE_DIRECTORIES(${PYTHON_NUMPY_INCLUDE_DIR})
-SET(requiredLibs ${requiredLibs} ${PYTHON_LIBRARY})
+set(UBITRACK_EXTRA_LIBS ${UBITRACK_EXTRA_LIBS} ${PYTHON_LIBRARY})
 
 SET(MODULE_INSTALL_PATH ${PYTHON_PACKAGE_DIR})
-SET( MODULE_LIBS ${requiredLibs} ${optionalLibs})
+SET(MODULE_LIBS ${CONAN_LIBS} ${UBITRACK_EXTRA_LIBS})
 
 
+MESSAGE(STATUS "Python Executable: ${PYTHON_EXECUTABLE}")   
+MESSAGE(STATUS "Python Include: ${PYTHON_INCLUDE_DIR} Numpy: ${PYTHON_NUMPY_INCLUDE_DIR}")   
+MESSAGE(STATUS "Python Lib: ${PYTHON_LIBRARY}")   
+MESSAGE(STATUS "Install Directory: ${CMAKE_INSTALL_PREFIX}")   
 
 if (PYTHON_EXECUTABLE)
-    set(SETUP_PY_IN "${CMAKE_CURRENT_SOURCE_DIR}/setup.py.in")
-    set(SETUP_PY    "${CMAKE_CURRENT_BINARY_DIR}/setup.py")
-    set(DEPS        "${CMAKE_CURRENT_SOURCE_DIR}/lib/ubitrack/__init__.py")
-    set(OUTPUT      "${CMAKE_CURRENT_BINARY_DIR}/build")
+  set(SETUP_PY_IN "${CMAKE_CURRENT_SOURCE_DIR}/setup.py.in")
+  set(SETUP_PY    "${CMAKE_CURRENT_BINARY_DIR}/setup.py")
+  set(DEPS        "${CMAKE_CURRENT_SOURCE_DIR}/lib/ubitrack/__init__.py")
+  set(OUTPUT      "${CMAKE_CURRENT_BINARY_DIR}/build")
 
-    configure_file(${SETUP_PY_IN} ${SETUP_PY})
+  configure_file(${SETUP_PY_IN} ${SETUP_PY})
 
 	add_custom_command(
 	  OUTPUT ${OUTPUT}/timestamp
@@ -72,7 +62,7 @@ if (PYTHON_EXECUTABLE)
 	)
 	add_custom_target(pybuild ALL DEPENDS ${OUTPUT}/timestamp )
 
-    install(CODE "execute_process(COMMAND ${PYTHON_EXECUTABLE} ${SETUP_PY} install)")
+  install(CODE "execute_process(COMMAND ${PYTHON_EXECUTABLE} ${SETUP_PY} install --prefix=${CMAKE_INSTALL_PREFIX})")
 endif(PYTHON_EXECUTABLE)
 
 INCLUDE_DIRECTORIES("${CMAKE_SOURCE_DIR}/include")

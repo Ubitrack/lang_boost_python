@@ -3,6 +3,7 @@ from conans import tools
 from conans.tools import os_info, SystemPackageTool
 import os, sys
 import sysconfig
+from io import StringIO
 
 class UbitrackCoreConan(ConanFile):
     name = "ubitrack_lang_boost_python"
@@ -27,7 +28,7 @@ class UbitrackCoreConan(ConanFile):
        )
 
     # all sources are deployed with the package
-    exports_sources = "cmake/*", "include/*", "doc/*", "lib/*", "src/*", "tests/*", "CMakeLists.txt"
+    exports_sources = "cmake/*", "include/*", "doc/*", "lib/*", "src/*", "tests/*", "CMakeLists.txt", "setup.py.in"
 
     def configure(self):
         self.options['Boost'].python = self.options.python
@@ -71,9 +72,9 @@ class UbitrackCoreConan(ConanFile):
     @property
     def python_exec(self):
         try:
-            pyexec = str(self.conanfile.options.python)
+            pyexec = str(self.options.python)
             output = StringIO()
-            self.conanfile.run('{0} -c "import sys; print(sys.executable)"'.format(pyexec), output=output)
+            self.run('{0} -c "import sys; print(sys.executable)"'.format(pyexec), output=output)
             return '"'+output.getvalue().strip().replace("\\","/")+'"'
         except:
             return ""
@@ -100,7 +101,7 @@ class UbitrackCoreConan(ConanFile):
         
     @property
     def numpy_include(self):
-        cmd = "import os; os.environ['DISTUTILS_USE_SDK']='1'; import numpy.distutils; print numpy.distutils.misc_util.get_numpy_include_dirs()[0]" 
+        cmd = "import os; os.environ['DISTUTILS_USE_SDK']='1'; import numpy.distutils; print(numpy.distutils.misc_util.get_numpy_include_dirs()[0])" 
         return self.run_python_command(cmd)
                   
     def get_python_path(self, dir_name):
@@ -111,7 +112,7 @@ class UbitrackCoreConan(ConanFile):
         pyexec = self.python_exec
         if pyexec:
             output = StringIO()
-            self.conanfile.run('{0} -c "{1}"'.format(pyexec, cmd), output=output)
+            self.run('{0} -c "{1}"'.format(pyexec, cmd), output=output)
             return output.getvalue().strip()
         else:
             return ""
