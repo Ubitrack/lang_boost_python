@@ -19,7 +19,8 @@ class UbitrackCoreConan(ConanFile):
     settings = "os", "compiler", "build_type", "arch"
     generators = "cmake"
     requires = (
-        "Boost/[>=1.63.0]@camposs/stable",
+        "Boost/[>=1.59.0,<1.63.0]@camposs/stable",
+        "boost_numpy/0.8@camposs/stable", # only until we manage to upgrade to boost versions >= 1.63.0
         "ubitrack_core/%s@ubitrack/stable" % version,
         "ubitrack_vision/%s@ubitrack/stable" % version,
         "ubitrack_dataflow/%s@ubitrack/stable" % version,

@@ -1,20 +1,22 @@
 # Adapted from OpenCV CMake Infrastructure, git repository 05/2013
 # by Ulrich Eck
-if(WIN32 AND NOT PYTHON_EXECUTABLE)
-  # search for executable with the same bitness as resulting binaries
-  # standard FindPythonInterp always prefers executable from system path
-  # this is really important because we are using the interpreter for numpy search and for choosing the install location
-  foreach(_CURRENT_VERSION ${Python_ADDITIONAL_VERSIONS} 2.7 2.6 2.5 2.4 2.3 2.2 2.1 2.0)
-    find_host_program(PYTHON_EXECUTABLE
-      NAMES python${_CURRENT_VERSION} python
-      PATHS
-        [HKEY_LOCAL_MACHINE\\\\SOFTWARE\\\\Python\\\\PythonCore\\\\${_CURRENT_VERSION}\\\\InstallPath]
-        [HKEY_CURRENT_USER\\\\SOFTWARE\\\\Python\\\\PythonCore\\\\${_CURRENT_VERSION}\\\\InstallPath]
-      NO_SYSTEM_ENVIRONMENT_PATH
-    )
-  endforeach()
-endif()
-find_host_package(PythonInterp 2.0)
+if(NOT PYTHON_EXECUTABLE)
+  if(WIN32)
+    # search for executable with the same bitness as resulting binaries
+    # standard FindPythonInterp always prefers executable from system path
+    # this is really important because we are using the interpreter for numpy search and for choosing the install location
+    foreach(_CURRENT_VERSION ${Python_ADDITIONAL_VERSIONS} 3.7 3.6 3.5 2.7)
+      find_program(PYTHON_EXECUTABLE
+        NAMES python${_CURRENT_VERSION} python
+        PATHS
+          [HKEY_LOCAL_MACHINE\\\\SOFTWARE\\\\Python\\\\PythonCore\\\\${_CURRENT_VERSION}\\\\InstallPath]
+          [HKEY_CURRENT_USER\\\\SOFTWARE\\\\Python\\\\PythonCore\\\\${_CURRENT_VERSION}\\\\InstallPath]
+        NO_SYSTEM_ENVIRONMENT_PATH
+      )
+    endforeach()
+  endif(WIN32)
+  find_package(PythonInterp ${PYTHON_VERSION_FULL})
+endif(NOT PYTHON_EXECUTABLE)
 
 unset(HAVE_SPHINX CACHE)
 if(PYTHON_EXECUTABLE)
@@ -39,9 +41,9 @@ if(PYTHON_EXECUTABLE)
 
   if(NOT ANDROID AND NOT IOS)
     if(CMAKE_VERSION VERSION_GREATER 2.8.8 AND PYTHON_VERSION_FULL)
-      find_host_package(PythonLibs ${PYTHON_VERSION_FULL} EXACT)
+      find_package(PythonLibs ${PYTHON_VERSION_FULL} EXACT)
     else()
-      find_host_package(PythonLibs ${PYTHON_VERSION_FULL})
+      find_package(PythonLibs ${PYTHON_VERSION_FULL})
     endif()
     # cmake 2.4 (at least on Ubuntu 8.04 (hardy)) don't define PYTHONLIBS_FOUND
     if(NOT PYTHONLIBS_FOUND AND PYTHON_INCLUDE_PATH)
@@ -51,7 +53,7 @@ if(PYTHON_EXECUTABLE)
 
   if(NOT ANDROID AND NOT IOS)
     if(CMAKE_HOST_UNIX)
-      execute_process(COMMAND ${PYTHON_EXECUTABLE} -c "from distutils.sysconfig import *; print get_python_lib()"
+      execute_process(COMMAND ${PYTHON_EXECUTABLE} -c "from distutils.sysconfig import *; print(get_python_lib())"
                       RESULT_VARIABLE PYTHON_CVPY_PROCESS
                       OUTPUT_VARIABLE PYTHON_STD_PACKAGES_PATH
                       OUTPUT_STRIP_TRAILING_WHITESPACE)
@@ -82,7 +84,7 @@ if(PYTHON_EXECUTABLE)
 
     if(NOT PYTHON_NUMPY_INCLUDE_DIR)
       # Attempt to discover the NumPy include directory. If this succeeds, then build python API with NumPy
-      execute_process(COMMAND ${PYTHON_EXECUTABLE} -c "import os; os.environ['DISTUTILS_USE_SDK']='1'; import numpy.distutils; print numpy.distutils.misc_util.get_numpy_include_dirs()[0]"
+      execute_process(COMMAND ${PYTHON_EXECUTABLE} -c "import os; os.environ['DISTUTILS_USE_SDK']='1'; import numpy.distutils; print(numpy.distutils.misc_util.get_numpy_include_dirs()[0])"
                       RESULT_VARIABLE PYTHON_NUMPY_PROCESS
                       OUTPUT_VARIABLE PYTHON_NUMPY_INCLUDE_DIR
                       OUTPUT_STRIP_TRAILING_WHITESPACE)
@@ -94,31 +96,11 @@ if(PYTHON_EXECUTABLE)
     endif()
 
     if(PYTHON_NUMPY_INCLUDE_DIR)
-      execute_process(COMMAND ${PYTHON_EXECUTABLE} -c "import numpy; print numpy.version.version"
+      execute_process(COMMAND ${PYTHON_EXECUTABLE} -c "import numpy; print(numpy.version.version)"
                         RESULT_VARIABLE PYTHON_NUMPY_PROCESS
                         OUTPUT_VARIABLE PYTHON_NUMPY_VERSION
                         OUTPUT_STRIP_TRAILING_WHITESPACE)
     endif()
   endif(NOT ANDROID AND NOT IOS)
 
-  if(BUILD_DOCS)
-    find_host_program(SPHINX_BUILD sphinx-build)
-    if(SPHINX_BUILD)
-        if(UNIX)
-            execute_process(COMMAND sh -c "${SPHINX_BUILD} -_ 2>&1 | sed -ne 1p"
-                             RESULT_VARIABLE SPHINX_PROCESS
-                             OUTPUT_VARIABLE SPHINX_VERSION
-                             OUTPUT_STRIP_TRAILING_WHITESPACE)
-        else()
-            execute_process(COMMAND ${PYTHON_EXECUTABLE} -c "import sphinx; print sphinx.__version__"
-                            RESULT_VARIABLE SPHINX_PROCESS
-                            OUTPUT_VARIABLE SPHINX_VERSION
-                            OUTPUT_STRIP_TRAILING_WHITESPACE)
-        endif()
-        if(SPHINX_PROCESS EQUAL 0)
-          set(HAVE_SPHINX 1)
-          message(STATUS "Found Sphinx ${SPHINX_VERSION}: ${SPHINX_BUILD}")
-        endif()
-    endif()
-  endif(BUILD_DOCS)
 endif(PYTHON_EXECUTABLE)
