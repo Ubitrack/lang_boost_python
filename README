@@ -5,6 +5,11 @@ Author: Ulrich Eck <ueck@net-labs.de>
 ubitrack_python provides seamless integration of ubitrack dataflow instances into python based applications for prototyping.
 Wrappers are provided for all data- and measurement types, utfacade, utgraph(partly), and utvisualization(draft).
 
+NOTE: 
+=====
+the conan version is currently not working due to missing boost-python libraries in our repositories. 
+Try the pybind11-based version at: http://github.com/ubitrack/lang_python
+
 Requirements:
 =============
 
